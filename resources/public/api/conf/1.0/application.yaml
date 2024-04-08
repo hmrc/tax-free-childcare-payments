@@ -1,0 +1,49 @@
+openapi: "3.0.3"
+
+info:
+  version: 1.0.0
+  title: Hello World
+
+servers:
+  - url: https://test-api.service.hmrc.gov.uk/hello-world
+    description: Sandbox
+  - url: https://api.service.hmrc.gov.uk/hello-world
+    description: Production
+
+components:
+  parameters:
+    acceptHeader:
+      name: Accept
+      in: header
+      schema:
+        type: string
+        enum: [
+          "application/vnd.hmrc.1.0+json",
+          "application/vnd.hmrc.1.0+xml"
+        ]
+      required: true
+
+paths:
+  /hello-world:
+    get:
+      summary: Placeholder hello world endpoint
+      description: |
+        An endpoint that returns "Hello world"
+      tags:
+        - tax-free-childcare-payments
+      parameters:
+        - $ref: '#/components/parameters/acceptHeader'
+      responses:
+        200:
+          description: "OK Response"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                "Hello world"
+      security:
+        - {}
