@@ -16,28 +16,32 @@
 
 package connectors
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 import play.api.Configuration
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.taxfreechildcarepayments.controllers.EnrichedLinkInput
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import java.net.{URI, URL}
 
 final case class LinkResponse(status: String)
+
 object LinkResponse {
   implicit lazy val format: OFormat[LinkResponse] = Json.format
 }
+
 @Singleton
 class EisConnector @Inject() (
-                                httpClient: HttpClientV2,
-                                configuration: Configuration
-                              )(implicit ec: ExecutionContext) {
+    httpClient: HttpClientV2,
+    configuration: Configuration
+  )(implicit ec: ExecutionContext
+  ) {
 
   def call(request: EnrichedLinkInput)(implicit hc: HeaderCarrier): Future[LinkResponse] =
     httpClient
-      .post(url"to-be-determined")
+      .post(new URI("https://www.google.com").toURL)
       .withBody(Json.toJson(request))
       .execute[LinkResponse]
 }

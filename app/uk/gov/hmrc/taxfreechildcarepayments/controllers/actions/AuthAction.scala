@@ -19,7 +19,9 @@ package uk.gov.hmrc.taxfreechildcarepayments.controllers.actions
 import javax.inject.Inject
 import scala.annotation.nowarn
 import scala.concurrent.{ExecutionContext, Future}
+
 import models.requests.IdentifierRequest
+
 import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.Results.BadRequest
@@ -28,6 +30,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
+
 import uk.gov.hmrc.taxfreechildcarepayments.config.AppConfig
 
 class AuthAction @Inject() (
@@ -45,7 +48,7 @@ class AuthAction @Inject() (
     authorised(ConfidenceLevel.L250)
       .retrieve(Retrievals.nino) {
         case Some(nino) => block(IdentifierRequest(request, nino))
-        case None => Future.successful(BadRequest(Json.obj()))
+        case None       => Future.successful(BadRequest(Json.obj()))
       }
   }
 }
