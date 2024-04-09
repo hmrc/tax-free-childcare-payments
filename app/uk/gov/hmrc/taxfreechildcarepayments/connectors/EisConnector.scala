@@ -41,7 +41,7 @@ class EisConnector @Inject() (
 
   def call(request: EnrichedLinkInput)(implicit hc: HeaderCarrier): Future[LinkResponse] =
     httpClient
-      .post(new URI("https://www.google.com").toURL)
+      .post(new URI("http://localhost:5000/link").toURL)
       .withBody(Json.toJson(request))
       .execute[LinkResponse]
 }
