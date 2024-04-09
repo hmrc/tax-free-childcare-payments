@@ -1,3 +1,5 @@
 # microservice specific routes
 
-GET        /hello-world             uk.gov.hmrc.taxfreechildcarepayments.controllers.MicroserviceHelloWorldController.hello
+POST       /individuals/tax-free-childcare/payments/link uk.gov.hmrc.taxfreechildcarepayments.controllers.TaxFreeChildcarePaymentsController.link
+POST       /individuals/tax-free-childcare/payments/balance uk.gov.hmrc.taxfreechildcarepayments.controllers.TaxFreeChildcarePaymentsController.balance
+POST       /individuals/tax-free-childcare/payments uk.gov.hmrc.taxfreechildcarepayments.controllers.TaxFreeChildcarePaymentsController.payment

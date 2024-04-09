@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.taxfreechildcarepayments.config
+package models.requests
 
-import javax.inject.{Inject, Singleton}
+import play.api.mvc.{Request, WrappedRequest}
 
-import play.api.Configuration
-
-@Singleton
-class AppConfig @Inject() (config: Configuration) {
-
-  val appName: String = config.get[String]("appName")
-}
+final case class IdentifierRequest[A](request: Request[A], nino: String) extends WrappedRequest[A](request)
