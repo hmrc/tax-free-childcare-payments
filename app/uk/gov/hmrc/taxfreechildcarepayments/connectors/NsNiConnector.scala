@@ -14,33 +14,27 @@
  * limitations under the License.
  */
 
-package connectors
+package uk.gov.hmrc.taxfreechildcarepayments.connectors
 
 import java.net.URI
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+import models.requests.{EnrichedLinkRequest, LinkResponse}
+
 import play.api.Configuration
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
 
-import uk.gov.hmrc.taxfreechildcarepayments.controllers.EnrichedLinkInput
-
-final case class LinkResponse(status: String)
-
-object LinkResponse {
-  implicit lazy val format: OFormat[LinkResponse] = Json.format
-}
-
 @Singleton
-class EisConnector @Inject() (
+class NsNiConnector @Inject() (
     httpClient: HttpClientV2,
     configuration: Configuration
   )(implicit ec: ExecutionContext
   ) {
 
-  def call(request: EnrichedLinkInput)(implicit hc: HeaderCarrier): Future[LinkResponse] =
+  def call(request: EnrichedLinkRequest)(implicit hc: HeaderCarrier): Future[LinkResponse] =
     httpClient
       .post(new URI("http://localhost:5000/link").toURL)
       .withBody(Json.toJson(request))

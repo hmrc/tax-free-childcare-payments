@@ -19,34 +19,23 @@ package uk.gov.hmrc.taxfreechildcarepayments.controllers
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-import connectors.EisConnector
+import models.requests.{EnrichedLinkRequest, LinkRequest}
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import uk.gov.hmrc.taxfreechildcarepayments.connectors.NsNiConnector
 import uk.gov.hmrc.taxfreechildcarepayments.controllers.actions.AuthAction
 
-final case class EnrichedLinkInput(someRef: String, nino: String)
-
-object EnrichedLinkInput {
-  implicit lazy val format: OFormat[EnrichedLinkInput] = Json.format
-}
-
-final case class LinkInput(someRef: String)
-
-object LinkInput {
-  implicit lazy val format: OFormat[LinkInput] = Json.format
-}
-
 @Singleton()
-class TaxFreeChildcarePaymentsController @Inject() (cc: ControllerComponents, identify: AuthAction, eisConnector: EisConnector)(implicit ec: ExecutionContext)
+class TaxFreeChildcarePaymentsController @Inject() (cc: ControllerComponents, identify: AuthAction, eisConnector: NsNiConnector)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def link(): Action[LinkInput] = identify.async(parse.json[LinkInput]) {
+  def link(): Action[LinkRequest] = identify.async(parse.json[LinkRequest]) {
     implicit request =>
       val nino         = request.nino
-      val enrichedData = EnrichedLinkInput(request.body.someRef, nino)
+      val enrichedData = EnrichedLinkRequest(request.body.someRef, nino)
       eisConnector.call(enrichedData)
         .map(ls => Ok(Json.toJson(ls)))
   }

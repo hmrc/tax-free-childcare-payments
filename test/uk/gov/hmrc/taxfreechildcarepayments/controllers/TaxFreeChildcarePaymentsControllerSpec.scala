@@ -18,12 +18,13 @@ package uk.gov.hmrc.taxfreechildcarepayments.controllers
 
 import scala.concurrent.Future
 
-import connectors.{EisConnector, LinkResponse}
+import models.requests.{EnrichedLinkRequest, LinkRequest, LinkResponse}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito
 import org.mockito.Mockito.{verify, when}
-import org.scalatest.OptionValues
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{BeforeAndAfter, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -38,34 +39,46 @@ import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AuthConnector, ConfidenceLevel}
 
-class TaxFreeChildcarePaymentsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with OptionValues with MockitoSugar {
+import uk.gov.hmrc.taxfreechildcarepayments.connectors.NsNiConnector
+
+class TaxFreeChildcarePaymentsControllerSpec extends AnyWordSpec
+    with BeforeAndAfter
+    with Matchers
+    with GuiceOneAppPerSuite
+    with OptionValues
+    with MockitoSugar {
+
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  val mockEisConnector: EisConnector   = mock[EisConnector]
+  val mockNsNiConnector: NsNiConnector = mock[NsNiConnector]
+
+  before {
+    Mockito.reset[Any](mockAuthConnector, mockNsNiConnector)
+  }
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
     .overrides(
       bind[AuthConnector].toInstance(mockAuthConnector),
-      bind[EisConnector].toInstance(mockEisConnector)
+      bind[NsNiConnector].toInstance(mockNsNiConnector)
     )
     .build()
 
   "POST /link" should {
-    "return 200" in {
+    "return 200 with " in {
       when(mockAuthConnector.authorise(any(), any[Retrieval[Option[String]]]())(any(), any()))
         .thenReturn(Future.successful(Some("nino")))
-      when(mockEisConnector.call(any())(any()))
+      when(mockNsNiConnector.call(any())(any()))
         .thenReturn(Future.successful(LinkResponse("success")))
 
       val request = FakeRequest(
         routes.TaxFreeChildcarePaymentsController.link
-      ).withBody(Json.toJson(LinkInput("ref")))
+      ).withBody(Json.toJson(LinkRequest("ref")))
 
-      val expectedEisRequest = EnrichedLinkInput("ref", "nino")
+      val expectedNsNiRequest = EnrichedLinkRequest("ref", "nino")
 
       val result = route(app, request).value
       status(result) shouldBe Status.OK
       verify(mockAuthConnector).authorise(eqTo(ConfidenceLevel.L250), eqTo(Retrievals.nino))(any(), any())
-      verify(mockEisConnector).call(eqTo(expectedEisRequest))(any())
+      verify(mockNsNiConnector).call(eqTo(expectedNsNiRequest))(any())
     }
   }
 }
