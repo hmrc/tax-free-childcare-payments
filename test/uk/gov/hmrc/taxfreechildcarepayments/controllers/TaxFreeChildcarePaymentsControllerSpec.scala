@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.taxfreechildcarepayments.controllers
 
-import connectors.{EisConnector, LinkResponse}
-
 import scala.concurrent.Future
+
+import connectors.{EisConnector, LinkResponse}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.OptionValues
@@ -26,6 +26,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 import play.api.Application
 import play.api.http.Status
 import play.api.inject.bind
@@ -38,13 +39,8 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AuthConnector, ConfidenceLevel}
 
 class TaxFreeChildcarePaymentsControllerSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with OptionValues with MockitoSugar {
-  val mockAuthConnector: AuthConnector        = mock[AuthConnector]
-  when(mockAuthConnector.authorise(any(), any[Retrieval[Option[String]]]())(any(), any()))
-    .thenReturn(Future.successful(Some("nino")))
-
-  val mockEisConnector: EisConnector = mock[EisConnector]
-  when(mockEisConnector.call(any())(any()))
-    .thenReturn(Future.successful(LinkResponse("success")))
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  val mockEisConnector: EisConnector   = mock[EisConnector]
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
     .overrides(
@@ -55,13 +51,21 @@ class TaxFreeChildcarePaymentsControllerSpec extends AnyWordSpec with Matchers w
 
   "POST /link" should {
     "return 200" in {
+      when(mockAuthConnector.authorise(any(), any[Retrieval[Option[String]]]())(any(), any()))
+        .thenReturn(Future.successful(Some("nino")))
+      when(mockEisConnector.call(any())(any()))
+        .thenReturn(Future.successful(LinkResponse("success")))
+
       val request = FakeRequest(
         routes.TaxFreeChildcarePaymentsController.link
       ).withBody(Json.toJson(LinkInput("ref")))
 
+      val expectedEisRequest = EnrichedLinkInput("ref", "nino")
+
       val result = route(app, request).value
       status(result) shouldBe Status.OK
       verify(mockAuthConnector).authorise(eqTo(ConfidenceLevel.L250), eqTo(Retrievals.nino))(any(), any())
+      verify(mockEisConnector).call(eqTo(expectedEisRequest))(any())
     }
   }
 }

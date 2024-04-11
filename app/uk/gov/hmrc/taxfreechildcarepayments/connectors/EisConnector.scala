@@ -16,15 +16,16 @@
 
 package connectors
 
+import java.net.URI
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+
 import play.api.Configuration
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.taxfreechildcarepayments.controllers.EnrichedLinkInput
 
-import java.net.{URI, URL}
+import uk.gov.hmrc.taxfreechildcarepayments.controllers.EnrichedLinkInput
 
 final case class LinkResponse(status: String)
 
