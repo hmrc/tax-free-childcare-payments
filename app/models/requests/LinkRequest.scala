@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.taxfreechildcarepayments.config
+package models.requests
 
-import javax.inject.{Inject, Singleton}
+import play.api.libs.json.{Json, OFormat}
 
-import play.api.Configuration
+final case class LinkRequest(correlationId: String)
 
-@Singleton
-class AppConfig @Inject() (config: Configuration) {
-
-  val appName: String = config.get[String]("appName")
+object LinkRequest {
+  implicit lazy val format: OFormat[LinkRequest] = Json.format
 }

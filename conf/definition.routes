@@ -1,2 +1,2 @@
-GET        /api/definition                 uk.gov.hmrc.taxfreechildcarepayments.controllers.DocumentationController.definition()
-GET        /api/conf/:version/*file        uk.gov.hmrc.taxfreechildcarepayments.controllers.DocumentationController.specification(version, file)
+GET        /api/definition                 uk.gov.hmrc.taxfreechildcarepayments.controllers.documentation.DocumentationController.definition()
+GET        /api/conf/:version/*file        uk.gov.hmrc.taxfreechildcarepayments.controllers.documentation.DocumentationController.specification(version, file)

@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.taxfreechildcarepayments.config
+package uk.gov.hmrc.taxfreechildcarepayments.controllers.documentation
 
 import javax.inject.{Inject, Singleton}
 
-import play.api.Configuration
+import controllers.Assets
+
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 @Singleton
-class AppConfig @Inject() (config: Configuration) {
+class DocumentationController @Inject() (assets: Assets, cc: ControllerComponents) extends BackendController(cc) {
 
-  val appName: String = config.get[String]("appName")
+  def definition(): Action[AnyContent] = {
+    assets.at("/public/api", "definition.json")
+  }
+
+  def specification(version: String, file: String): Action[AnyContent] = {
+    assets.at(s"/public/api/conf/$version", file)
+  }
 }
