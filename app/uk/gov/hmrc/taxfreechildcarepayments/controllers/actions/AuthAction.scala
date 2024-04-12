@@ -43,7 +43,7 @@ class AuthAction @Inject() (
   @nowarn()
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     authorised(ConfidenceLevel.L250)
       .retrieve(Retrievals.nino) {

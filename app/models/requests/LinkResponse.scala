@@ -18,7 +18,7 @@ package models.requests
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class LinkResponse(status: String)
+final case class LinkResponse(correlationId: String)
 
 object LinkResponse {
   implicit lazy val format: OFormat[LinkResponse] = Json.format

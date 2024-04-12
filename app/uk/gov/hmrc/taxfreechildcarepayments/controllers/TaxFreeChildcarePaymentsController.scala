@@ -35,16 +35,16 @@ class TaxFreeChildcarePaymentsController @Inject() (cc: ControllerComponents, id
   def link(): Action[LinkRequest] = identify.async(parse.json[LinkRequest]) {
     implicit request =>
       val nino         = request.nino
-      val enrichedData = EnrichedLinkRequest(request.body.someRef, nino)
+      val enrichedData = EnrichedLinkRequest(request.body.correlationId, nino)
       eisConnector.call(enrichedData)
         .map(ls => Ok(Json.toJson(ls)))
   }
 
-  def balance(): Action[AnyContent] = Action.async { implicit request =>
+  def balance(): Action[AnyContent] = Action.async {
     Future.successful(Ok("balance  is wip"))
   }
 
-  def payment(): Action[AnyContent] = Action.async { implicit request =>
+  def payment(): Action[AnyContent] = Action.async {
     Future.successful(Ok("payment is wip"))
   }
 }

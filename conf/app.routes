@@ -1,5 +1,5 @@
 # microservice specific routes
 
-POST       /individuals/tax-free-childcare/payments/link uk.gov.hmrc.taxfreechildcarepayments.controllers.TaxFreeChildcarePaymentsController.link
-POST       /individuals/tax-free-childcare/payments/balance uk.gov.hmrc.taxfreechildcarepayments.controllers.TaxFreeChildcarePaymentsController.balance
-POST       /individuals/tax-free-childcare/payments uk.gov.hmrc.taxfreechildcarepayments.controllers.TaxFreeChildcarePaymentsController.payment
+POST       /link uk.gov.hmrc.taxfreechildcarepayments.controllers.TaxFreeChildcarePaymentsController.link
+POST       /balance uk.gov.hmrc.taxfreechildcarepayments.controllers.TaxFreeChildcarePaymentsController.balance
+POST       / uk.gov.hmrc.taxfreechildcarepayments.controllers.TaxFreeChildcarePaymentsController.payment

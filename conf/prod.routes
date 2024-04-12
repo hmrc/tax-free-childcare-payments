@@ -1,4 +1,4 @@
 # Add all the application routes to the app.routes file
-->         /                          app.Routes
+->         /individuals/tax-free-childcare/payments                          app.Routes
 ->         /                          health.Routes
 ->         /                          definition.Routes
