@@ -36,7 +36,7 @@ class NsNiConnector @Inject() (
 
   def call(request: EnrichedLinkRequest)(implicit hc: HeaderCarrier): Future[LinkResponse] =
     httpClient
-      .post(new URI("http://localhost:5000/link").toURL)
+      .post(new URI("http://localhost:10501/individuals/tax-free-childcare/payments/link").toURL)
       .withBody(Json.toJson(request))
       .execute[LinkResponse]
 }
