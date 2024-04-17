@@ -35,7 +35,14 @@ class TaxFreeChildcarePaymentsController @Inject() (cc: ControllerComponents, id
   def link(): Action[LinkRequest] = identify.async(parse.json[LinkRequest]) {
     implicit request =>
       val nino         = request.nino
-      val enrichedData = EnrichedLinkRequest(request.body.correlationId, nino)
+      val enrichedData = EnrichedLinkRequest(
+        request.body.correlationId,
+        request.body.epp_unique_customer_id,
+        request.body.epp_reg_reference,
+        request.body.outbound_child_payment_ref,
+        request.body.child_date_of_birth,
+        nino
+      )
       eisConnector.call(enrichedData)
         .map(ls => Ok(Json.toJson(ls)))
   }

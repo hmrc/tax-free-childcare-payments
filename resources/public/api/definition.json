@@ -2,9 +2,9 @@
   "scopes": [
   ],
   "api": {
-    "name": "Hello World",
-    "description": "A 'hello world' example of an API on the HMRC API Developer Hub.",
-    "context": "discuss-with-the-api-platform-team",
+    "name": "Tax Free Childcare Payments",
+    "description": "Parents who pay for childcare activities cost do this either via their government tax free childcare account (TFC) where they get top-up payments to help with childcare costs or they use external payment providers (EPP) where they can pay for childcare costs, however, using EPP does not allow them to make use to the government top-ups therefore, the end points defined by this api are to link the EPP app with the TFC, provided the parent consent and give permission to the EPP to access their TFC balance on their behalf the EPP then can request the TFC balance, and finally, the parent can choose to instruct to pay for their childcare invoices from their EPP account",
+    "context": "individuals/tax-free-childcare/payments",
     "categories": ["OTHER"],
     "versions": [
       {

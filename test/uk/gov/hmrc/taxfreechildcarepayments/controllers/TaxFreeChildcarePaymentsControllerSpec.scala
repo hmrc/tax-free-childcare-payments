@@ -67,13 +67,13 @@ class TaxFreeChildcarePaymentsControllerSpec extends AnyWordSpec
       when(mockAuthConnector.authorise(any(), any[Retrieval[Option[String]]]())(any(), any()))
         .thenReturn(Future.successful(Some("nino")))
       when(mockNsNiConnector.call(any())(any()))
-        .thenReturn(Future.successful(LinkResponse("success")))
+        .thenReturn(Future.successful(LinkResponse("correlationId", "child name")))
 
       val request = FakeRequest(
         routes.TaxFreeChildcarePaymentsController.link
-      ).withBody(Json.toJson(LinkRequest("ref")))
+      ).withBody(Json.toJson(LinkRequest("correlationId", "epp_unique_customer_id", "epp_reg_reference", "outbound_child_payment_ref", "child_date_of_birth")))
 
-      val expectedNsNiRequest = EnrichedLinkRequest("ref", "nino")
+      val expectedNsNiRequest = EnrichedLinkRequest("correlationId", "epp_unique_customer_id", "epp_reg_reference", "outbound_child_payment_ref", "child_date_of_birth", "nino")
 
       val result = route(app, request).value
       status(result) shouldBe Status.OK
