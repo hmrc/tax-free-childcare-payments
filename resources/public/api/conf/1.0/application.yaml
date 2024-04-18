@@ -1,66 +1,79 @@
 openapi: "3.0.3"
 info:
-  title: TFC integration API
-  description: "# Overview\nThis is an API which allows EPPs to offer their users the opportunity\
-    \ to use their TFC balance to pay for their childcare through the EPP platform.\n\n\
+  title: Tax-free childcare integration API
+  description: "# Overview
+  
+  It is a government initiative to encourage more parents to use the tax-free childcare (TFC) allowance available to them. To promote this service we want to make it easier for parents to make payments using the funds in their tax-free childcare account.   
+
+
+This API allows online cashless payment providers for schools to offer their users the opportunity to use their TFC balance to pay for their childcare through the providers platform.
+
+
     There are three different operations involved in this process:\n\
-    \n- Link the parent's TFC account with their account on the EPP platform\n- Check the balance on the child's TFC account\
-    \n- Make a payment from the child's TFC account to the childcare provider."
+    - Linking the parent's TFC account with their account on the EPP platform.
+    
+    - Checking the balance on the child's TFC account'.
+    
+    - Making a payment from the child's TFC account to the childcare provider."
   version: 1.0.0
 servers:
-- url: https://test-api.service.hmrc.gov.uk
+  - url: https://test-api.service.hmrc.gov.uk
+    description: Sandbox
+  - url: https://api.service.hmrc.gov.uk
+    description: Production
 tags:
-- Link accounts
-- Check balance
-- Make payment
-paths: 
- /individuals/tax-free-childcare/payments/link:
+  - name: Link accounts
+  - name: Check balance
+  - name: Make payment
+paths:
+  /individuals/tax-free-childcare/payments/link:
     post:
       tags:
-      - Link accounts
-      summary: Link EPP account to TFC account
+        - Link accounts
+      summary: Linking the parent's online payment provider account to their TFC account
       description: |
-        This API links the parent's TFC account with an account they hold with an EPP. This linking will be initiated by the EPP's application when offering TFC to the parent as an option to pay for their child's care. The parent will be required to confirm if they want this link to be created. This link is essential if the parent wishes to use TFC within the EPP's app.
+        This endpoint links the parent's TFC account with an account they hold with an online payment provider. This linking will be initiated by the payment provider's platform when offering TFC to the parent as an option to pay for their child's care. The parent will be required to confirm if they want this link to be created. This link is essential if the parent wishes to use TFC within the payment provider's platform.
       requestBody:
         content:
           application/json:
-            schema: 
+            schema:
               type: object
               properties:
                 correlation_id:
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the EPP.
                   type: string
                 epp_unique_customer_id:
-                  description: The unique ID assigned to the EPP by NS&I. 
+                  description: The unique ID assigned to the EPP by NS&I.
                   type: string
                 epp_reg_reference:
                   description: The unique ID assigned to the EPP when they register with HMRC.
-          
                   type: string
                 outbound_child_payment_ref:
-                  description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
+                  description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account.
                   type: string
-                  format: ABCD12345TFC
+                  example: ABCD12345TFC
                 child_date_of_birth:
-                  description: The date of birth of the child for whom the link is being made. This extra identity check is used to cross-reference with the child's details held by the EPP. Date 
+                  description: The date of birth of the child for whom the link is being made. This extra identity check is used to cross-reference with the child's details held by the EPP. Date
                   type: string
-                  format: YYYY-MM-DD
+                  example: YYYY-MM-DD
                 parent_nino:
                   description: The parent's national insurance number in the format AA123456A. This enables NS&I to identify the parent.
                   type: string
+                  example: AB123456C
+
       responses:
-          "200":
-            description: Confirmation that a link has been established
-            content: 
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    correlation_id:
-                      type: string
-                      description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the EPP.
-                    child_full_name:
-                      type: string
-                      description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
+        "200":
+          description: Confirmation that a link has been established
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  correlation_id:
+                    type: string
+                    description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the EPP.
+                  child_full_name:
+                    type: string
+                    description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
       security:
         - {}
