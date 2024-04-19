@@ -10,9 +10,10 @@ There are three different operations involved in this process:
 - Linking the parent's TFC account with their account on the online payment provider platform
 - Checking the balance on the child's TFC account'.
 - Making a payment from the child's TFC account to the childcare provider.
+Requests are passed for processing to National Savings and Investments (NS&I), who hold the TFC account funds.
 
 ## Prerequisites
-
+- The online payment provider will need to be registered with NS&I. NS&I will provide them with a unique ID which is required by this API.
 
 ## Security considerations
 
