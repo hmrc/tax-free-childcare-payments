@@ -14,7 +14,9 @@ This API allows online cashless payment providers for schools to offer their use
     
     - Checking the balance on the child's TFC account'.
     
-    - Making a payment from the child's TFC account to the childcare provider."
+    - Making a payment from the child's TFC account to the childcare provider.
+    
+    Requests are passed to National Savings and Investments (NS&I), who hold the TFC account funds."
   version: 1.0.0
 servers:
 - url: https://test-api.service.hmrc.gov.uk
@@ -31,7 +33,7 @@ paths:
       tags:
       - Link accounts
       summary: Linking the parent's online payment provider account to their TFC account
-      description: |
+      description: 
         This endpoint links the parent's TFC account with an account they hold with an online payment provider. This linking will be initiated by the payment provider's platform when offering TFC to the parent as an option to pay for their child's care. The parent will be required to confirm if they want this link to be created. This link is essential if the parent wishes to use TFC within the payment provider's platform.
       requestBody:
         content:
@@ -40,8 +42,9 @@ paths:
               type: object
               properties:
                 correlation_id:
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This 32 character, hyphen separated alphanumeric string is generated and sent by the online payment provider.
                   type: string
+                  example: 12a34567-8b90-1234-c6de-5fghi6j78k90
                 epp_unique_customer_id:
                   description: The unique ID assigned to the online payment provider by NS&I. 
                   type: string
@@ -56,11 +59,7 @@ paths:
                   description: The date of birth of the child for whom the link is being made. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
                   type: string
                   example: YYYY-MM-DD
-                parent_nino:
-                  description: The parent's national insurance number in the format AA123456A. This enables NS&I to identify the parent.
-                  type: string
-                  example: AB123456C
-    
+
       responses:
           "200":
             description: Confirmation that a link has been established
