@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.taxfreechildcarepayments.controllers
+package controllers
+
+import connectors.NsNiConnector
+import controllers.actions.AuthAction
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-
 import models.requests.{EnrichedLinkRequest, LinkRequest}
-
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
-import uk.gov.hmrc.taxfreechildcarepayments.connectors.NsNiConnector
-import uk.gov.hmrc.taxfreechildcarepayments.controllers.actions.AuthAction
 
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (cc: ControllerComponents, identify: AuthAction, eisConnector: NsNiConnector)(implicit ec: ExecutionContext)

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.taxfreechildcarepayments.controllers.documentation
+package controllers.documentation
 
 import javax.inject.{Inject, Singleton}
 

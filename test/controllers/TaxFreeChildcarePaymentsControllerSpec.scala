@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.taxfreechildcarepayments.controllers
+package controllers
 
-import scala.concurrent.Future
-
+import connectors.NsNiConnector
 import models.requests.{EnrichedLinkRequest, LinkRequest, LinkResponse}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito
@@ -27,7 +26,6 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfter, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-
 import play.api.Application
 import play.api.http.Status
 import play.api.inject.bind
@@ -39,7 +37,7 @@ import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AuthConnector, ConfidenceLevel}
 
-import uk.gov.hmrc.taxfreechildcarepayments.connectors.NsNiConnector
+import scala.concurrent.Future
 
 class TaxFreeChildcarePaymentsControllerSpec extends AnyWordSpec
     with BeforeAndAfter
