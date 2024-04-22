@@ -46,17 +46,19 @@ paths:
                   type: string
                   example: 12a34567-8b90-1234-c6de-5fghi6j78k90
                 epp_unique_customer_id:
-                  description: The unique ID assigned to the online payment provider by NS&I. 
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
                   type: string
+                  example: 12345678901
                 epp_reg_reference:
-                  description: The unique ID assigned to the online payment provider when they register with HMRC.
+                  description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
                   type: string
+                  example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
                   description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
                   type: string
                   example: ABCD12345TFC
                 child_date_of_birth:
-                  description: The date of birth of the child for whom the link is being made. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
+                  description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
                   type: string
                   example: YYYY-MM-DD
 
@@ -80,7 +82,7 @@ paths:
       tags:
       - Check balance
       summary: Retrieve the balance of the associated child's TFC account
-      description: |
+      description: 
         This endpoint fetches the balance of the associated child's TFC account. The balance of the TFC account consists of the following three different elements:\n\- Paid in by you - The amount of money the parent or guardian has paid into the child's account.\n\- Government top-up - The amount of top-up funds paid in by the government.\n\- Total balance - The sum of the two previous amounts.
 
 
