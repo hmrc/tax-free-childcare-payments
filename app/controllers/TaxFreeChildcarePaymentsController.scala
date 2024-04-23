@@ -38,7 +38,7 @@ class TaxFreeChildcarePaymentsController @Inject() (cc: ControllerComponents, id
         request.body.epp_unique_customer_id,
         request.body.epp_reg_reference,
         request.body.outbound_child_payment_ref,
-        request.body.child_date_of_birth,
+        request.body.child_date_of_birth.toString,
         nino
       )
       eisConnector.call(enrichedData)

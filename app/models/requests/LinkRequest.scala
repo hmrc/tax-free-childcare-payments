@@ -18,6 +18,7 @@ package models.requests
 
 import play.api.libs.json.{Json, Reads}
 
+import java.time.LocalDate
 import java.util.UUID
 
 final case class LinkRequest(
@@ -25,7 +26,7 @@ final case class LinkRequest(
     epp_unique_customer_id: String,
     epp_reg_reference: String,
     outbound_child_payment_ref: String,
-    child_date_of_birth: String
+    child_date_of_birth: LocalDate
   )
 
 object LinkRequest {
