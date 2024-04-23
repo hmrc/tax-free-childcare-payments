@@ -17,7 +17,7 @@
 package controllers
 
 import models.requests.LinkResponse
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
@@ -31,6 +31,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     with should.Matchers
     with WireMockSupport
     with ScalaFutures
+    with IntegrationPatience
     with GuiceOneServerPerSuite
     with WsTestClient
     with HeaderNames
@@ -40,6 +41,8 @@ class TaxFreeChildcarePaymentsControllerISpec
   import play.api.Application
   import play.api.libs.json.Json
 
+  import java.util.UUID
+
   override lazy val wireMockPort = 10501
 
   override def fakeApplication(): Application = new GuiceApplicationBuilder()
@@ -47,7 +50,8 @@ class TaxFreeChildcarePaymentsControllerISpec
     .build()
 
   withClient { wsClient =>
-    val baseUrl = s"http://localhost:$port"
+    val contextRoot = "/individuals/tax-free-childcare/payments"
+    val baseUrl     = s"http://localhost:$port$contextRoot"
 
     /** Covers [[TaxFreeChildcarePaymentsController.link]] */
     "POST /link" should {
@@ -64,7 +68,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val linkRequest = Json.obj(
-            "correlationId"              -> "",
+            "correlationId"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> "",
             "epp_reg_reference"          -> "",
             "outbound_child_payment_ref" -> "",
@@ -72,12 +76,41 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val res = wsClient
-            .url(s"$baseUrl/individuals/tax-free-childcare/payments/link")
+            .url(s"$baseUrl/link")
             .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
             .post(linkRequest)
             .futureValue
 
           res.status shouldBe OK
+        }
+      }
+      s"respond $BAD_REQUEST" when {
+        s"correlationID field is not a valid UUID" in {
+          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
+          stubFor(
+            post("/auth/authorise") willReturn authResponse
+          )
+
+          val nsiResponse = okJson(Json.toJson(LinkResponse("", "")).toString)
+          stubFor(
+            post("/individuals/tax-free-childcare/payments/link") willReturn nsiResponse
+          )
+
+          val linkRequest = Json.obj(
+            "correlationId"              -> "I am a bad UUID.",
+            "epp_unique_customer_id"     -> "",
+            "epp_reg_reference"          -> "",
+            "outbound_child_payment_ref" -> "",
+            "child_date_of_birth"        -> ""
+          )
+
+          val res = wsClient
+            .url(s"$baseUrl/link")
+            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+            .post(linkRequest)
+            .futureValue
+
+          res.status shouldBe BAD_REQUEST
         }
       }
     }
