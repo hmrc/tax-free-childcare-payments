@@ -39,7 +39,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     with Status {
 
   import com.github.tomakehurst.wiremock.client.WireMock._
-  import models.requests.LinkRequest.{CUSTOMER_ID_LENGTH, PAYMENT_REF_CHARS, PAYMENT_REF_DIGITS}
+  import models.requests.LinkRequest.{CUSTOMER_ID_LENGTH, PAYMENT_REF_DIGITS, PAYMENT_REF_LETTERS}
   import models.requests.LinkResponse
   import play.api.Application
   import play.api.libs.json.Json
@@ -188,7 +188,7 @@ class TaxFreeChildcarePaymentsControllerISpec
   private def randomCustomerId = Array.fill(CUSTOMER_ID_LENGTH)(randomDigit).mkString
 
   private def randomPaymentRef = {
-    val letters = Array.fill(PAYMENT_REF_CHARS)(randomLetter).mkString
+    val letters = Array.fill(PAYMENT_REF_LETTERS)(randomLetter).mkString
     val digits  = Array.fill(PAYMENT_REF_DIGITS)(randomDigit).mkString
 
     letters + digits + "TFC"
