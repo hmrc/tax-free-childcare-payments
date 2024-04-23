@@ -16,7 +16,7 @@
 
 package models.requests
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Json, Reads}
 
 import java.util.UUID
 
@@ -29,5 +29,11 @@ final case class LinkRequest(
   )
 
 object LinkRequest {
-  implicit lazy val format: OFormat[LinkRequest] = Json.format
+  val CUSTOMER_ID_LENGTH          = 11
+  private val CUSTOMER_ID_PATTERN = s"^[0-9]{$CUSTOMER_ID_LENGTH}$$"
+
+  implicit val reads: Reads[LinkRequest] =
+    Json.format filter { lr =>
+      lr.epp_unique_customer_id matches CUSTOMER_ID_PATTERN
+    }
 }
