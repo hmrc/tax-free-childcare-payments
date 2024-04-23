@@ -18,13 +18,13 @@ package controllers
 
 import connectors.NsNiConnector
 import controllers.actions.AuthAction
-
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 import models.requests.{EnrichedLinkRequest, LinkRequest}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (cc: ControllerComponents, identify: AuthAction, eisConnector: NsNiConnector)(implicit ec: ExecutionContext)
@@ -34,7 +34,7 @@ class TaxFreeChildcarePaymentsController @Inject() (cc: ControllerComponents, id
     implicit request =>
       val nino         = request.nino
       val enrichedData = EnrichedLinkRequest(
-        request.body.correlationId,
+        request.body.correlationId.toString,
         request.body.epp_unique_customer_id,
         request.body.epp_reg_reference,
         request.body.outbound_child_payment_ref,
