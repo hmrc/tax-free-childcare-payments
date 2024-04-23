@@ -37,7 +37,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     with Status {
 
   import com.github.tomakehurst.wiremock.client.WireMock._
-  import models.requests.LinkRequest.CUSTOMER_ID_LENGTH
+  import models.requests.LinkRequest.{CUSTOMER_ID_LENGTH, PAYMENT_REF_CHARS, PAYMENT_REF_DIGITS}
   import models.requests.LinkResponse
   import play.api.Application
   import play.api.libs.json.Json
@@ -73,7 +73,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             "correlationId"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> "",
-            "outbound_child_payment_ref" -> "",
+            "outbound_child_payment_ref" -> randomPaymentRef,
             "child_date_of_birth"        -> ""
           )
 
@@ -98,7 +98,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             "correlationId"              -> "I am a bad UUID.",
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> "",
-            "outbound_child_payment_ref" -> "",
+            "outbound_child_payment_ref" -> randomPaymentRef,
             "child_date_of_birth"        -> ""
           )
 
@@ -121,7 +121,30 @@ class TaxFreeChildcarePaymentsControllerISpec
             "correlationId"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> "I am a bad customer ID.",
             "epp_reg_reference"          -> "",
-            "outbound_child_payment_ref" -> "",
+            "outbound_child_payment_ref" -> randomPaymentRef,
+            "child_date_of_birth"        -> ""
+          )
+
+          val res = wsClient
+            .url(s"$baseUrl/link")
+            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+            .post(linkRequest)
+            .futureValue
+
+          res.status shouldBe BAD_REQUEST
+        }
+
+        s"payment ref is invalid" in {
+          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
+          stubFor(
+            post("/auth/authorise") willReturn authResponse
+          )
+
+          val linkRequest = Json.obj(
+            "correlationId"              -> UUID.randomUUID(),
+            "epp_unique_customer_id"     -> randomCustomerId,
+            "epp_reg_reference"          -> "",
+            "outbound_child_payment_ref" -> "I am a bad payment reference.",
             "child_date_of_birth"        -> ""
           )
 
@@ -137,6 +160,15 @@ class TaxFreeChildcarePaymentsControllerISpec
     }
   }
 
-  private def randomDigit      = Random.nextInt(10)
   private def randomCustomerId = Array.fill(CUSTOMER_ID_LENGTH)(randomDigit).mkString
+
+  private def randomPaymentRef = {
+    val letters = Array.fill(PAYMENT_REF_CHARS)(randomLetter).mkString
+    val digits  = Array.fill(PAYMENT_REF_DIGITS)(randomDigit).mkString
+
+    letters + digits + "TFC"
+  }
+
+  private def randomDigit  = Random.nextInt(10)
+  private def randomLetter = ('A' to 'Z')(Random.nextInt(26))
 }
