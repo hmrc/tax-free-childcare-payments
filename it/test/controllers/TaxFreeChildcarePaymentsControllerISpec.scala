@@ -40,7 +40,6 @@ class TaxFreeChildcarePaymentsControllerISpec
     with Status {
 
   import com.github.tomakehurst.wiremock.client.WireMock._
-  import models.requests.LinkRequest.{CUSTOMER_ID_LENGTH, PAYMENT_REF_DIGITS, PAYMENT_REF_LETTERS}
   import models.requests.LinkResponse
   import play.api.Application
   import play.api.libs.json.Json
@@ -72,18 +71,10 @@ class TaxFreeChildcarePaymentsControllerISpec
             post("/individuals/tax-free-childcare/payments/link") willReturn nsiResponse
           )
 
-          val linkRequest = Json.obj(
-            "correlationId"              -> UUID.randomUUID(),
-            "epp_unique_customer_id"     -> randomCustomerId,
-            "epp_reg_reference"          -> "",
-            "outbound_child_payment_ref" -> randomPaymentRef,
-            "child_date_of_birth"        -> randomDate
-          )
-
           val res = wsClient
             .url(s"$baseUrl/link")
             .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
-            .post(linkRequest)
+            .post(randomLinkRequestJson)
             .futureValue
 
           res.status shouldBe OK
@@ -100,7 +91,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           val linkRequest = Json.obj(
             "correlationId"              -> "I am a bad UUID.",
             "epp_unique_customer_id"     -> randomCustomerId,
-            "epp_reg_reference"          -> "",
+            "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef,
             "child_date_of_birth"        -> randomDate
           )
@@ -125,7 +116,32 @@ class TaxFreeChildcarePaymentsControllerISpec
           val linkRequest = Json.obj(
             "correlationId"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> "I am a bad customer ID.",
-            "epp_reg_reference"          -> "",
+            "epp_reg_reference"          -> randomRegistrationRef,
+            "outbound_child_payment_ref" -> randomPaymentRef,
+            "child_date_of_birth"        -> randomDate
+          )
+
+          val res = wsClient
+            .url(s"$baseUrl/link")
+            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+            .post(linkRequest)
+            .futureValue
+
+          res.status shouldBe BAD_REQUEST
+          val resBody = res.json.as[ErrorResponse]
+          resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
+        }
+
+        s"registration ref is invalid" in {
+          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
+          stubFor(
+            post("/auth/authorise") willReturn authResponse
+          )
+
+          val linkRequest = Json.obj(
+            "correlationId"              -> UUID.randomUUID(),
+            "epp_unique_customer_id"     -> randomCustomerId,
+            "epp_reg_reference"          -> "I am a bad registration reference",
             "outbound_child_payment_ref" -> randomPaymentRef,
             "child_date_of_birth"        -> randomDate
           )
@@ -150,7 +166,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           val linkRequest = Json.obj(
             "correlationId"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
-            "epp_reg_reference"          -> "",
+            "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> "I am a bad payment reference.",
             "child_date_of_birth"        -> randomDate
           )
@@ -175,7 +191,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           val linkRequest = Json.obj(
             "correlationId"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
-            "epp_reg_reference"          -> "",
+            "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef,
             "child_date_of_birth"        -> "I am a bad date string"
           )
@@ -191,22 +207,52 @@ class TaxFreeChildcarePaymentsControllerISpec
           resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
       }
+
+      s"respond $UNAUTHORIZED" when {
+        "bearer token is absent" in {
+          val res = wsClient
+            .url(s"$baseUrl/link")
+            .post(randomLinkRequestJson)
+            .futureValue
+
+          res.status shouldBe UNAUTHORIZED
+          val resBody = res.json.as[ErrorResponse]
+          resBody.statusCode shouldBe UNAUTHORIZED
+        }
+      }
     }
   }
 
-  private def randomCustomerId = Array.fill(CUSTOMER_ID_LENGTH)(randomDigit).mkString
+  private def randomLinkRequestJson = Json.obj(
+    "correlationId"              -> UUID.randomUUID().toString,
+    "epp_unique_customer_id"     -> randomCustomerId,
+    "epp_reg_reference"          -> randomRegistrationRef,
+    "outbound_child_payment_ref" -> randomPaymentRef,
+    "child_date_of_birth"        -> randomDate
+  )
+
+  private def randomCustomerId      = randomStringOf(EXPECTED_CUSTOMER_ID_LENGTH, '0' to '9')
+  private def randomRegistrationRef = randomStringOf(EXPECTED_REGISTRATION_REF_LENGTH, ('a' to 'z') ++ ('A' to 'Z') ++ ('0' to '9'))
 
   private def randomPaymentRef = {
-    val letters = Array.fill(PAYMENT_REF_LETTERS)(randomLetter).mkString
-    val digits  = Array.fill(PAYMENT_REF_DIGITS)(randomDigit).mkString
+    val letters = randomStringOf(EXPECTED_PAYMENT_REF_LETTERS, 'A' to 'Z')
+    val digits  = randomStringOf(EXPECTED_PAYMENT_REF_DIGITS, '0' to '9')
 
     letters + digits + "TFC"
   }
 
-  private def randomDate = LocalDate.now() minusDays Random.nextInt(5000)
+  private def randomDate = LocalDate.now() minusDays Random.nextInt(EXPECTED_MAX_CHILD_AGE_DAYS)
 
-  private def randomDigit  = Random.nextInt(10)
-  private def randomLetter = ('A' to 'Z')(Random.nextInt(26))
+  private def randomStringOf(n: Int, chars: Seq[Char]) = {
+    def randomChar = chars(Random.nextInt(chars.length))
+    Array.fill(n)(randomChar).mkString
+  }
+
+  private val EXPECTED_CUSTOMER_ID_LENGTH      = 11
+  private val EXPECTED_REGISTRATION_REF_LENGTH = 16
+  private val EXPECTED_PAYMENT_REF_LETTERS     = 4
+  private val EXPECTED_PAYMENT_REF_DIGITS      = 5
+  private val EXPECTED_MAX_CHILD_AGE_DAYS      = 18 * 365
 
   private val EXPECTED_JSON_ERROR_RESPONSE = ErrorResponse(
     statusCode = BAD_REQUEST,

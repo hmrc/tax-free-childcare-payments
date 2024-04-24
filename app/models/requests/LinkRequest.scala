@@ -30,12 +30,8 @@ final case class LinkRequest(
   )
 
 object LinkRequest {
-  val CUSTOMER_ID_LENGTH          = 11
-  private val CUSTOMER_ID_PATTERN = s"^[0-9]{$CUSTOMER_ID_LENGTH}$$"
-
-  val PAYMENT_REF_LETTERS         = 4
-  val PAYMENT_REF_DIGITS          = 5
-  private val PAYMENT_REF_PATTERN = s"^[A-Z]{$PAYMENT_REF_LETTERS}[0-9]{$PAYMENT_REF_DIGITS}TFC$$"
+  private val CUSTOMER_ID_PATTERN = s"^[0-9]{11}$$"
+  private val PAYMENT_REF_PATTERN = s"^[A-Z]{4}[0-9]{5}TFC$$"
 
   implicit val reads: Reads[LinkRequest] =
     Json.format filter { lr =>
