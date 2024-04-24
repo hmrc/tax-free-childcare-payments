@@ -24,6 +24,7 @@ import play.api.http.{HeaderNames, Status}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
+import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 
 import java.time.LocalDate
 
@@ -111,6 +112,8 @@ class TaxFreeChildcarePaymentsControllerISpec
             .futureValue
 
           res.status shouldBe BAD_REQUEST
+          val resBody = res.json.as[ErrorResponse]
+          resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
 
         s"customer ID is invalid" in {
@@ -134,6 +137,8 @@ class TaxFreeChildcarePaymentsControllerISpec
             .futureValue
 
           res.status shouldBe BAD_REQUEST
+          val resBody = res.json.as[ErrorResponse]
+          resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
 
         s"payment ref is invalid" in {
@@ -157,6 +162,8 @@ class TaxFreeChildcarePaymentsControllerISpec
             .futureValue
 
           res.status shouldBe BAD_REQUEST
+          val resBody = res.json.as[ErrorResponse]
+          resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
 
         s"child DOB is invalid" in {
@@ -180,6 +187,8 @@ class TaxFreeChildcarePaymentsControllerISpec
             .futureValue
 
           res.status shouldBe BAD_REQUEST
+          val resBody = res.json.as[ErrorResponse]
+          resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
       }
     }
@@ -198,4 +207,9 @@ class TaxFreeChildcarePaymentsControllerISpec
 
   private def randomDigit  = Random.nextInt(10)
   private def randomLetter = ('A' to 'Z')(Random.nextInt(26))
+
+  private val EXPECTED_JSON_ERROR_RESPONSE = ErrorResponse(
+    statusCode = BAD_REQUEST,
+    message = "Provided parameters do not match expected format."
+  )
 }
