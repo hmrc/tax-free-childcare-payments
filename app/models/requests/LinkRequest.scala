@@ -16,10 +16,28 @@
 
 package models.requests
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Json, Reads}
 
-final case class LinkRequest(correlationId: String, epp_unique_customer_id: String, epp_reg_reference: String, outbound_child_payment_ref: String, child_date_of_birth: String)
+import java.time.LocalDate
+import java.util.UUID
+
+final case class LinkRequest(
+    correlationId: UUID,
+    epp_unique_customer_id: String,
+    epp_reg_reference: String,
+    outbound_child_payment_ref: String,
+    child_date_of_birth: LocalDate
+  )
 
 object LinkRequest {
-  implicit lazy val format: OFormat[LinkRequest] = Json.format
+  private val CUSTOMER_ID_PATTERN      = s"^[0-9]{11}$$"
+  private val REGISTRATION_REF_PATTERN = s"^[a-zA-Z0-9]{16}$$"
+  private val PAYMENT_REF_PATTERN      = s"^[A-Z]{4}[0-9]{5}TFC$$"
+
+  implicit val reads: Reads[LinkRequest] =
+    Json.reads filter { lr =>
+      (lr.epp_unique_customer_id matches CUSTOMER_ID_PATTERN) &&
+      (lr.epp_reg_reference matches REGISTRATION_REF_PATTERN) &&
+      (lr.outbound_child_payment_ref matches PAYMENT_REF_PATTERN)
+    }
 }

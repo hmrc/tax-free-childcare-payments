@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.taxfreechildcarepayments.config
+package config
 
-import com.google.inject.AbstractModule
+import javax.inject.{Inject, Singleton}
 
-class Module extends AbstractModule {
+import play.api.Configuration
 
-  override def configure(): Unit = {
+@Singleton
+class AppConfig @Inject() (config: Configuration) {
 
-    bind(classOf[AppConfig]).asEagerSingleton()
-  }
+  val appName: String = config.get[String]("appName")
 }

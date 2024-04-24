@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.taxfreechildcarepayments.connectors
+package connectors
 
 import java.net.URI
 import javax.inject.{Inject, Singleton}
