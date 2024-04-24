@@ -208,16 +208,17 @@ class TaxFreeChildcarePaymentsControllerISpec
         }
       }
 
-      s"respond $UNAUTHORIZED" when {
-        "bearer token is absent" in {
+      s"respond with $NOT_FOUND and a JSON ErrorResponse" when {
+        "the URL is incorrect" in {
           val res = wsClient
-            .url(s"$baseUrl/link")
+            .url(s"$baseUrl/knil")
+            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
             .post(randomLinkRequestJson)
             .futureValue
 
-          res.status shouldBe UNAUTHORIZED
+          res.status shouldBe NOT_FOUND
           val resBody = res.json.as[ErrorResponse]
-          resBody.statusCode shouldBe UNAUTHORIZED
+          resBody.statusCode shouldBe NOT_FOUND
         }
       }
     }
