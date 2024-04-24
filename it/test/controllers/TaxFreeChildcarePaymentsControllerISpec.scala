@@ -90,7 +90,7 @@ class TaxFreeChildcarePaymentsControllerISpec
         }
       }
 
-      s"respond $BAD_REQUEST" when {
+      s"respond with $BAD_REQUEST and generic error message" when {
         s"correlationID field is not a valid UUID" in {
           val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
           stubFor(
