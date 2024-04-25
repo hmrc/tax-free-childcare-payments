@@ -81,6 +81,7 @@ class TaxFreeChildcarePaymentsControllerISpec
         }
       }
 
+      /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         s"correlationID field is not a valid UUID" in {
           val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
@@ -207,19 +208,20 @@ class TaxFreeChildcarePaymentsControllerISpec
           resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
       }
+    }
 
-      s"respond with $NOT_FOUND and a JSON ErrorResponse" when {
-        "the URL is incorrect" in {
-          val res = wsClient
-            .url(s"$baseUrl/knil")
-            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
-            .post(randomLinkRequestJson)
-            .futureValue
+    /** Covers `else` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
+    "POST /knil" should {
+      s"respond with $NOT_FOUND and a JSON ErrorResponse" in {
+        val res = wsClient
+          .url(s"$baseUrl/knil")
+          .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+          .post(randomLinkRequestJson)
+          .futureValue
 
-          res.status shouldBe NOT_FOUND
-          val resBody = res.json.as[ErrorResponse]
-          resBody.statusCode shouldBe NOT_FOUND
-        }
+        res.status shouldBe NOT_FOUND
+        val resBody = res.json.as[ErrorResponse]
+        resBody.statusCode shouldBe NOT_FOUND
       }
     }
   }
