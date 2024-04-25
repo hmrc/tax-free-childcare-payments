@@ -1,6 +1,6 @@
 openapi: "3.0.3"
 info:
-  title: Tax-free childcare payment integration API
+  title: Tax-free Childcare Payment Integration API
   description: "# Overview
   
   It is a government initiative to encourage more parents to use the tax-free childcare (TFC) allowance available to them. To promote this service we want to make it easier for parents to make payments using the funds in their tax-free childcare account.   
