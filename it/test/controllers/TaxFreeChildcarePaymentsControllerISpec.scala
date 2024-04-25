@@ -49,8 +49,8 @@ class TaxFreeChildcarePaymentsControllerISpec
 
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder().configure(
-      "microservice.services.auth.port"     -> wireMockPort,
-      "microservice.services.ns-and-i.port" -> wireMockPort
+      "microservice.services.auth.port" -> wireMockPort,
+      "microservice.services.nsi.port"  -> wireMockPort
     ).build()
 
   withClient { wsClient =>

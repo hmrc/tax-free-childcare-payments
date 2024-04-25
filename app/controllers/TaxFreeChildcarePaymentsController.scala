@@ -16,7 +16,7 @@
 
 package controllers
 
-import connectors.NsAndIConnector
+import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.requests.{EnrichedLinkRequest, LinkRequest}
 import play.api.libs.json.Json
@@ -30,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class TaxFreeChildcarePaymentsController @Inject() (
     cc: ControllerComponents,
     identify: AuthAction,
-    nsAndIConnector: NsAndIConnector
+    nsiConnector: NsiConnector
   )(implicit ec: ExecutionContext
   ) extends BackendController(cc) {
 
@@ -44,7 +44,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
         request.body.child_date_of_birth.toString,
         request.nino
       )
-      nsAndIConnector.call(enrichedData)
+      nsiConnector.call(enrichedData)
         .map(ls => Ok(Json.toJson(ls)))
   }
 

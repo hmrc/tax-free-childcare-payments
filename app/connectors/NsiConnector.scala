@@ -27,7 +27,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class NsAndIConnector @Inject() (
+class NsiConnector @Inject() (
     httpClient: HttpClientV2,
     servicesConfig: ServicesConfig
   )(implicit ec: ExecutionContext
@@ -39,12 +39,14 @@ class NsAndIConnector @Inject() (
       .withBody(Json.toJson(request))
       .execute[LinkResponse]
 
-  private def getConfig(path: String) = servicesConfig.getString(s"microservice.services.ns-and-i.$path")
+  private val serviceName = "nsi"
+
+  private def getConfig(path: String) = servicesConfig.getString(s"microservice.services.$serviceName.$path")
 
   private val baseUrl = {
-    val domain = servicesConfig.baseUrl("ns-and-i")
-    domain + getConfig("path")
+    val domain = servicesConfig.baseUrl(serviceName)
+    domain + getConfig("resourcePath")
   }
 
-  private val linkUrl = new URL(baseUrl + getConfig("routes.link"))
+  private val linkUrl = new URL(baseUrl + getConfig("resources.link"))
 }
