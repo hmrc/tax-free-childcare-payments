@@ -21,10 +21,8 @@ import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.http.{HeaderNames, Status}
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
-import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 
 import java.time.LocalDate
 
@@ -42,22 +40,24 @@ class TaxFreeChildcarePaymentsControllerISpec
   import com.github.tomakehurst.wiremock.client.WireMock._
   import models.requests.LinkResponse
   import play.api.Application
+  import play.api.inject.guice.GuiceApplicationBuilder
   import play.api.libs.json.Json
+  import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 
   import java.util.UUID
   import scala.util.Random
 
-  override lazy val wireMockPort = 10501
-
-  override def fakeApplication(): Application = new GuiceApplicationBuilder()
-    .configure("microservice.services.auth.port" -> wireMockPort)
-    .build()
+  override def fakeApplication(): Application =
+    new GuiceApplicationBuilder().configure(
+      "microservice.services.auth.port"     -> wireMockPort,
+      "microservice.services.ns-and-i.port" -> wireMockPort
+    ).build()
 
   withClient { wsClient =>
     val contextRoot = "/individuals/tax-free-childcare/payments"
     val baseUrl     = s"http://localhost:$port$contextRoot"
 
-    /** Covers [[TaxFreeChildcarePaymentsController.link]] */
+    /** Covers [[TaxFreeChildcarePaymentsController.link()]] */
     "POST /link" should {
       s"respond $OK" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in {

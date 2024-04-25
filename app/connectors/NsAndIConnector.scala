@@ -16,27 +16,35 @@
 
 package connectors
 
-import java.net.URI
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
 import models.requests.{EnrichedLinkRequest, LinkResponse}
-
-import play.api.Configuration
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import java.net.URL
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class NsNiConnector @Inject() (
+class NsAndIConnector @Inject() (
     httpClient: HttpClientV2,
-    configuration: Configuration
+    servicesConfig: ServicesConfig
   )(implicit ec: ExecutionContext
   ) {
 
   def call(request: EnrichedLinkRequest)(implicit hc: HeaderCarrier): Future[LinkResponse] =
     httpClient
-      .post(new URI("http://localhost:10501/individuals/tax-free-childcare/payments/link").toURL)
+      .post(linkUrl)
       .withBody(Json.toJson(request))
       .execute[LinkResponse]
+
+  private def getConfig(path: String) = servicesConfig.getString(s"microservice.services.ns-and-i.$path")
+
+  private val baseUrl = {
+    val domain = servicesConfig.baseUrl("ns-and-i")
+    domain + getConfig("path")
+  }
+
+  private val linkUrl = new URL(baseUrl + getConfig("routes.link"))
 }
