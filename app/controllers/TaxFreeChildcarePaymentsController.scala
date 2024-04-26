@@ -16,7 +16,7 @@
 
 package controllers
 
-import connectors.NsNiConnector
+import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.requests.{EnrichedLinkRequest, LinkRequest}
 import play.api.libs.json.Json
@@ -27,21 +27,24 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
-class TaxFreeChildcarePaymentsController @Inject() (cc: ControllerComponents, identify: AuthAction, eisConnector: NsNiConnector)(implicit ec: ExecutionContext)
-    extends BackendController(cc) {
+class TaxFreeChildcarePaymentsController @Inject() (
+    cc: ControllerComponents,
+    identify: AuthAction,
+    nsiConnector: NsiConnector
+  )(implicit ec: ExecutionContext
+  ) extends BackendController(cc) {
 
   def link(): Action[LinkRequest] = identify.async(parse.json[LinkRequest]) {
     implicit request =>
-      val nino         = request.nino
       val enrichedData = EnrichedLinkRequest(
         request.body.correlationId.toString,
         request.body.epp_unique_customer_id,
         request.body.epp_reg_reference,
         request.body.outbound_child_payment_ref,
         request.body.child_date_of_birth.toString,
-        nino
+        request.nino
       )
-      eisConnector.call(enrichedData)
+      nsiConnector.call(enrichedData)
         .map(ls => Ok(Json.toJson(ls)))
   }
 
