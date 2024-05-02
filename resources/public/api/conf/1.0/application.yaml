@@ -226,7 +226,7 @@ components:
           tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
           refreshUrl: https://api.service.hmrc.gov.uk/oauth/refresh
           scopes:
-            tax-free-childcare-payment: Access all aspects of Tax Free Childcare Payments API
+            tax-free-childcare-payments: Access all aspects of Tax Free Childcare Payments API
 
 security:
   - user-restricted: []
