@@ -258,7 +258,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val res = wsClient
-            .url(s"$baseUrl/link")
+            .url(s"$baseUrl/balance")
             .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
             .post(linkRequest)
             .futureValue
@@ -282,7 +282,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val res = wsClient
-            .url(s"$baseUrl/link")
+            .url(s"$baseUrl/balance")
             .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
             .post(linkRequest)
             .futureValue
@@ -306,7 +306,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val res = wsClient
-            .url(s"$baseUrl/link")
+            .url(s"$baseUrl/balance")
             .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
             .post(linkRequest)
             .futureValue
@@ -330,7 +330,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val res = wsClient
-            .url(s"$baseUrl/link")
+            .url(s"$baseUrl/balance")
             .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
             .post(linkRequest)
             .futureValue
