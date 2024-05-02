@@ -38,7 +38,6 @@ class TaxFreeChildcarePaymentsControllerISpec
     with Status {
 
   import com.github.tomakehurst.wiremock.client.WireMock._
-  import models.requests.LinkResponse
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
   import play.api.libs.json.Json
@@ -66,18 +65,24 @@ class TaxFreeChildcarePaymentsControllerISpec
             post("/auth/authorise") willReturn authResponse
           )
 
-          val nsiResponse = okJson(Json.toJson(LinkResponse("", "")).toString)
+          val submittedPayload = randomLinkRequestJson
+          val nsiResponseBody  = Json.obj(
+            "correlationId"   -> (submittedPayload \ "correlationId").as[String],
+            "child_full_name" -> "Peter Pan"
+          )
+
           stubFor(
-            post("/individuals/tax-free-childcare/payments/link") willReturn nsiResponse
+            post("/individuals/tax-free-childcare/payments/link") willReturn okJson(nsiResponseBody.toString)
           )
 
           val res = wsClient
             .url(s"$baseUrl/link")
             .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
-            .post(randomLinkRequestJson)
+            .post(submittedPayload)
             .futureValue
 
           res.status shouldBe OK
+          res.json shouldBe nsiResponseBody
         }
       }
 
@@ -219,17 +224,17 @@ class TaxFreeChildcarePaymentsControllerISpec
             post("/auth/authorise") willReturn authResponse
           )
 
-          val nsiResponse = okJson(Json.obj(
-            "correlation_id" -> UUID.randomUUID(),
+          val nsiResponseBody = Json.obj(
+            "correlation_id"     -> UUID.randomUUID(),
             "tfc_account_status" -> "active",
-            "paid_in_by_you" -> 0,
-            "government_top_up" -> 0,
-            "total_balance" -> 0,
-            "cleared_funds" -> 0,
-            "top_up_allowance" -> 0,
-          ).toString)
+            "paid_in_by_you"     -> 0,
+            "government_top_up"  -> 0,
+            "total_balance"      -> 0,
+            "cleared_funds"      -> 0,
+            "top_up_allowance"   -> 0
+          )
           stubFor(
-            post("/individuals/tax-free-childcare/payments/balance") willReturn nsiResponse
+            post("/individuals/tax-free-childcare/payments/balance") willReturn okJson(nsiResponseBody.toString)
           )
 
           val res = wsClient
@@ -239,6 +244,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             .futureValue
 
           res.status shouldBe OK
+          res.json shouldBe nsiResponseBody
         }
       }
 
@@ -376,7 +382,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     letters + digits + "TFC"
   }
 
-  private def randomDate          = LocalDate.now() minusDays Random.nextInt(EXPECTED_MAX_CHILD_AGE_DAYS)
+  private def randomDate = LocalDate.now() minusDays Random.nextInt(MAX_CHILD_AGE_DAYS)
 
   private def randomStringOf(n: Int, chars: Seq[Char]) = {
     def randomChar = chars(Random.nextInt(chars.length))
@@ -388,8 +394,7 @@ class TaxFreeChildcarePaymentsControllerISpec
   private val EXPECTED_PAYMENT_REF_LETTERS     = 4
   private val EXPECTED_PAYMENT_REF_DIGITS      = 5
 
-  private val EXPECTED_MAX_CHILD_AGE_DAYS = 18 * 365
-  private val MAX_CASH_SUM_PENCE          = 100 * 1000
+  private val MAX_CHILD_AGE_DAYS = 18 * 365
 
   private val EXPECTED_JSON_ERROR_RESPONSE = ErrorResponse(
     statusCode = BAD_REQUEST,
