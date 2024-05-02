@@ -61,7 +61,9 @@ paths:
                   description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.
                   type: string
                   example: YYYY-MM-DD
-
+      security:
+        - userScheme:
+            - tax-free-childcare-payments
       responses:
         "200":
           description: Confirmation that a link has been established
@@ -114,6 +116,9 @@ paths:
                   description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.
                   type: string
                   example: YYYY-MM-DD
+      security:
+        - userScheme:
+            - tax-free-childcare-payments
       responses:
         "200":
           description: Full details of the balance in the relevant child's TFC account.
@@ -193,6 +198,9 @@ paths:
                   enum:
                     - CCP
                     - EPP
+      security:
+        - userScheme:
+            - tax-free-childcare-payments
       responses:
         "200":
           description: Confirmation the payment was succesful
