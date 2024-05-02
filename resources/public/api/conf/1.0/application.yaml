@@ -78,6 +78,9 @@ paths:
                       type: string
                       description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
                       example: Full Name
+      security:
+        - userRestricted:
+            - tax-free-childcare-payments
 
   /individuals/tax-free-childcare/payments/balance:
     post:
@@ -148,7 +151,9 @@ paths:
                     top_up_allowance:
                       type: string
                       description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in.
-
+      security:
+        - userRestricted:
+            - tax-free-childcare-payments
 
   /individuals/tax-free-childcare/payments:
     post:
@@ -212,7 +217,9 @@ paths:
                       type: string
                       description: The estimated date the payment will leave the child's TFC account. This is used for audit purposes and to give childcare providers an expectation of when they will receive funds.
                       example: YYYY-MM-DD
-
+      security:
+        - userRestricted:
+            - tax-free-childcare-payments
       
 components:
   securitySchemes:
@@ -228,8 +235,3 @@ components:
           scopes: 
            read: tfc-read
            write: tfc-write
-
-security:
-  - user-restricted: []
-
-  
