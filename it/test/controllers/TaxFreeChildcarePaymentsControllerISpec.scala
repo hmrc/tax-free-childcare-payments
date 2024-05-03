@@ -67,7 +67,7 @@ class TaxFreeChildcarePaymentsControllerISpec
 
           val submittedPayload = randomLinkRequestJson
           val nsiResponseBody  = Json.obj(
-            "correlationId"   -> (submittedPayload \ "correlationId").as[String],
+            "correlation_id"   -> (submittedPayload \ "correlation_id").as[String],
             "child_full_name" -> "Peter Pan"
           )
 
@@ -95,7 +95,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val linkRequest = Json.obj(
-            "correlationId"              -> "I am a bad UUID.",
+            "correlation_id"              -> "I am a bad UUID.",
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef,
@@ -120,7 +120,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val linkRequest = Json.obj(
-            "correlationId"              -> UUID.randomUUID(),
+            "correlation_id"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> "I am a bad customer ID.",
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef,
@@ -145,7 +145,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val linkRequest = Json.obj(
-            "correlationId"              -> UUID.randomUUID(),
+            "correlation_id"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> "I am a bad registration reference",
             "outbound_child_payment_ref" -> randomPaymentRef,
@@ -170,7 +170,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val linkRequest = Json.obj(
-            "correlationId"              -> UUID.randomUUID(),
+            "correlation_id"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> "I am a bad payment reference.",
@@ -195,7 +195,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val linkRequest = Json.obj(
-            "correlationId"              -> UUID.randomUUID(),
+            "correlation_id"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef,
@@ -258,7 +258,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val linkRequest = Json.obj(
-            "correlationId"              -> "I am a bad UUID.",
+            "correlation_id"              -> "I am a bad UUID.",
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef
@@ -282,7 +282,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val checkBalanceRequest = Json.obj(
-            "correlationId"              -> UUID.randomUUID(),
+            "correlation_id"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> "I am a bad customer ID.",
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef
@@ -306,7 +306,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val checkBalanceRequest = Json.obj(
-            "correlationId"              -> UUID.randomUUID(),
+            "correlation_id"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> "I am a bad registration reference",
             "outbound_child_payment_ref" -> randomPaymentRef
@@ -330,7 +330,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val linkRequest = Json.obj(
-            "correlationId"              -> UUID.randomUUID(),
+            "correlation_id"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> "I am a bad payment reference."
@@ -371,7 +371,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     )
 
   private def randomMetadataJsonWith(correlation_id: UUID) = Json.obj(
-    "correlationId"              -> correlation_id,
+    "correlation_id"              -> correlation_id,
     "epp_unique_customer_id"     -> randomCustomerId,
     "epp_reg_reference"          -> randomRegistrationRef,
     "outbound_child_payment_ref" -> randomPaymentRef
