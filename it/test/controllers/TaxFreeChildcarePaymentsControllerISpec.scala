@@ -224,7 +224,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             post("/auth/authorise") willReturn authResponse
           )
 
-          val nsiResponseBody = Json.obj(
+          val expectedResponse = Json.obj(
             "correlation_id"     -> UUID.randomUUID(),
             "tfc_account_status" -> "active",
             "paid_in_by_you"     -> 0,
@@ -233,18 +233,19 @@ class TaxFreeChildcarePaymentsControllerISpec
             "cleared_funds"      -> 0,
             "top_up_allowance"   -> 0
           )
+          val nsiResponse      = expectedResponse - "correlation_id"
           stubFor(
-            post("/individuals/tax-free-childcare/payments/balance") willReturn okJson(nsiResponseBody.toString)
+            post("/individuals/tax-free-childcare/payments/balance") willReturn okJson(nsiResponse.toString)
           )
 
           val res = wsClient
             .url(s"$baseUrl/balance")
             .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
-            .post(randomLinkRequestJson)
+            .post(randomMetadataJsonWith((expectedResponse \ "correlation_id").as[UUID]))
             .futureValue
 
           res.status shouldBe OK
-          res.json shouldBe nsiResponseBody
+          res.json shouldBe expectedResponse
         }
       }
 
@@ -280,7 +281,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             post("/auth/authorise") willReturn authResponse
           )
 
-          val linkRequest = Json.obj(
+          val checkBalanceRequest = Json.obj(
             "correlationId"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> "I am a bad customer ID.",
             "epp_reg_reference"          -> randomRegistrationRef,
@@ -290,7 +291,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           val res = wsClient
             .url(s"$baseUrl/balance")
             .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
-            .post(linkRequest)
+            .post(checkBalanceRequest)
             .futureValue
 
           res.status shouldBe BAD_REQUEST
@@ -304,7 +305,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             post("/auth/authorise") willReturn authResponse
           )
 
-          val linkRequest = Json.obj(
+          val checkBalanceRequest = Json.obj(
             "correlationId"              -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> "I am a bad registration reference",
@@ -314,7 +315,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           val res = wsClient
             .url(s"$baseUrl/balance")
             .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
-            .post(linkRequest)
+            .post(checkBalanceRequest)
             .futureValue
 
           res.status shouldBe BAD_REQUEST
@@ -354,7 +355,7 @@ class TaxFreeChildcarePaymentsControllerISpec
         val res = wsClient
           .url(s"$baseUrl/knil")
           .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
-          .post(randomLinkRequestJson)
+          .get()
           .futureValue
 
         res.status shouldBe NOT_FOUND
@@ -364,12 +365,16 @@ class TaxFreeChildcarePaymentsControllerISpec
     }
   }
 
-  private def randomLinkRequestJson = Json.obj(
-    "correlationId"              -> UUID.randomUUID().toString,
+  private def randomLinkRequestJson =
+    randomMetadataJsonWith(UUID.randomUUID()) ++ Json.obj(
+      "child_date_of_birth" -> randomDate
+    )
+
+  private def randomMetadataJsonWith(correlation_id: UUID) = Json.obj(
+    "correlationId"              -> correlation_id,
     "epp_unique_customer_id"     -> randomCustomerId,
     "epp_reg_reference"          -> randomRegistrationRef,
-    "outbound_child_payment_ref" -> randomPaymentRef,
-    "child_date_of_birth"        -> randomDate
+    "outbound_child_payment_ref" -> randomPaymentRef
   )
 
   private def randomCustomerId      = randomStringOf(EXPECTED_CUSTOMER_ID_LENGTH, '0' to '9')
