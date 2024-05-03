@@ -61,9 +61,7 @@ paths:
                   description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.
                   type: string
                   example: YYYY-MM-DD
-      security:
-        - userScheme:
-            - tax-free-childcare-payments
+
       responses:
         "200":
           description: Confirmation that a link has been established
@@ -80,6 +78,9 @@ paths:
                     type: string
                     description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
                     example: Full Name
+      security:
+        - user-restricted:
+            - tax-free-childcare-payments
 
   /individuals/tax-free-childcare/payments/balance:
     post:
@@ -116,9 +117,6 @@ paths:
                   description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.
                   type: string
                   example: YYYY-MM-DD
-      security:
-        - userScheme:
-            - tax-free-childcare-payments
       responses:
         "200":
           description: Full details of the balance in the relevant child's TFC account.
@@ -153,6 +151,9 @@ paths:
                   top_up_allowance:
                     type: string
                     description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in.
+      security:
+        - user-restricted:
+            - tax-free-childcare-payments
 
 
   /individuals/tax-free-childcare/payments:
@@ -198,9 +199,6 @@ paths:
                   enum:
                     - CCP
                     - EPP
-      security:
-        - userScheme:
-            - tax-free-childcare-payments
       responses:
         "200":
           description: Confirmation the payment was succesful
@@ -220,6 +218,9 @@ paths:
                     type: string
                     description: The estimated date the payment will leave the child's TFC account. This is used for audit purposes and to give childcare providers an expectation of when they will receive funds.
                     example: YYYY-MM-DD
+      security:
+        - user-restricted:
+            - tax-free-childcare-payments
 
 
 components:
@@ -235,8 +236,3 @@ components:
           refreshUrl: https://api.service.hmrc.gov.uk/oauth/refresh
           scopes:
             tax-free-childcare-payments: Access all aspects of Tax Free Childcare Payments API
-
-security:
-  - user-restricted: []
-
-
