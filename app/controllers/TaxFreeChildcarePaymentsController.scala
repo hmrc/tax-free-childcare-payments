@@ -19,10 +19,11 @@ package controllers
 import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.requests.{LinkRequest, RequestMetadata}
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OWrites}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,18 +36,25 @@ class TaxFreeChildcarePaymentsController @Inject() (
   ) extends BackendController(cc) {
 
   def link(): Action[LinkRequest] = identify.async(parse.json[LinkRequest]) { implicit req =>
-    nsiConnector.linkAccounts map { ls =>
-      Ok(Json.toJson(ls))
-    }
+    nsiConnector
+      .linkAccounts
+      .map {
+        okJson(req.body.metadata.correlation_id, _)
+      }
   }
 
   def balance(): Action[RequestMetadata] = identify.async(parse.json[RequestMetadata]) { implicit req =>
-    nsiConnector.checkBalance map { res =>
-      Ok(Json.toJsObject(res) + ("correlation_id", Json.toJson(req.body.correlationId)))
-    }
+    nsiConnector
+      .checkBalance
+      .map {
+        okJson(req.body.correlation_id, _)
+      }
   }
 
   def payment(): Action[AnyContent] = Action.async {
     Future.successful(Ok("payment is wip"))
   }
+
+  private def okJson[Res: OWrites](correlation_id: UUID, nsiResponse: Res) =
+    Ok(Json.toJsObject(nsiResponse) + ("correlation_id" -> Json.toJson(correlation_id)))
 }
