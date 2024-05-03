@@ -19,26 +19,26 @@ This API allows online cashless payment providers for schools to offer their use
     Requests are passed to National Savings and Investments (NS&I), who hold the TFC account funds."
   version: 1.0.0
 servers:
-- url: https://test-api.service.hmrc.gov.uk
-  description: Sandbox
-- url: https://api.service.hmrc.gov.uk
-  description: Production
+  - url: https://test-api.service.hmrc.gov.uk
+    description: Sandbox
+  - url: https://api.service.hmrc.gov.uk
+    description: Production
 tags:
-- name: Link accounts
-- name: Check balance
-- name: Make payment
-paths: 
+  - name: Link accounts
+  - name: Check balance
+  - name: Make payment
+paths:
   /individuals/tax-free-childcare/payments/link:
-   post:
+    post:
       tags:
-      - Link accounts
+        - Link accounts
       summary: Linking the parent's online payment provider account to their TFC account
-      description: 
+      description:
         This endpoint links the parent's TFC account with an account they hold with an online payment provider. This linking will be initiated by the payment provider's platform when offering TFC to the parent as an option to pay for their child's care. The parent will be required to confirm if they want this link to be created. This link is essential if the parent wishes to use TFC within the payment provider's platform.
       requestBody:
         content:
           application/json:
-            schema: 
+            schema:
               type: object
               properties:
                 correlation_id:
@@ -46,7 +46,7 @@ paths:
                   type: string
                   example: 12a34567-8b90-1234-c6de-5fghi6j78k90
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I.
                   type: string
                   example: 12345678901
                 epp_reg_reference:
@@ -54,47 +54,47 @@ paths:
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
-                  description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
+                  description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account.
                   type: string
                   example: ABCD12345TFC
                 child_date_of_birth:
-                  description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
+                  description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.
                   type: string
                   example: YYYY-MM-DD
 
       responses:
-          "200":
-            description: Confirmation that a link has been established
-            content: 
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    correlation_id:
-                      type: string
-                      description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                      example: 12a34567-8b90-1234-c6de-5fghi6j78k90
-                    child_full_name:
-                      type: string
-                      description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
-                      example: Full Name
+        "200":
+          description: Confirmation that a link has been established
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  correlation_id:
+                    type: string
+                    description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                    example: 12a34567-8b90-1234-c6de-5fghi6j78k90
+                  child_full_name:
+                    type: string
+                    description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
+                    example: Full Name
       security:
-        - userRestricted:
+        - user-restricted:
             - tax-free-childcare-payments
 
   /individuals/tax-free-childcare/payments/balance:
     post:
       tags:
-      - Check balance
+        - Check balance
       summary: Retrieve the balance of the associated child's TFC account
-      description: 
+      description:
         This endpoint fetches the balance of the associated child's TFC account. The balance of the TFC account consists of the following three different elements:\n\- Paid in by you - The amount of money the parent or guardian has paid into the child's account.\n\- Government top-up - The amount of top-up funds paid in by the government.\n\- Total balance - The sum of the two previous amounts.
 
 
       requestBody:
         content:
           application/json:
-            schema: 
+            schema:
               type: object
               properties:
                 correlation_id:
@@ -102,7 +102,7 @@ paths:
                   type: string
                   example: 12a34567-8b90-1234-c6de-5fghi6j78k90
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I.
                   type: string
                   example: 12345678901
                 epp_reg_reference:
@@ -110,55 +110,56 @@ paths:
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
-                  description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
+                  description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account.
                   type: string
                   example: ABCD12345TFC
                 child_date_of_birth:
-                  description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
+                  description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.
                   type: string
                   example: YYYY-MM-DD
       responses:
-          "200":
-            description: Full details of the balance in the relevant child's TFC account.
-            content: 
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    correlation_id:
-                      type: string
-                      description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the EPP.
-                      example: 12a34567-8b90-1234-c6de-5fghi6j78k90
-                    tfc_account_status:
-                      type: string
-                      description: The status of the child's TFC account. Indicates whether the account is active or not.
-                      enum:
-                       - Active
-                       - Blocked
-                      example: Active
-                    paid_in_by_you:
-                      type: string
-                      description: The amount of money paid in to the child's TFC account by the parent or guardian.
-                    government_top-up:
-                      type: string
-                      description: The amount paid in by the government, this amount has cleared and is available to the parent or guardian.
-                    total_balance:
-                      type: string
-                      description: The sum of paid_in_by_you and government_top-up, this is the total amount paid into the account.
-                    cleared_funds:
-                      type: string
-                      description: The total amount of money available to the parent or guardian to use to make payments to childcare providers. This is equal to total_balance minus any uncleared funds from paid_in_by_you.
-                    top_up_allowance:
-                      type: string
-                      description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in.
+        "200":
+          description: Full details of the balance in the relevant child's TFC account.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  correlation_id:
+                    type: string
+                    description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the EPP.
+                    example: 12a34567-8b90-1234-c6de-5fghi6j78k90
+                  tfc_account_status:
+                    type: string
+                    description: The status of the child's TFC account. Indicates whether the account is active or not.
+                    enum:
+                      - Active
+                      - Blocked
+                    example: Active
+                  paid_in_by_you:
+                    type: string
+                    description: The amount of money paid in to the child's TFC account by the parent or guardian.
+                  government_top-up:
+                    type: string
+                    description: The amount paid in by the government, this amount has cleared and is available to the parent or guardian.
+                  total_balance:
+                    type: string
+                    description: The sum of paid_in_by_you and government_top-up, this is the total amount paid into the account.
+                  cleared_funds:
+                    type: string
+                    description: The total amount of money available to the parent or guardian to use to make payments to childcare providers. This is equal to total_balance minus any uncleared funds from paid_in_by_you.
+                  top_up_allowance:
+                    type: string
+                    description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in.
       security:
-        - userRestricted:
+        - user-restricted:
             - tax-free-childcare-payments
+
 
   /individuals/tax-free-childcare/payments:
     post:
       tags:
-      - Make payment
+        - Make payment
       summary: Send payment from the TFC account to the intended recipient
       description: |
         This endpoint sends the selected amount to the intended recipient from the child's TFC account.
@@ -166,7 +167,7 @@ paths:
       requestBody:
         content:
           application/json:
-            schema: 
+            schema:
               type: object
               properties:
                 correlation_id:
@@ -174,7 +175,7 @@ paths:
                   type: string
                   example: 12a34567-8b90-1234-c6de-5fghi6j78k90
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I.
                   type: string
                   example: 12345678901
                 epp_reg_reference:
@@ -186,7 +187,7 @@ paths:
                   type: string
                   example: £1234.56
                 ccp_reg_reference:
-                  description: The unique reference number given to the childcare provider by the childcare regulator (e.g. Ofsted). The online payment provider needs to provide this to HMRC. 
+                  description: The unique reference number given to the childcare provider by the childcare regulator (e.g. Ofsted). The online payment provider needs to provide this to HMRC.
                   type: string
                 ccp_postcode:
                   description: The postcode associated with the childcare provider, this enables further verification.
@@ -196,31 +197,32 @@ paths:
                   description: The initial recipient of the funds from the child's TFC account. Depending on the online payment provider's policies, payment may initially go to the childcare provider directly or to the online payment provider for initial processing. There are two options, CCP for the childcare provider and EPP for the online payment provider.
                   type: string
                   enum:
-                  - CCP
-                  - EPP
+                    - CCP
+                    - EPP
       responses:
-          "200":
-            description: Confirmation the payment was succesful
-            content: 
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    correlation_id:
-                      type: string
-                      description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                      example: 12a34567-8b90-1234-c6de-5fghi6j78k90
-                    payment_reference:
-                      type: string
-                      description: A unique identifier that is used as confirmation that the payment has been successful. This can be used to track the payment.
-                    estimated_payment_date:
-                      type: string
-                      description: The estimated date the payment will leave the child's TFC account. This is used for audit purposes and to give childcare providers an expectation of when they will receive funds.
-                      example: YYYY-MM-DD
+        "200":
+          description: Confirmation the payment was succesful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  correlation_id:
+                    type: string
+                    description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                    example: 12a34567-8b90-1234-c6de-5fghi6j78k90
+                  payment_reference:
+                    type: string
+                    description: A unique identifier that is used as confirmation that the payment has been successful. This can be used to track the payment.
+                  estimated_payment_date:
+                    type: string
+                    description: The estimated date the payment will leave the child's TFC account. This is used for audit purposes and to give childcare providers an expectation of when they will receive funds.
+                    example: YYYY-MM-DD
       security:
-        - userRestricted:
+        - user-restricted:
             - tax-free-childcare-payments
-      
+
+
 components:
   securitySchemes:
     user-restricted:
@@ -232,6 +234,5 @@ components:
           authorizationUrl: https://api.service.hmrc.gov.uk/oauth/authorize
           tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
           refreshUrl: https://api.service.hmrc.gov.uk/oauth/refresh
-          scopes: 
-           read: tfc-read
-           write: tfc-write
+          scopes:
+            tax-free-childcare-payments: Access all aspects of Tax Free Childcare Payments API
