@@ -16,11 +16,13 @@
 
 package controllers
 
+import org.scalatest.Assertion
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.http.{HeaderNames, Status}
+import play.api.libs.json.JsValue
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
 
@@ -59,17 +61,15 @@ class TaxFreeChildcarePaymentsControllerISpec
     /** Covers [[TaxFreeChildcarePaymentsController.link()]] */
     "POST /link" should {
       s"respond $OK" when {
-        s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in {
-          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
-          stubFor(
-            post("/auth/authorise") willReturn authResponse
-          )
-
-          val submittedPayload = randomLinkRequestJson
-          val nsiResponseBody  = Json.obj(
-            "correlation_id"   -> (submittedPayload \ "correlation_id").as[String],
+        s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
+          val expectedResponseJson = Json.obj(
+            "correlation_id"  -> UUID.randomUUID(),
             "child_full_name" -> "Peter Pan"
           )
+
+          val correlation_id   = (expectedResponseJson \ "correlation_id").as[JsValue]
+          val submittedPayload = randomLinkRequestJson + ("correlation_id" -> correlation_id)
+          val nsiResponseBody  = expectedResponseJson - "correlation_id"
 
           stubFor(
             post("/individuals/tax-free-childcare/payments/link") willReturn okJson(nsiResponseBody.toString)
@@ -82,20 +82,16 @@ class TaxFreeChildcarePaymentsControllerISpec
             .futureValue
 
           res.status shouldBe OK
-          res.json shouldBe nsiResponseBody
+          res.json shouldBe expectedResponseJson
         }
       }
 
       /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
-        s"correlationID field is not a valid UUID" in {
-          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
-          stubFor(
-            post("/auth/authorise") willReturn authResponse
-          )
 
+        s"correlationID field is not a valid UUID" in withAuthNinoRetrieval {
           val linkRequest = Json.obj(
-            "correlation_id"              -> "I am a bad UUID.",
+            "correlation_id"             -> "I am a bad UUID.",
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef,
@@ -113,14 +109,9 @@ class TaxFreeChildcarePaymentsControllerISpec
           resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
 
-        s"customer ID is invalid" in {
-          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
-          stubFor(
-            post("/auth/authorise") willReturn authResponse
-          )
-
+        s"customer ID is invalid" in withAuthNinoRetrieval {
           val linkRequest = Json.obj(
-            "correlation_id"              -> UUID.randomUUID(),
+            "correlation_id"             -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> "I am a bad customer ID.",
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef,
@@ -145,7 +136,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           val linkRequest = Json.obj(
-            "correlation_id"              -> UUID.randomUUID(),
+            "correlation_id"             -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> "I am a bad registration reference",
             "outbound_child_payment_ref" -> randomPaymentRef,
@@ -163,14 +154,9 @@ class TaxFreeChildcarePaymentsControllerISpec
           resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
 
-        s"payment ref is invalid" in {
-          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
-          stubFor(
-            post("/auth/authorise") willReturn authResponse
-          )
-
+        s"payment ref is invalid" in withAuthNinoRetrieval {
           val linkRequest = Json.obj(
-            "correlation_id"              -> UUID.randomUUID(),
+            "correlation_id"             -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> "I am a bad payment reference.",
@@ -188,14 +174,9 @@ class TaxFreeChildcarePaymentsControllerISpec
           resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
 
-        s"child DOB is invalid" in {
-          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
-          stubFor(
-            post("/auth/authorise") willReturn authResponse
-          )
-
+        s"child DOB is invalid" in withAuthNinoRetrieval {
           val linkRequest = Json.obj(
-            "correlation_id"              -> UUID.randomUUID(),
+            "correlation_id"             -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef,
@@ -218,12 +199,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     /** Covers [[TaxFreeChildcarePaymentsController.balance()]] */
     "POST /balance" should {
       s"respond $OK" when {
-        s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in {
-          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
-          stubFor(
-            post("/auth/authorise") willReturn authResponse
-          )
-
+        s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
           val expectedResponse = Json.obj(
             "correlation_id"     -> UUID.randomUUID(),
             "tfc_account_status" -> "active",
@@ -251,14 +227,10 @@ class TaxFreeChildcarePaymentsControllerISpec
 
       /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
-        s"correlationID field is not a valid UUID" in {
-          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
-          stubFor(
-            post("/auth/authorise") willReturn authResponse
-          )
 
+        s"correlationID field is not a valid UUID" in withAuthNinoRetrieval {
           val linkRequest = Json.obj(
-            "correlation_id"              -> "I am a bad UUID.",
+            "correlation_id"             -> "I am a bad UUID.",
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef
@@ -275,14 +247,9 @@ class TaxFreeChildcarePaymentsControllerISpec
           resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
 
-        s"customer ID is invalid" in {
-          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
-          stubFor(
-            post("/auth/authorise") willReturn authResponse
-          )
-
+        s"customer ID is invalid" in withAuthNinoRetrieval {
           val checkBalanceRequest = Json.obj(
-            "correlation_id"              -> UUID.randomUUID(),
+            "correlation_id"             -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> "I am a bad customer ID.",
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef
@@ -299,14 +266,9 @@ class TaxFreeChildcarePaymentsControllerISpec
           resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
 
-        s"registration ref is invalid" in {
-          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
-          stubFor(
-            post("/auth/authorise") willReturn authResponse
-          )
-
+        s"registration ref is invalid" in withAuthNinoRetrieval {
           val checkBalanceRequest = Json.obj(
-            "correlation_id"              -> UUID.randomUUID(),
+            "correlation_id"             -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> "I am a bad registration reference",
             "outbound_child_payment_ref" -> randomPaymentRef
@@ -323,14 +285,9 @@ class TaxFreeChildcarePaymentsControllerISpec
           resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
 
-        s"payment ref is invalid" in {
-          val authResponse = okJson(Json.obj("nino" -> "QW123456A").toString)
-          stubFor(
-            post("/auth/authorise") willReturn authResponse
-          )
-
+        s"payment ref is invalid" in withAuthNinoRetrieval {
           val linkRequest = Json.obj(
-            "correlation_id"              -> UUID.randomUUID(),
+            "correlation_id"             -> UUID.randomUUID(),
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> "I am a bad payment reference."
@@ -350,7 +307,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     }
 
     /** Covers `else` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
-    "POST /knil" should {
+    "GET /knil" should {
       s"respond with $NOT_FOUND and a JSON ErrorResponse" in {
         val res = wsClient
           .url(s"$baseUrl/knil")
@@ -365,13 +322,21 @@ class TaxFreeChildcarePaymentsControllerISpec
     }
   }
 
+  private def withAuthNinoRetrieval(check: => Assertion) = {
+    stubFor(
+      post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
+    )
+
+    check
+  }
+
   private def randomLinkRequestJson =
     randomMetadataJsonWith(UUID.randomUUID()) ++ Json.obj(
       "child_date_of_birth" -> randomDate
     )
 
   private def randomMetadataJsonWith(correlation_id: UUID) = Json.obj(
-    "correlation_id"              -> correlation_id,
+    "correlation_id"             -> correlation_id,
     "epp_unique_customer_id"     -> randomCustomerId,
     "epp_reg_reference"          -> randomRegistrationRef,
     "outbound_child_payment_ref" -> randomPaymentRef
