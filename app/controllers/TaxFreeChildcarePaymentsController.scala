@@ -18,7 +18,7 @@ package controllers
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests.{EnrichedLinkRequest, LinkRequest}
+import models.requests.{BalanceRequest, EnrichedLinkRequest, LinkRequest}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -44,12 +44,14 @@ class TaxFreeChildcarePaymentsController @Inject() (
         request.body.child_date_of_birth.toString,
         request.nino
       )
-      nsiConnector.call(enrichedData)
+      nsiConnector.linkAccounts(enrichedData)
         .map(ls => Ok(Json.toJson(ls)))
   }
 
-  def balance(): Action[AnyContent] = Action.async {
-    Future.successful(Ok("balance  is wip"))
+  def balance(): Action[BalanceRequest] = identify.async(parse.json[BalanceRequest]) { implicit req =>
+    nsiConnector.checkBalance map { res =>
+      Ok(Json.toJsObject(res) + ("correlation_id", Json.toJson(req.body.correlationId)))
+    }
   }
 
   def payment(): Action[AnyContent] = Action.async {
