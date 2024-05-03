@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.response
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class LinkResponse(correlationId: String, child_full_name: String)
-
-object LinkResponse {
-  implicit lazy val format: OFormat[LinkResponse] = Json.format
+final case class BalanceResponse(
+    tfc_account_status: String,
+    paid_in_by_you: BigDecimal,
+    government_top_up: BigDecimal,
+    total_balance: BigDecimal,
+    cleared_funds: BigDecimal,
+    top_up_allowance: BigDecimal
+  )
+object BalanceResponse {
+  implicit val format: OFormat[BalanceResponse] = Json.format
 }

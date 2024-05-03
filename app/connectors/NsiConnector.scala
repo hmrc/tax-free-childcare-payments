@@ -16,8 +16,8 @@
 
 package connectors
 
-import models.BalanceResponse
-import models.requests.{BalanceRequest, EnrichedLinkRequest, IdentifierRequest, LinkResponse}
+import models.requests.{EnrichedLinkRequest, IdentifierRequest, RequestMetadata}
+import models.response.{BalanceResponse, LinkResponse}
 import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -41,7 +41,7 @@ class NsiConnector @Inject() (
       .withBody(Json.toJson(request))
       .execute[LinkResponse]
 
-  def checkBalance(implicit req: IdentifierRequest[BalanceRequest]): Future[BalanceResponse] =
+  def checkBalance(implicit req: IdentifierRequest[RequestMetadata]): Future[BalanceResponse] =
     httpClient
       .post(checkBalanceUrl)
       .withBody(Json.toJsObject(req.body) + ("nino", JsString(req.nino)))

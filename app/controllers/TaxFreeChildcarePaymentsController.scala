@@ -18,7 +18,7 @@ package controllers
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests.{BalanceRequest, EnrichedLinkRequest, LinkRequest}
+import models.requests.{EnrichedLinkRequest, LinkRequest, RequestMetadata}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -37,10 +37,10 @@ class TaxFreeChildcarePaymentsController @Inject() (
   def link(): Action[LinkRequest] = identify.async(parse.json[LinkRequest]) {
     implicit request =>
       val enrichedData = EnrichedLinkRequest(
-        request.body.correlationId.toString,
-        request.body.epp_unique_customer_id,
-        request.body.epp_reg_reference,
-        request.body.outbound_child_payment_ref,
+        request.body.metadata.correlationId.toString,
+        request.body.metadata.epp_unique_customer_id,
+        request.body.metadata.epp_reg_reference,
+        request.body.metadata.outbound_child_payment_ref,
         request.body.child_date_of_birth.toString,
         request.nino
       )
@@ -48,7 +48,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
         .map(ls => Ok(Json.toJson(ls)))
   }
 
-  def balance(): Action[BalanceRequest] = identify.async(parse.json[BalanceRequest]) { implicit req =>
+  def balance(): Action[RequestMetadata] = identify.async(parse.json[RequestMetadata]) { implicit req =>
     nsiConnector.checkBalance map { res =>
       Ok(Json.toJsObject(res) + ("correlation_id", Json.toJson(req.body.correlationId)))
     }
