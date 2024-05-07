@@ -139,7 +139,7 @@ paths:
                   paid_in_by_you:
                     type: string
                     description: The amount of money paid in to the child's TFC account by the parent or guardian.
-                  government_top-up:
+                  government_top_up:
                     type: string
                     description: The amount paid in by the government, this amount has cleared and is available to the parent or guardian.
                   total_balance:
