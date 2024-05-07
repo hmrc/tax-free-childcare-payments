@@ -60,7 +60,7 @@ class TaxFreeChildcarePaymentsControllerISpec
 
     /** Covers [[TaxFreeChildcarePaymentsController.link()]] */
     "POST /link" should {
-      s"respond $OK" when {
+      s"respond with status $OK and correct JSON body" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
           val expectedResponseJson = Json.obj(
             "correlation_id"  -> UUID.randomUUID(),
@@ -95,7 +95,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef,
-            "child_date_of_birth"        -> randomDate
+            "child_date_of_birth"        -> randomDateOfBirth
           )
 
           val res = wsClient
@@ -115,7 +115,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             "epp_unique_customer_id"     -> "I am a bad customer ID.",
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> randomPaymentRef,
-            "child_date_of_birth"        -> randomDate
+            "child_date_of_birth"        -> randomDateOfBirth
           )
 
           val res = wsClient
@@ -140,7 +140,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> "I am a bad registration reference",
             "outbound_child_payment_ref" -> randomPaymentRef,
-            "child_date_of_birth"        -> randomDate
+            "child_date_of_birth"        -> randomDateOfBirth
           )
 
           val res = wsClient
@@ -160,7 +160,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
             "outbound_child_payment_ref" -> "I am a bad payment reference.",
-            "child_date_of_birth"        -> randomDate
+            "child_date_of_birth"        -> randomDateOfBirth
           )
 
           val res = wsClient
@@ -198,7 +198,7 @@ class TaxFreeChildcarePaymentsControllerISpec
 
     /** Covers [[TaxFreeChildcarePaymentsController.balance()]] */
     "POST /balance" should {
-      s"respond $OK" when {
+      s"respond with status $OK and correct JSON body" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
           val expectedResponse = Json.obj(
             "correlation_id"     -> UUID.randomUUID(),
@@ -306,6 +306,37 @@ class TaxFreeChildcarePaymentsControllerISpec
       }
     }
 
+    /** Covers [[TaxFreeChildcarePaymentsController.payment()]] */
+    "POST /payment" should {
+      s"respond $OK" when {
+        s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
+          val expectedCorrelationId = UUID.randomUUID()
+          val expectedPaymentRef    = randomPaymentRef
+          val expectedPaymentDate   = randomPaymentDate
+
+          val expectedResponse = Json.obj(
+            "correlation_id"         -> expectedCorrelationId,
+            "payment_reference"      -> expectedPaymentRef,
+            "estimated_payment_date" -> expectedPaymentDate
+          )
+
+          val nsiResponse = expectedResponse - "correlation_id"
+          stubFor(
+            post("/individuals/tax-free-childcare/payments/balance") willReturn okJson(nsiResponse.toString)
+          )
+
+          val res = wsClient
+            .url(s"$baseUrl/")
+            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+            .post(randomPaymentRequestJson(expectedCorrelationId))
+            .futureValue
+
+          res.status shouldBe OK
+          res.json shouldBe expectedResponse
+        }
+      }
+    }
+
     /** Covers `else` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
     "GET /knil" should {
       s"respond with $NOT_FOUND and a JSON ErrorResponse" in {
@@ -332,7 +363,15 @@ class TaxFreeChildcarePaymentsControllerISpec
 
   private def randomLinkRequestJson =
     randomMetadataJsonWith(UUID.randomUUID()) ++ Json.obj(
-      "child_date_of_birth" -> randomDate
+      "child_date_of_birth" -> randomDateOfBirth
+    )
+
+  private def randomPaymentRequestJson(uuid: UUID) =
+    randomMetadataJsonWith(uuid) ++ Json.obj(
+      "payment_amount"    -> randomSumOfMoney,
+      "ccp_reg_reference" -> randomRegistrationRef,
+      "ccp_postCode"      -> "AB12 3CD",
+      "payee_type"        -> randomPayeeType
     )
 
   private def randomMetadataJsonWith(correlation_id: UUID) = Json.obj(
@@ -352,19 +391,27 @@ class TaxFreeChildcarePaymentsControllerISpec
     letters + digits + "TFC"
   }
 
-  private def randomDate = LocalDate.now() minusDays Random.nextInt(MAX_CHILD_AGE_DAYS)
+  private def randomDateOfBirth = LocalDate.now() minusDays Random.nextInt(MAX_CHILD_AGE_DAYS)
+  private def randomPaymentDate = LocalDate.now() plusDays Random.nextInt(MAX_PAYMENT_DELAY_DAYS)
 
   private def randomStringOf(n: Int, chars: Seq[Char]) = {
     def randomChar = chars(Random.nextInt(chars.length))
     Array.fill(n)(randomChar).mkString
   }
 
+  private def randomSumOfMoney = BigDecimal(Random.nextInt(MAX_AMOUNT_OF_PENCE) / 100).setScale(2)
+
+  private def randomPayeeType = Seq("ccp", "epp")(Random.nextInt(2))
+
   private val EXPECTED_CUSTOMER_ID_LENGTH      = 11
   private val EXPECTED_REGISTRATION_REF_LENGTH = 16
   private val EXPECTED_PAYMENT_REF_LETTERS     = 4
   private val EXPECTED_PAYMENT_REF_DIGITS      = 5
 
-  private val MAX_CHILD_AGE_DAYS = 18 * 365
+  private val MAX_CHILD_AGE_DAYS     = 18 * 365
+  private val MAX_PAYMENT_DELAY_DAYS = 30
+
+  private val MAX_AMOUNT_OF_PENCE = 1000000
 
   private val EXPECTED_JSON_ERROR_RESPONSE = ErrorResponse(
     statusCode = BAD_REQUEST,
