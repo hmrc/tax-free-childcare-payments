@@ -18,11 +18,12 @@ package controllers
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests.{EnrichedLinkRequest, LinkRequest}
-import play.api.libs.json.Json
+import models.requests.{LinkRequest, RequestMetadata}
+import play.api.libs.json.{Json, OWrites}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,25 +35,26 @@ class TaxFreeChildcarePaymentsController @Inject() (
   )(implicit ec: ExecutionContext
   ) extends BackendController(cc) {
 
-  def link(): Action[LinkRequest] = identify.async(parse.json[LinkRequest]) {
-    implicit request =>
-      val enrichedData = EnrichedLinkRequest(
-        request.body.correlationId.toString,
-        request.body.epp_unique_customer_id,
-        request.body.epp_reg_reference,
-        request.body.outbound_child_payment_ref,
-        request.body.child_date_of_birth.toString,
-        request.nino
-      )
-      nsiConnector.call(enrichedData)
-        .map(ls => Ok(Json.toJson(ls)))
+  def link(): Action[LinkRequest] = identify.async(parse.json[LinkRequest]) { implicit req =>
+    nsiConnector
+      .linkAccounts
+      .map {
+        okJson(req.body.metadata.correlation_id, _)
+      }
   }
 
-  def balance(): Action[AnyContent] = Action.async {
-    Future.successful(Ok("balance  is wip"))
+  def balance(): Action[RequestMetadata] = identify.async(parse.json[RequestMetadata]) { implicit req =>
+    nsiConnector
+      .checkBalance
+      .map {
+        okJson(req.body.correlation_id, _)
+      }
   }
 
   def payment(): Action[AnyContent] = Action.async {
     Future.successful(Ok("payment is wip"))
   }
+
+  private def okJson[Res: OWrites](correlation_id: UUID, nsiResponse: Res) =
+    Ok(Json.toJsObject(nsiResponse) + ("correlation_id" -> Json.toJson(correlation_id)))
 }

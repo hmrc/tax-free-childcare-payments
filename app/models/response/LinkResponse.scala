@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.response
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class EnrichedLinkRequest(
-    correlationId: String,
-    epp_unique_customer_id: String,
-    epp_reg_reference: String,
-    outbound_child_payment_ref: String,
-    child_date_of_birth: String,
-    nino: String
-  )
+final case class LinkResponse(child_full_name: String)
 
-object EnrichedLinkRequest {
-  implicit lazy val format: OFormat[EnrichedLinkRequest] = Json.format
+object LinkResponse {
+  implicit lazy val format: OFormat[LinkResponse] = Json.format
 }

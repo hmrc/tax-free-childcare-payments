@@ -16,10 +16,11 @@
 
 package connectors
 
-import models.requests.{EnrichedLinkRequest, LinkResponse}
-import play.api.libs.json.Json
-import uk.gov.hmrc.http.HeaderCarrier
+import models.requests.{IdentifierRequest, LinkRequest, RequestMetadata}
+import models.response.{BalanceResponse, LinkResponse}
+import play.api.libs.json._
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.net.URL
@@ -31,13 +32,22 @@ class NsiConnector @Inject() (
     httpClient: HttpClientV2,
     servicesConfig: ServicesConfig
   )(implicit ec: ExecutionContext
-  ) {
+  ) extends BackendHeaderCarrierProvider {
 
-  def call(request: EnrichedLinkRequest)(implicit hc: HeaderCarrier): Future[LinkResponse] =
+  def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[LinkResponse] =
     httpClient
-      .post(linkUrl)
-      .withBody(Json.toJson(request))
+      .post(linkAccountsUrl)
+      .withBody(enrichedWithNino[LinkRequest])
       .execute[LinkResponse]
+
+  def checkBalance(implicit req: IdentifierRequest[RequestMetadata]): Future[BalanceResponse] =
+    httpClient
+      .post(checkBalanceUrl)
+      .withBody(enrichedWithNino[RequestMetadata])
+      .execute[BalanceResponse]
+
+  private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]) =
+    Json.toJsObject(req.body) + ("nino" -> JsString(req.nino))
 
   private val serviceName = "nsi"
 
@@ -48,5 +58,6 @@ class NsiConnector @Inject() (
     domain + getConfig("resourcePath")
   }
 
-  private val linkUrl = new URL(baseUrl + getConfig("resources.link"))
+  private val linkAccountsUrl = new URL(baseUrl + getConfig("resources.link"))
+  private val checkBalanceUrl = new URL(baseUrl + getConfig("resources.balance"))
 }
