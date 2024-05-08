@@ -16,8 +16,8 @@
 
 package connectors
 
-import models.requests.{IdentifierRequest, LinkRequest, RequestMetadata}
-import models.response.{BalanceResponse, LinkResponse}
+import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, RequestMetadata}
+import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import play.api.libs.json._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
@@ -46,6 +46,12 @@ class NsiConnector @Inject() (
       .withBody(enrichedWithNino[RequestMetadata])
       .execute[BalanceResponse]
 
+  def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[PaymentResponse] =
+    httpClient
+      .post(makePaymentUrl)
+      .withBody(enrichedWithNino[PaymentRequest])
+      .execute[PaymentResponse]
+
   private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]) =
     Json.toJsObject(req.body) + ("nino" -> JsString(req.nino))
 
@@ -60,4 +66,5 @@ class NsiConnector @Inject() (
 
   private val linkAccountsUrl = new URL(baseUrl + getConfig("resources.link"))
   private val checkBalanceUrl = new URL(baseUrl + getConfig("resources.balance"))
+  private val makePaymentUrl  = new URL(baseUrl + getConfig("resources.payment"))
 }

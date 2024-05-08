@@ -18,14 +18,14 @@ package controllers
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests.{LinkRequest, RequestMetadata}
+import models.requests.{LinkRequest, PaymentRequest, RequestMetadata}
 import play.api.libs.json.{Json, OWrites}
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (
@@ -51,8 +51,12 @@ class TaxFreeChildcarePaymentsController @Inject() (
       }
   }
 
-  def payment(): Action[AnyContent] = Action.async {
-    Future.successful(Ok("payment is wip"))
+  def payment(): Action[PaymentRequest] = identify.async(parse.json[PaymentRequest]) { implicit req =>
+    nsiConnector
+      .makePayment
+      .map {
+        okJson(req.body.metadata.correlation_id, _)
+      }
   }
 
   private def okJson[Res: OWrites](correlation_id: UUID, nsiResponse: Res) =
