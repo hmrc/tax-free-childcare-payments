@@ -307,7 +307,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     }
 
     /** Covers [[TaxFreeChildcarePaymentsController.payment()]] */
-    "POST /payment" should {
+    "POST /" should {
       s"respond $OK" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
@@ -322,7 +322,7 @@ class TaxFreeChildcarePaymentsControllerISpec
 
           val nsiResponse = expectedResponse - "correlation_id"
           stubFor(
-            post("/individuals/tax-free-childcare/payments/balance") willReturn okJson(nsiResponse.toString)
+            post("/individuals/tax-free-childcare/payments/") willReturn okJson(nsiResponse.toString)
           )
 
           val res = wsClient
@@ -370,7 +370,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     randomMetadataJsonWith(uuid) ++ Json.obj(
       "payment_amount"    -> randomSumOfMoney,
       "ccp_reg_reference" -> randomRegistrationRef,
-      "ccp_postCode"      -> "AB12 3CD",
+      "ccp_postcode"      -> "AB12 3CD",
       "payee_type"        -> randomPayeeType
     )
 
