@@ -18,13 +18,11 @@ package models.requests
 
 import base.BaseSpec
 
-import java.util.UUID
-
 class PaymentRequestSpec extends BaseSpec {
 
   "JSON format" should {
     "successfully decode a valid JSON representation" in {
-      val validPaymentReqJson = randomPaymentRequestJson(UUID.randomUUID())
+      val validPaymentReqJson = randomPaymentRequestJson
       validPaymentReqJson.as[PaymentRequest]
     }
   }

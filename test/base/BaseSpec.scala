@@ -21,7 +21,6 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsObject, Json}
 
 import java.time.LocalDate
-import java.util.UUID
 import scala.util.Random
 
 class BaseSpec
@@ -29,20 +28,19 @@ class BaseSpec
     with should.Matchers {
 
   protected def randomLinkRequestJson: JsObject =
-    randomMetadataJsonWith(UUID.randomUUID()) ++ Json.obj(
+    randomMetadataJson ++ Json.obj(
       "child_date_of_birth" -> randomDateOfBirth
     )
 
-  protected def randomPaymentRequestJson(uuid: UUID): JsObject =
-    randomMetadataJsonWith(uuid) ++ Json.obj(
+  protected def randomPaymentRequestJson: JsObject =
+    randomMetadataJson ++ Json.obj(
       "payment_amount"    -> randomSumOfMoney,
       "ccp_reg_reference" -> randomRegistrationRef,
       "ccp_postcode"      -> "AB12 3CD",
       "payee_type"        -> randomPayeeType
     )
 
-  protected def randomMetadataJsonWith(correlation_id: UUID): JsObject = Json.obj(
-    "correlation_id"             -> correlation_id,
+  protected def randomMetadataJson: JsObject = Json.obj(
     "epp_unique_customer_id"     -> randomCustomerId,
     "epp_reg_reference"          -> randomRegistrationRef,
     "outbound_child_payment_ref" -> randomPaymentRef
