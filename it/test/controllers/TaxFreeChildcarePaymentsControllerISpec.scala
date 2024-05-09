@@ -16,41 +16,16 @@
 
 package controllers
 
-import base.BaseSpec
-import org.scalatest.Assertion
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.http.{HeaderNames, Status}
-import play.api.test.WsTestClient
-import uk.gov.hmrc.http.test.WireMockSupport
+import base.BaseISpec
+import com.github.tomakehurst.wiremock.client.WireMock._
+import play.api.libs.json.Json
+import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 
 import java.util.UUID
 
-class TaxFreeChildcarePaymentsControllerISpec
-    extends BaseSpec
-    with WireMockSupport
-    with ScalaFutures
-    with IntegrationPatience
-    with GuiceOneServerPerSuite
-    with WsTestClient
-    with HeaderNames
-    with Status {
-
-  import com.github.tomakehurst.wiremock.client.WireMock._
-  import play.api.Application
-  import play.api.inject.guice.GuiceApplicationBuilder
-  import play.api.libs.json.Json
-  import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
-
-  override def fakeApplication(): Application =
-    new GuiceApplicationBuilder().configure(
-      "microservice.services.auth.port" -> wireMockPort,
-      "microservice.services.nsi.port"  -> wireMockPort
-    ).build()
+class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
 
   withClient { wsClient =>
-    val contextRoot = "/individuals/tax-free-childcare/payments"
-    val baseUrl     = s"http://localhost:$port$contextRoot"
 
     /** Covers [[TaxFreeChildcarePaymentsController.link()]] */
     "POST /link" should {
@@ -321,19 +296,4 @@ class TaxFreeChildcarePaymentsControllerISpec
       }
     }
   }
-
-  private def withAuthNinoRetrieval(check: => Assertion) = {
-    stubFor(
-      post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
-    )
-
-    check
-  }
-
-  private val EXPECTED_JSON_ERROR_RESPONSE = ErrorResponse(
-    statusCode = BAD_REQUEST,
-    message = "Provided parameters do not match expected format."
-  )
-
-  private val CORRELATION_ID = "Correlation-ID"
 }

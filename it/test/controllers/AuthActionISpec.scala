@@ -16,39 +16,13 @@
 
 package controllers
 
-import base.BaseSpec
-import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
-import org.scalatest.Assertion
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import base.BaseISpec
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.Application
-import play.api.http.{HeaderNames, Status}
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import play.api.test.WsTestClient
-import uk.gov.hmrc.http.test.WireMockSupport
 
-class AuthActionISpec
-    extends BaseSpec
-    with WireMockSupport
-    with ScalaFutures
-    with IntegrationPatience
-    with GuiceOneServerPerSuite
-    with WsTestClient
-    with HeaderNames
-    with Status
-    with TableDrivenPropertyChecks {
-
-  override def fakeApplication(): Application =
-    new GuiceApplicationBuilder().configure(
-      "microservice.services.auth.port" -> wireMockPort,
-      "microservice.services.nsi.port"  -> wireMockPort
-    ).build()
+class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks {
 
   withClient { wsClient =>
-    val contextRoot = "/individuals/tax-free-childcare/payments"
-    val baseUrl     = s"http://localhost:$port$contextRoot"
 
     val resources = Table(
       "URL"               -> "Valid Payload",
@@ -91,14 +65,4 @@ class AuthActionISpec
       }
     }
   }
-
-  private def withAuthNinoRetrieval(check: => Assertion) = {
-    stubFor(
-      post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
-    )
-
-    check
-  }
-
-  lazy val CORRELATION_ID = "Correlation-ID"
 }
