@@ -76,8 +76,10 @@ class TaxFreeChildcarePaymentsControllerISpec
             .post(randomLinkRequestJson)
             .futureValue
 
+          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
+
           res.status shouldBe OK
-          res.header(CORRELATION_ID).value shouldBe expectedCorrelationId
+          resCorrelationId shouldBe expectedCorrelationId
           res.json shouldBe expectedResponseJson
         }
       }
@@ -197,8 +199,10 @@ class TaxFreeChildcarePaymentsControllerISpec
             .post(randomMetadataJson)
             .futureValue
 
+          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
+
           res.status shouldBe OK
-          res.header(CORRELATION_ID).value shouldBe expectedCorrelationId
+          resCorrelationId shouldBe expectedCorrelationId
           res.json shouldBe expectedResponse
         }
       }
@@ -290,8 +294,10 @@ class TaxFreeChildcarePaymentsControllerISpec
             .post(randomPaymentRequestJson)
             .futureValue
 
+          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
+
           res.status shouldBe OK
-          res.header(CORRELATION_ID).value shouldBe expectedCorrelationId
+          resCorrelationId shouldBe expectedCorrelationId
           res.json shouldBe expectedResponse
         }
       }

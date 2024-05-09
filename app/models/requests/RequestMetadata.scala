@@ -18,8 +18,6 @@ package models.requests
 
 import play.api.libs.json.{Json, OWrites, Reads}
 
-import java.util.UUID
-
 final case class RequestMetadata(
     epp_unique_customer_id: String,
     epp_reg_reference: String,
