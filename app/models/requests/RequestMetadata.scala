@@ -21,7 +21,6 @@ import play.api.libs.json.{Json, OWrites, Reads}
 import java.util.UUID
 
 final case class RequestMetadata(
-    correlation_id: UUID,
     epp_unique_customer_id: String,
     epp_reg_reference: String,
     outbound_child_payment_ref: String

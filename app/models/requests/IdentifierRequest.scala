@@ -18,4 +18,10 @@ package models.requests
 
 import play.api.mvc.{Request, WrappedRequest}
 
-final case class IdentifierRequest[A](request: Request[A], nino: String) extends WrappedRequest[A](request)
+import java.util.UUID
+
+final case class IdentifierRequest[A](
+    nino: String,
+    correlation_id: UUID,
+    request: Request[A]
+  ) extends WrappedRequest[A](request)
