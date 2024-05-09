@@ -28,7 +28,7 @@ tags:
   - name: Check balance
   - name: Make payment
 paths:
-  /individuals/tax-free-childcare/payments/link/{correlation_id}:
+  /individuals/tax-free-childcare/payments/link/:
     post:
       tags:
         - Link accounts
@@ -37,7 +37,7 @@ paths:
         This endpoint links the parent's TFC account with an account they hold with an online payment provider. This linking will be initiated by the payment provider's platform when offering TFC to the parent as an option to pay for their child's care. The parent will be required to confirm if they want this link to be created. This link is essential if the parent wishes to use TFC within the payment provider's platform.
       parameters:
       - name: correlation_id
-        in: path
+        in: header
         required: true
         style: simple
         explode: false
@@ -89,7 +89,7 @@ paths:
         - user-restricted:
             - tax-free-childcare-payments
 
-  /individuals/tax-free-childcare/payments/balance/{correlation_id}:
+  /individuals/tax-free-childcare/payments/balance/:
     post:
       tags:
         - Check balance
@@ -98,7 +98,7 @@ paths:
         This endpoint fetches the balance of the associated child's TFC account. The balance of the TFC account consists of the following three different elements:\n\- Paid in by you - The amount of money the parent or guardian has paid into the child's account.\n\- Government top-up - The amount of top-up funds paid in by the government.\n\- Total balance - The sum of the two previous amounts.
       parameters:
       - name: correlation_id
-        in: path
+        in: header
         required: true
         style: simple
         explode: false
@@ -168,16 +168,15 @@ paths:
             - tax-free-childcare-payments
 
 
-  /individuals/tax-free-childcare/payments/{correlation_id}:
+  /individuals/tax-free-childcare/payments/:
     post:
       tags:
         - Make payment
       summary: Send payment from the TFC account to the intended recipient
-      description: |
-        This endpoint sends the selected amount to the intended recipient from the child's TFC account.
+      description: This endpoint sends the selected amount to the intended recipient from the child's TFC account.
       parameters:
       - name: correlation_id
-        in: path
+        in: header
         required: true
         style: simple
         explode: false
