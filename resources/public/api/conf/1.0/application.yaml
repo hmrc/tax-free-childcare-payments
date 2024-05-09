@@ -28,23 +28,30 @@ tags:
   - name: Check balance
   - name: Make payment
 paths:
-  /individuals/tax-free-childcare/payments/link:
+  /individuals/tax-free-childcare/payments/link/{correlation_id}:
     post:
       tags:
         - Link accounts
       summary: Linking the parent's online payment provider account to their TFC account
       description:
         This endpoint links the parent's TFC account with an account they hold with an online payment provider. This linking will be initiated by the payment provider's platform when offering TFC to the parent as an option to pay for their child's care. The parent will be required to confirm if they want this link to be created. This link is essential if the parent wishes to use TFC within the payment provider's platform.
+      parameters:
+      - name: correlation_id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        description: A unique key shared between all parties which can be used for tracing and error tracking. This 32 character, hyphen separated alphanumeric string is generated and sent by the online payment provider.
+        schema:
+          format: uuid
+          type: string
+          example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                correlation_id:
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This 32 character, hyphen separated alphanumeric string is generated and sent by the online payment provider.
-                  type: string
-                  example: 633e8da0-6f0a-4158-948f-e511cd351795
                 epp_unique_customer_id:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I.
                   type: string
@@ -82,25 +89,30 @@ paths:
         - user-restricted:
             - tax-free-childcare-payments
 
-  /individuals/tax-free-childcare/payments/balance:
+  /individuals/tax-free-childcare/payments/balance/{correlation_id}:
     post:
       tags:
         - Check balance
       summary: Retrieve the balance of the associated child's TFC account
       description:
         This endpoint fetches the balance of the associated child's TFC account. The balance of the TFC account consists of the following three different elements:\n\- Paid in by you - The amount of money the parent or guardian has paid into the child's account.\n\- Government top-up - The amount of top-up funds paid in by the government.\n\- Total balance - The sum of the two previous amounts.
-
-
+      parameters:
+      - name: correlation_id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        description: A unique key shared between all parties which can be used for tracing and error tracking. This 32 character, hyphen separated alphanumeric string is generated and sent by the online payment provider.
+        schema:
+          format: uuid
+          type: string
+          example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7  
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                correlation_id:
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This 32 character, hyphen separated alphanumeric string is generated and sent by the online payment provider.
-                  type: string
-                  example: 633e8da0-6f0a-4158-948f-e511cd351795
                 epp_unique_customer_id:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I.
                   type: string
@@ -156,24 +168,30 @@ paths:
             - tax-free-childcare-payments
 
 
-  /individuals/tax-free-childcare/payments:
+  /individuals/tax-free-childcare/payments/{correlation_id}:
     post:
       tags:
         - Make payment
       summary: Send payment from the TFC account to the intended recipient
       description: |
         This endpoint sends the selected amount to the intended recipient from the child's TFC account.
-
+      parameters:
+      - name: correlation_id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        description: A unique key shared between all parties which can be used for tracing and error tracking. This 32 character, hyphen separated alphanumeric string is generated and sent by the online payment provider.
+        schema:
+          format: uuid
+          type: string
+          example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                correlation_id:
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This 32 character, hyphen separated alphanumeric string is generated and sent by the online payment provider.
-                  type: string
-                  example: 633e8da0-6f0a-4158-948f-e511cd351795
                 epp_unique_customer_id:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I.
                   type: string
