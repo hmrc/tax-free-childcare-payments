@@ -16,6 +16,7 @@
 
 package base
 
+import org.scalatest.OptionValues
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsObject, Json}
@@ -25,7 +26,8 @@ import scala.util.Random
 
 class BaseSpec
     extends AnyWordSpec
-    with should.Matchers {
+    with should.Matchers
+    with OptionValues {
 
   protected def randomLinkRequestJson: JsObject =
     randomMetadataJson ++ Json.obj(

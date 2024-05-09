@@ -24,6 +24,8 @@ import play.api.http.{HeaderNames, Status}
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
 
+import java.util.UUID
+
 class TaxFreeChildcarePaymentsControllerISpec
     extends BaseSpec
     with WireMockSupport
@@ -54,23 +56,28 @@ class TaxFreeChildcarePaymentsControllerISpec
     "POST /link" should {
       s"respond with status $OK and correct JSON body" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
-          val expectedResponseJson = Json.obj(
+          val expectedCorrelationId = UUID.randomUUID()
+          val expectedResponseJson  = Json.obj(
             "child_full_name" -> "Peter Pan"
           )
 
-          val submittedPayload = randomLinkRequestJson
-
           stubFor(
-            post("/individuals/tax-free-childcare/payments/link") willReturn okJson(expectedResponseJson.toString)
+            post("/individuals/tax-free-childcare/payments/link")
+              .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
+              .willReturn(okJson(expectedResponseJson.toString))
           )
 
           val res = wsClient
             .url(s"$baseUrl/link")
-            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
-            .post(submittedPayload)
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId.toString
+            )
+            .post(randomLinkRequestJson)
             .futureValue
 
           res.status shouldBe OK
+          res.header(CORRELATION_ID).value shouldBe expectedCorrelationId
           res.json shouldBe expectedResponseJson
         }
       }
@@ -165,7 +172,8 @@ class TaxFreeChildcarePaymentsControllerISpec
     "POST /balance" should {
       s"respond with status $OK and correct JSON body" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
-          val expectedResponse = Json.obj(
+          val expectedCorrelationId = UUID.randomUUID()
+          val expectedResponse      = Json.obj(
             "tfc_account_status" -> "active",
             "paid_in_by_you"     -> 0,
             "government_top_up"  -> 0,
@@ -173,17 +181,24 @@ class TaxFreeChildcarePaymentsControllerISpec
             "cleared_funds"      -> 0,
             "top_up_allowance"   -> 0
           )
+
           stubFor(
-            post("/individuals/tax-free-childcare/payments/balance") willReturn okJson(expectedResponse.toString)
+            post("/individuals/tax-free-childcare/payments/balance")
+              .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
+              .willReturn(okJson(expectedResponse.toString))
           )
 
           val res = wsClient
             .url(s"$baseUrl/balance")
-            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId.toString
+            )
             .post(randomMetadataJson)
             .futureValue
 
           res.status shouldBe OK
+          res.header(CORRELATION_ID).value shouldBe expectedCorrelationId
           res.json shouldBe expectedResponse
         }
       }
@@ -251,6 +266,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     "POST /" should {
       s"respond $OK" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
+          val expectedCorrelationId = UUID.randomUUID()
           val expectedPaymentRef    = randomPaymentRef
           val expectedPaymentDate   = randomPaymentDate
 
@@ -260,16 +276,22 @@ class TaxFreeChildcarePaymentsControllerISpec
           )
 
           stubFor(
-            post("/individuals/tax-free-childcare/payments/") willReturn okJson(expectedResponse.toString)
+            post("/individuals/tax-free-childcare/payments/")
+              .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
+              .willReturn(okJson(expectedResponse.toString))
           )
 
           val res = wsClient
             .url(s"$baseUrl/")
-            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId.toString
+            )
             .post(randomPaymentRequestJson)
             .futureValue
 
           res.status shouldBe OK
+          res.header(CORRELATION_ID).value shouldBe expectedCorrelationId
           res.json shouldBe expectedResponse
         }
       }
@@ -280,7 +302,10 @@ class TaxFreeChildcarePaymentsControllerISpec
       s"respond with $NOT_FOUND and a JSON ErrorResponse" in {
         val res = wsClient
           .url(s"$baseUrl/knil")
-          .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+          .withHttpHeaders(
+            AUTHORIZATION  -> "Bearer qwertyuiop",
+            CORRELATION_ID -> UUID.randomUUID().toString
+          )
           .get()
           .futureValue
 
@@ -299,8 +324,10 @@ class TaxFreeChildcarePaymentsControllerISpec
     check
   }
 
-  private val EXPECTED_JSON_ERROR_RESPONSE               = ErrorResponse(
+  private val EXPECTED_JSON_ERROR_RESPONSE = ErrorResponse(
     statusCode = BAD_REQUEST,
     message = "Provided parameters do not match expected format."
   )
+
+  private val CORRELATION_ID = "Correlation-ID"
 }
