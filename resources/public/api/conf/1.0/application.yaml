@@ -125,6 +125,9 @@ paths:
                     invalid_credentials:
                       value:
                         errorDescription: "Invalid OAuth token supplied for user-restricted endpoint"
+                    missing_header:
+                      value:
+                        errorDescription: "Authorization header is missing"
           "404":
             description: Not found
             content:
