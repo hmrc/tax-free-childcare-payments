@@ -18,7 +18,9 @@ package models.requests
 
 import models.requests.PaymentRequest.PayeeType
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{Format, Json, OFormat, __}
+import play.api.libs.json._
+
+import scala.util.Try
 
 final case class PaymentRequest(
     metadata: RequestMetadata,
@@ -31,10 +33,15 @@ final case class PaymentRequest(
 object PaymentRequest {
 
   object PayeeType extends Enumeration {
-    val ccp, epp = Value
+    val CCP, EPP = Value
   }
 
-  implicit val formatPayeeType: Format[PayeeType.Value] = Json.formatEnum(PayeeType)
+  implicit val formatPayeeType: Format[PayeeType.Value] = Format(
+    Reads.StringReads flatMapResult { str =>
+      JsResult fromTry Try(PayeeType withName str.toUpperCase)
+    },
+    payeeType => JsString(payeeType.toString)
+  )
 
   implicit val format: OFormat[PaymentRequest] = (
     __.format[RequestMetadata] ~
