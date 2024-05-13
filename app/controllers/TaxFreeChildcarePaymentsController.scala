@@ -18,12 +18,12 @@ package controllers
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests.{LinkRequest, RequestMetadata}
-import play.api.libs.json.{Json, OWrites}
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, RequestMetadata}
+import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
+import play.api.libs.json.{Json, OWrites, Reads}
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,26 +35,16 @@ class TaxFreeChildcarePaymentsController @Inject() (
   )(implicit ec: ExecutionContext
   ) extends BackendController(cc) {
 
-  def link(): Action[LinkRequest] = identify.async(parse.json[LinkRequest]) { implicit req =>
-    nsiConnector
-      .linkAccounts
-      .map {
-        okJson(req.body.metadata.correlation_id, _)
+  def link(): Action[LinkRequest] = messageBrokerAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
+
+  def balance(): Action[RequestMetadata] = messageBrokerAction[RequestMetadata, BalanceResponse](implicit req => nsiConnector.checkBalance)
+
+  def payment(): Action[PaymentRequest] = messageBrokerAction[PaymentRequest, PaymentResponse](implicit req => nsiConnector.makePayment)
+
+  private def messageBrokerAction[Req: Reads, Res: OWrites](block: IdentifierRequest[Req] => Future[Res]) =
+    identify.async(parse.json[Req]) { request =>
+      block(request) map { response =>
+        Ok(Json.toJson(response))
       }
-  }
-
-  def balance(): Action[RequestMetadata] = identify.async(parse.json[RequestMetadata]) { implicit req =>
-    nsiConnector
-      .checkBalance
-      .map {
-        okJson(req.body.correlation_id, _)
-      }
-  }
-
-  def payment(): Action[AnyContent] = Action.async {
-    Future.successful(Ok("payment is wip"))
-  }
-
-  private def okJson[Res: OWrites](correlation_id: UUID, nsiResponse: Res) =
-    Ok(Json.toJsObject(nsiResponse) + ("correlation_id" -> Json.toJson(correlation_id)))
+    }
 }

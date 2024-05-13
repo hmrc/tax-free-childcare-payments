@@ -16,11 +16,6 @@
 
 package controllers.actions
 
-import config.AppConfig
-
-import javax.inject.Inject
-import scala.annotation.nowarn
-import scala.concurrent.{ExecutionContext, Future}
 import models.requests.IdentifierRequest
 import play.api.Logging
 import play.api.libs.json.Json
@@ -31,22 +26,42 @@ import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLeve
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
+
+@Singleton
 class AuthAction @Inject() (
     val authConnector: AuthConnector,
-    val parser: BodyParsers.Default,
-    config: AppConfig
+    val parser: BodyParsers.Default
   )(implicit val executionContext: ExecutionContext
-  ) extends ActionBuilder[IdentifierRequest, AnyContent] with ActionFunction[Request, IdentifierRequest] with AuthorisedFunctions with Logging {
+  ) extends ActionBuilder[IdentifierRequest, AnyContent] with AuthorisedFunctions with Logging {
 
-  @nowarn()
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     authorised(ConfidenceLevel.L250)
-      .retrieve(Retrievals.nino) {
-        case Some(nino) => block(IdentifierRequest(request, nino))
-        case None       => Future.successful(BadRequest(Json.obj()))
+      .retrieve(Retrievals.nino) { optNino =>
+        val optIdentifierRequest = for {
+          nino                <- optNino
+          correlationIdHeader <- request.headers get CORRELATION_ID
+          correlationId       <- Try(UUID fromString correlationIdHeader).toOption
+        } yield IdentifierRequest(nino, correlationId, request)
+
+        optIdentifierRequest match {
+          case Some(identifierRequest) =>
+            block(identifierRequest) map { result =>
+              result.withHeaders(
+                CORRELATION_ID -> identifierRequest.correlation_id.toString
+              )
+            }
+
+          case None => Future.successful(BadRequest(Json.obj()))
+        }
       }
   }
+
+  private val CORRELATION_ID = "Correlation-ID"
 }

@@ -16,12 +16,14 @@
 
 package models.requests
 
-import play.api.mvc.{Request, WrappedRequest}
+import base.BaseSpec
 
-import java.util.UUID
+class PaymentRequestSpec extends BaseSpec {
 
-final case class IdentifierRequest[A](
-    nino: String,
-    correlation_id: UUID,
-    request: Request[A]
-  ) extends WrappedRequest[A](request)
+  "JSON format" should {
+    "successfully decode a valid JSON representation" in {
+      val validPaymentReqJson = randomPaymentRequestJson
+      validPaymentReqJson.as[PaymentRequest]
+    }
+  }
+}

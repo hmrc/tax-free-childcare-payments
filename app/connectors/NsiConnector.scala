@@ -16,8 +16,8 @@
 
 package connectors
 
-import models.requests.{IdentifierRequest, LinkRequest, RequestMetadata}
-import models.response.{BalanceResponse, LinkResponse}
+import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, RequestMetadata}
+import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import play.api.libs.json._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
@@ -37,14 +37,23 @@ class NsiConnector @Inject() (
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[LinkResponse] =
     httpClient
       .post(linkAccountsUrl)
+      .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[LinkRequest])
       .execute[LinkResponse]
 
   def checkBalance(implicit req: IdentifierRequest[RequestMetadata]): Future[BalanceResponse] =
     httpClient
       .post(checkBalanceUrl)
+      .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[RequestMetadata])
       .execute[BalanceResponse]
+
+  def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[PaymentResponse] =
+    httpClient
+      .post(makePaymentUrl)
+      .setHeader(CORRELATION_ID -> req.correlation_id.toString)
+      .withBody(enrichedWithNino[PaymentRequest])
+      .execute[PaymentResponse]
 
   private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]) =
     Json.toJsObject(req.body) + ("nino" -> JsString(req.nino))
@@ -60,4 +69,7 @@ class NsiConnector @Inject() (
 
   private val linkAccountsUrl = new URL(baseUrl + getConfig("resources.link"))
   private val checkBalanceUrl = new URL(baseUrl + getConfig("resources.balance"))
+  private val makePaymentUrl  = new URL(baseUrl + getConfig("resources.payment"))
+
+  private val CORRELATION_ID = "Correlation-ID"
 }

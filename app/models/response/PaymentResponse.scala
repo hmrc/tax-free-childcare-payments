@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.response
 
-import play.api.mvc.{Request, WrappedRequest}
+import play.api.libs.json.{Json, OFormat}
 
-import java.util.UUID
+import java.time.LocalDate
 
-final case class IdentifierRequest[A](
-    nino: String,
-    correlation_id: UUID,
-    request: Request[A]
-  ) extends WrappedRequest[A](request)
+final case class PaymentResponse(
+    payment_reference: String,
+    estimated_payment_date: LocalDate
+  )
+
+object PaymentResponse {
+  implicit val format: OFormat[PaymentResponse] = Json.format
+}
