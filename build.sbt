@@ -1,3 +1,4 @@
+import play.sbt.PlayImport.PlayKeys.playDefaultPort
 import uk.gov.hmrc.DefaultBuildSettings
 
 ThisBuild / majorVersion := 0
@@ -8,25 +9,21 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" 
 
 lazy val microservice = Project("tax-free-childcare-payments", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
+  .settings(CodeCoverageSettings.settings *)
   .settings(
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
-    // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
-    // suppress warnings in generated routes files
-    scalacOptions += "-Wconf:src=routes/.*:s",
-  )
-  .settings(resolvers += Resolver.jcenterRepo)
-  .settings(CodeCoverageSettings.settings: _*)
-  .settings(
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
-  )
-  .settings(
     scalacOptions ++= Seq(
+      // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
+      // suppress warnings in generated routes files
+      "-Wconf:src=routes/.*:s",
       "-Wconf:cat=unused&src=views/.*\\.scala:s",
       "-Wconf:cat=unused&src=.*RoutesPrefix\\.scala:s",
       "-Wconf:cat=unused&src=.*Routes\\.scala:s",
       "-Wconf:cat=unused&src=.*ReverseRoutes\\.scala:s"
-
-    )
+    ),
+    resolvers += Resolver.jcenterRepo,
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
+    playDefaultPort := 10500
   )
 
 lazy val it = project
