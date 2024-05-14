@@ -72,6 +72,13 @@ paths:
       responses:
         "200":
           description: Confirmation that a link has been established
+          headers:
+            Correlation-ID:
+              schema:
+                format: uuid
+                type: string
+                description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7 
           content:
             application/json:
               schema:
@@ -132,6 +139,13 @@ paths:
       responses:
         "200":
           description: Full details of the balance in the relevant child's TFC account.
+          headers:
+            Correlation-ID:
+              schema:
+                format: uuid
+                type: string
+                description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7     
           content:
             application/json:
               schema:
@@ -219,6 +233,13 @@ paths:
       responses:
         "200":
           description: Confirmation the payment was succesful
+          headers:
+            Correlation-ID:
+              schema:
+                format: uuid
+                type: string
+                description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
           content:
             application/json:
               schema:
