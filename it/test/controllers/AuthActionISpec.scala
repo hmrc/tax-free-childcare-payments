@@ -17,13 +17,20 @@
 package controllers
 
 import base.BaseISpec
+import ch.qos.logback.classic.Level
+import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
+import controllers.actions.AuthAction
 import org.scalatest.prop.TableDrivenPropertyChecks
+import play.api.Logger
 import play.api.libs.json.Json
+import play.api.libs.ws.WSRequest
+import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
-class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks {
+import scala.concurrent.Future
+
+class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogCapturing {
 
   withClient { wsClient =>
-
     val resources = Table(
       "URL"               -> "Valid Payload",
       s"$baseUrl/link"    -> randomLinkRequestJson,
@@ -34,35 +41,66 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks {
     /** Covers `case None` of [[controllers.actions.AuthAction.invokeBlock().]] */
     forAll(resources) { (url, payload) =>
       s"POST $url" should {
-        s"respond $BAD_REQUEST" when {
-          s"request header $CORRELATION_ID is missing" in withAuthNinoRetrieval {
-            val res = wsClient
-              .url(url)
-              .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop"
+        s"respond $BAD_REQUEST and give expected error message" when {
+          s"Auth service does not return a nino" in
+            expect400With("Unable to retrieve NI number.") {
+              stubFor(
+                post("/auth/authorise") willReturn okJson("{}")
               )
-              .post(payload)
-              .futureValue
 
-            res.status shouldBe BAD_REQUEST
-            res.json shouldBe Json.obj()
-          }
+              wsClient
+                .url(url)
+                .withHttpHeaders(
+                  AUTHORIZATION -> "Bearer qwertyuiop"
+                )
+                .post(payload)
+            }
 
-          s"request header $CORRELATION_ID is not a valid UUID" in withAuthNinoRetrieval {
-            val res = wsClient
-              .url(url)
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> "I am an invalid UUID."
-              )
-              .post(payload)
-              .futureValue
+          s"request header $CORRELATION_ID is missing" in
+            expect400With("Correlation ID is missing.") {
+              expectAuthNinoRetrieval
 
-            res.status shouldBe BAD_REQUEST
-            res.json shouldBe Json.obj()
-          }
+              wsClient
+                .url(url)
+                .withHttpHeaders(
+                  AUTHORIZATION -> "Bearer qwertyuiop"
+                )
+                .post(payload)
+            }
+
+          val invalidUuid = "asdfghkj"
+
+          s"request header $CORRELATION_ID is not a valid UUID" in
+            expect400With("Invalid UUID string: " + invalidUuid) {
+              expectAuthNinoRetrieval
+
+              wsClient
+                .url(url)
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> invalidUuid
+                )
+                .post(payload)
+            }
         }
       }
     }
+
+    def expect400With(message: String)(block: Future[WSRequest#Self#Response]): Unit =
+      withCaptureOfLoggingFrom(Logger(classOf[AuthAction])) { logs =>
+        val response             = block.futureValue
+        val expectedResponseBody = Json.obj(
+          "statusCode" -> BAD_REQUEST,
+          "message"    -> message
+        )
+
+        response.status shouldBe BAD_REQUEST
+        response.json shouldBe expectedResponseBody
+
+        val log = logs.last
+
+        log.getLevel shouldBe Level.INFO
+        log.getMessage shouldBe message
+      }
   }
 }
