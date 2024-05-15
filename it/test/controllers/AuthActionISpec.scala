@@ -33,14 +33,14 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
   withClient { wsClient =>
     val resources = Table(
       "URL"               -> "Valid Payload",
-      s"$baseUrl/link"    -> randomLinkRequestJson,
-      s"$baseUrl/balance" -> randomMetadataJson,
-      s"$baseUrl/"        -> randomPaymentRequestJson
+      s"$resourcePath/link"    -> randomLinkRequestJson,
+      s"$resourcePath/balance" -> randomMetadataJson,
+      s"$resourcePath/"        -> randomPaymentRequestJson
     )
 
     /** Covers `case None` of [[controllers.actions.AuthAction.invokeBlock().]] */
-    forAll(resources) { (url, payload) =>
-      s"POST $url" should {
+    forAll(resources) { (resource, payload) =>
+      s"POST $resource" should {
         s"respond $BAD_REQUEST and give expected error message" when {
           s"Auth service does not return a nino" in
             expect400With("Unable to retrieve NI number.") {
@@ -49,7 +49,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
               )
 
               wsClient
-                .url(url)
+                .url(domain + resource)
                 .withHttpHeaders(
                   AUTHORIZATION -> "Bearer qwertyuiop"
                 )
@@ -61,7 +61,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
               expectAuthNinoRetrieval
 
               wsClient
-                .url(url)
+                .url(domain + resource)
                 .withHttpHeaders(
                   AUTHORIZATION -> "Bearer qwertyuiop"
                 )
@@ -75,7 +75,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
               expectAuthNinoRetrieval
 
               wsClient
-                .url(url)
+                .url(domain + resource)
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> invalidUuid

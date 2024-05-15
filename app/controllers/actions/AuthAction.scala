@@ -18,12 +18,13 @@ package controllers.actions
 
 import models.requests.IdentifierRequest
 import play.api.Logging
+import play.api.http.Status
 import play.api.libs.json.Json
-import play.api.mvc.Results.BadRequest
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import java.util.UUID
@@ -36,7 +37,7 @@ class AuthAction @Inject() (
     val authConnector: AuthConnector,
     val parser: BodyParsers.Default
   )(implicit val executionContext: ExecutionContext
-  ) extends ActionBuilder[IdentifierRequest, AnyContent] with AuthorisedFunctions with Logging {
+  ) extends ActionBuilder[IdentifierRequest, AnyContent] with AuthorisedFunctions with Logging with Results with Status {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
 
@@ -45,20 +46,26 @@ class AuthAction @Inject() (
     authorised(ConfidenceLevel.L250)
       .retrieve(Retrievals.nino) { optNino =>
         val optIdentifierRequest = for {
-          nino                <- optNino
-          correlationIdHeader <- request.headers get CORRELATION_ID
-          correlationId       <- Try(UUID fromString correlationIdHeader).toOption
+          nino                <- optNino toRight "Unable to retrieve NI number."
+          correlationIdHeader <- request.headers get CORRELATION_ID toRight "Correlation ID is missing."
+          correlationId       <- Try(UUID fromString correlationIdHeader).toEither.left.map(_.getMessage)
         } yield IdentifierRequest(nino, correlationId, request)
 
         optIdentifierRequest match {
-          case Some(identifierRequest) =>
+          case Right(identifierRequest) =>
             block(identifierRequest) map { result =>
               result.withHeaders(
                 CORRELATION_ID -> identifierRequest.correlation_id.toString
               )
             }
 
-          case None => Future.successful(BadRequest(Json.obj()))
+          case Left(errorMessage) => Future.successful {
+            logger.info(errorMessage)
+
+            BadRequest(Json.toJson(
+              ErrorResponse(BAD_REQUEST, errorMessage)
+            ))
+          }
         }
       }
   }
