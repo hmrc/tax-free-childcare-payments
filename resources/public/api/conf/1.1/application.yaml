@@ -17,7 +17,7 @@ This API allows online cashless payment providers for schools to offer their use
     - Making a payment from the child's TFC account to the childcare provider.
     
     Requests are passed to National Savings and Investments (NS&I), who hold the TFC account funds."
-  version: 1.0.0
+  version: 1.1.0
 servers:
   - url: https://test-api.service.hmrc.gov.uk
     description: Sandbox
@@ -36,7 +36,7 @@ paths:
       description:
         This endpoint links the parent's TFC account with an account they hold with an online payment provider. This linking will be initiated by the payment provider's platform when offering TFC to the parent as an option to pay for their child's care. The parent will be required to confirm if they want this link to be created. This link is essential if the parent wishes to use TFC within the payment provider's platform.
       parameters:
-      - name: correlation_id
+      - name: Correlation-ID
         in: header
         required: true
         style: simple
@@ -72,15 +72,18 @@ paths:
       responses:
         "200":
           description: Confirmation that a link has been established
+          headers:
+            Correlation-ID:
+              schema:
+                format: uuid
+                type: string
+                description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7 
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  correlation_id:
-                    type: string
-                    description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                    example: 633e8da0-6f0a-4158-948f-e511cd351795
                   child_full_name:
                     type: string
                     description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
@@ -97,7 +100,7 @@ paths:
       description:
         This endpoint fetches the balance of the associated child's TFC account. The balance of the TFC account consists of the following three different elements:\n\- Paid in by you - The amount of money the parent or guardian has paid into the child's account.\n\- Government top-up - The amount of top-up funds paid in by the government.\n\- Total balance - The sum of the two previous amounts.
       parameters:
-      - name: correlation_id
+      - name: Correlation-ID
         in: header
         required: true
         style: simple
@@ -132,15 +135,18 @@ paths:
       responses:
         "200":
           description: Full details of the balance in the relevant child's TFC account.
+          headers:
+            Correlation-ID:
+              schema:
+                format: uuid
+                type: string
+                description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7     
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  correlation_id:
-                    type: string
-                    description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the EPP.
-                    example: 633e8da0-6f0a-4158-948f-e511cd351795
                   tfc_account_status:
                     type: string
                     description: The status of the child's TFC account. Indicates whether the account is active or not.
@@ -175,7 +181,7 @@ paths:
       summary: Send payment from the TFC account to the intended recipient
       description: This endpoint sends the selected amount to the intended recipient from the child's TFC account.
       parameters:
-      - name: correlation_id
+      - name: Correlation-ID
         in: header
         required: true
         style: simple
@@ -219,15 +225,18 @@ paths:
       responses:
         "200":
           description: Confirmation the payment was succesful
+          headers:
+            Correlation-ID:
+              schema:
+                format: uuid
+                type: string
+                description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  correlation_id:
-                    type: string
-                    description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                    example: 633e8da0-6f0a-4158-948f-e511cd351795
                   payment_reference:
                     type: string
                     description: A unique identifier that is used as confirmation that the payment has been successful. This can be used to track the payment.
