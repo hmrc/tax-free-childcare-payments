@@ -34,7 +34,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
     val resources = Table(
       "URL"               -> "Valid Payload",
       s"$resourcePath/link"    -> randomLinkRequestJson,
-      s"$resourcePath/balance" -> randomMetadataJson,
+      s"$resourcePath/balance" -> randomSharedJson,
       s"$resourcePath/"        -> randomPaymentRequestJson
     )
 

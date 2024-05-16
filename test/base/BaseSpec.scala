@@ -30,19 +30,19 @@ class BaseSpec
     with OptionValues {
 
   protected def randomLinkRequestJson: JsObject =
-    randomMetadataJson ++ Json.obj(
+    randomSharedJson ++ Json.obj(
       "child_date_of_birth" -> randomDateOfBirth
     )
 
   protected def randomPaymentRequestJson: JsObject =
-    randomMetadataJson ++ Json.obj(
+    randomSharedJson ++ Json.obj(
       "payment_amount"    -> randomSumOfMoney,
       "ccp_reg_reference" -> randomRegistrationRef,
       "ccp_postcode"      -> "AB12 3CD",
       "payee_type"        -> randomPayeeType
     )
 
-  protected def randomMetadataJson: JsObject = Json.obj(
+  protected def randomSharedJson: JsObject = Json.obj(
     "epp_unique_customer_id"     -> randomCustomerId,
     "epp_reg_reference"          -> randomRegistrationRef,
     "outbound_child_payment_ref" -> randomPaymentRef
