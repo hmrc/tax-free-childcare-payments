@@ -26,13 +26,14 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WSRequest
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
+import java.util.UUID
 import scala.concurrent.Future
 
 class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogCapturing {
 
   withClient { wsClient =>
     val resources = Table(
-      "URL"               -> "Valid Payload",
+      "URL"                    -> "Valid Payload",
       s"$resourcePath/link"    -> randomLinkRequestJson,
       s"$resourcePath/balance" -> randomSharedJson,
       s"$resourcePath/"        -> randomPaymentRequestJson
@@ -42,22 +43,8 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
     forAll(resources) { (resource, payload) =>
       s"POST $resource" should {
         s"respond $BAD_REQUEST and give expected error message" when {
-          s"Auth service does not return a nino" in
-            expect400With("Unable to retrieve NI number.") {
-              stubFor(
-                post("/auth/authorise") willReturn okJson("{}")
-              )
-
-              wsClient
-                .url(domain + resource)
-                .withHttpHeaders(
-                  AUTHORIZATION -> "Bearer qwertyuiop"
-                )
-                .post(payload)
-            }
-
           s"request header $CORRELATION_ID is missing" in
-            expect400With("Correlation ID is missing.") {
+            expect400With("<null> Missing Correlation-ID header.") {
               expectAuthNinoRetrieval
 
               wsClient
@@ -71,7 +58,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
           val invalidUuid = "asdfghkj"
 
           s"request header $CORRELATION_ID is not a valid UUID" in
-            expect400With("Invalid UUID string: " + invalidUuid) {
+            expect400With(s"<$invalidUuid> Invalid UUID string: $invalidUuid") {
               expectAuthNinoRetrieval
 
               wsClient
@@ -82,16 +69,33 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
                 )
                 .post(payload)
             }
+
+          val validCorrelationId = UUID.randomUUID().toString
+
+          s"Auth service does not return a nino" in
+            expect400With(s"<$validCorrelationId> Unable to retrieve NI number.") {
+              stubFor(
+                post("/auth/authorise") willReturn okJson("{}")
+              )
+
+              wsClient
+                .url(domain + resource)
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> validCorrelationId
+                )
+                .post(payload)
+            }
         }
       }
     }
 
-    def expect400With(message: String)(block: Future[WSRequest#Self#Response]): Unit =
+    def expect400With(expectedErrorMessage: String)(block: Future[WSRequest#Self#Response]): Unit =
       withCaptureOfLoggingFrom(Logger(classOf[AuthAction])) { logs =>
         val response             = block.futureValue
         val expectedResponseBody = Json.obj(
           "statusCode" -> BAD_REQUEST,
-          "message"    -> message
+          "message"    -> expectedErrorMessage
         )
 
         response.status shouldBe BAD_REQUEST
@@ -100,7 +104,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
         val log = logs.last
 
         log.getLevel shouldBe Level.INFO
-        log.getMessage shouldBe message
+        log.getMessage shouldBe expectedErrorMessage
       }
   }
 }
