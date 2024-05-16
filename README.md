@@ -34,12 +34,23 @@ Then, if the parent has an invoice to pay, then they can select the amount and t
 
 ## Logging
 
+### Implicit
+
 | Scenario        | Level   | Logger Name                                               | Message Pattern                                                                      | Source              |
 |-----------------|---------|-----------------------------------------------------------|--------------------------------------------------------------------------------------|---------------------|
 | Inbound Request | `INFO`  | `uk.gov.hmrc.play.bootstrap.filters.DefaultLoggingFilter` | `[A-Z]+ \S+ \d{3} \d+ms`                                                             | [Bootstrap][BS]     |
 | Outbound 200    | `DEBUG` | `connector`                                               | `\S*:[A-Z]+:\d+:\d+\.\d{3}[mnu]?s:\d+:\d+\.\d{3}[mnu]?s:[0-9a-f]{1,4}:\S+:ok`        | [HTTP Verbs][HV200] |
 | Outbound 404    | `INFO`  | `connector`                                               | `\S*:[A-Z]+:\d+:\d+\.\d{3}[mnu]?s:\d+:\d+\.\d{3}[mnu]?s:[0-9a-f]{1,4}:\S+:failed .*` | [HTTP Verbs][HV404] |
 | Outbound Error  | `WARN`  | `connector`                                               | `\S*:[A-Z]+:\d+:\d+\.\d{3}[mnu]?s:\d+:\d+\.\d{3}[mnu]?s:[0-9a-f]{1,4}:\S+:failed .*` | [HTTP Verbs][HVE]   |
+
+### Explicit
+
+| Scenario               | Level  | Logger Name                      | Message Pattern                                    |
+|------------------------|--------|----------------------------------|----------------------------------------------------|
+| Empty Nino Retrieval   | `INFO` | `controllers.actions.AuthAction` | `Unable to retrieve NI number.`                    |
+| Missing Correlation ID | `INFO` | `controllers.actions.AuthAction` | `Correlation ID is missing.`                       |
+| Invalid Correlation ID | `INFO` | `controllers.actions.AuthAction` | `(UUID string too large\|Invalid UUID string: .*)` |
+| Bad Request Payload    | `INFO` | `config.customJsonErrorHandler`  | `Json validation error.*`                          |
 
 [BS]: https://github.com/hmrc/bootstrap-play/blob/7a8a302b63cda07119f13ec21ad7ae82a45c966f/bootstrap-common-play-30/src/main/scala/uk/gov/hmrc/play/bootstrap/filters/LoggingFilter.scala#L61-L69
 
