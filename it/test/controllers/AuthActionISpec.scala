@@ -45,8 +45,6 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
         s"respond $BAD_REQUEST and give expected error message" when {
           s"request header $CORRELATION_ID is missing" in
             expect400With("<null> Missing Correlation-ID header.") {
-              expectAuthNinoRetrieval
-
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
@@ -59,8 +57,6 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
 
           s"request header $CORRELATION_ID is not a valid UUID" in
             expect400With(s"<$invalidUuid> Invalid UUID string: $invalidUuid") {
-              expectAuthNinoRetrieval
-
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
@@ -74,10 +70,6 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
 
           s"Auth service does not return a nino" in
             expect400With(s"<$validCorrelationId> Unable to retrieve NI number.") {
-              stubFor(
-                post("/auth/authorise") willReturn okJson("{}")
-              )
-
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
@@ -92,6 +84,10 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
 
     def expect400With(expectedErrorMessage: String)(block: Future[WSRequest#Self#Response]): Unit =
       withCaptureOfLoggingFrom(Logger(classOf[AuthAction])) { logs =>
+        stubFor(
+          post("/auth/authorise") willReturn okJson("{}")
+        )
+
         val response             = block.futureValue
         val expectedResponseBody = Json.obj(
           "statusCode" -> BAD_REQUEST,

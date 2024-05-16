@@ -45,10 +45,11 @@ class AuthAction @Inject() (
 
     authorised(ConfidenceLevel.L250)
       .retrieve(Retrievals.nino) { optNino =>
-        val optIdentifierRequest = for {
-          nino                <- optNino toRight "Unable to retrieve NI number."
-          correlationIdHeader <- request.headers get CORRELATION_ID toRight "Correlation ID is missing."
+        val optCorrelationIdHeader = request.headers get CORRELATION_ID
+        val optIdentifierRequest   = for {
+          correlationIdHeader <- optCorrelationIdHeader toRight s"Missing $CORRELATION_ID header."
           correlationId       <- Try(UUID fromString correlationIdHeader).toEither.left.map(_.getMessage)
+          nino                <- optNino toRight "Unable to retrieve NI number."
         } yield IdentifierRequest(nino, correlationId, request)
 
         optIdentifierRequest match {
@@ -60,10 +61,12 @@ class AuthAction @Inject() (
             }
 
           case Left(errorMessage) => Future.successful {
-            logger.info(errorMessage)
+            val fullMessage = s"<${optCorrelationIdHeader.orNull}> $errorMessage"
+
+              logger.info(fullMessage)
 
             BadRequest(Json.toJson(
-              ErrorResponse(BAD_REQUEST, errorMessage)
+              ErrorResponse(BAD_REQUEST, fullMessage)
             ))
           }
         }
