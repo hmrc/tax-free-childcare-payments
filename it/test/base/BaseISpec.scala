@@ -16,7 +16,6 @@
 
 package base
 
-import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
 import org.scalatest.Assertion
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
@@ -35,6 +34,8 @@ class BaseISpec
     with WsTestClient
     with HeaderNames
     with Status {
+  import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
+  import com.github.tomakehurst.wiremock.stubbing.StubMapping
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
 
@@ -44,16 +45,18 @@ class BaseISpec
       "microservice.services.nsi.port"  -> wireMockPort
     ).build()
 
-  protected lazy val contextRoot = "/individuals/tax-free-childcare/payments"
-  protected lazy val baseUrl     = s"http://localhost:$port$contextRoot"
+  protected lazy val domain       = s"http://localhost:$port"
+  protected lazy val resourcePath = "/individuals/tax-free-childcare/payments"
+  protected lazy val baseUrl      = s"$domain$resourcePath"
 
   protected def withAuthNinoRetrieval(check: => Assertion): Assertion = {
-    stubFor(
-      post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
-    )
-
+    expectAuthNinoRetrieval
     check
   }
+
+  protected def expectAuthNinoRetrieval: StubMapping = stubFor(
+    post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
+  )
 
   protected lazy val EXPECTED_JSON_ERROR_RESPONSE: ErrorResponse = ErrorResponse(
     statusCode = BAD_REQUEST,

@@ -16,39 +16,142 @@
 
 package config
 
-import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.matchers.should
+import base.BaseISpec
+import ch.qos.logback.classic.Level
+import org.scalatest.{Assertion, LoneElement}
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.Application
-import play.api.http.{HeaderNames, Status}
-import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.WsTestClient
-import uk.gov.hmrc.http.test.WireMockSupport
+import play.api.Logger
+import play.api.libs.json.{JsString, Json}
+import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
+import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
-class CustomJsonErrorHandlerISpec
-  extends AnyWordSpec
-    with should.Matchers
-    with WireMockSupport
-    with ScalaFutures
-    with IntegrationPatience
-    with GuiceOneServerPerSuite
-    with WsTestClient
-    with HeaderNames
-    with Status
-    with TableDrivenPropertyChecks {
+import java.util.UUID
 
-  override def fakeApplication(): Application =
-    new GuiceApplicationBuilder().configure(
-      "microservice.services.auth.port" -> wireMockPort,
-      "microservice.services.nsi.port"  -> wireMockPort
-    ).build()
+class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChecks with LogCapturing with LoneElement {
 
   withClient { wsClient =>
-    val contextRoot = "/individuals/tax-free-childcare/payments"
-    val baseUrl     = s"http://localhost:$port$contextRoot"
+    val sharedBadRequestScenarios = Table(
+      ("Spec", "Field", "Bad Value"),
+      ("customer ID is invalid", "epp_unique_customer_id", "I am a bad customer ID."),
+      ("registration ref is invalid", "epp_reg_reference", "I am a bad registration reference"),
+      ("payment ref is invalid", "outbound_child_payment_ref", "I am a bad payment reference.")
+    )
 
+    s"POST $resourcePath/link" should {
 
+      /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
+      s"respond with $BAD_REQUEST and generic error message" when {
+        forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
+          spec in withAuthNinoRetrievalExpectLog {
+            val linkRequest = randomLinkRequestJson + (field, JsString(badValue))
+
+            val res = wsClient
+              .url(s"$baseUrl/link")
+              .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+              .post(linkRequest)
+              .futureValue
+
+            res.status shouldBe BAD_REQUEST
+            val resBody = res.json.as[ErrorResponse]
+            resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
+          }
+        }
+
+        s"child DOB is invalid" in withAuthNinoRetrievalExpectLog {
+          val linkRequest = Json.obj(
+            "epp_unique_customer_id"     -> randomCustomerId,
+            "epp_reg_reference"          -> randomRegistrationRef,
+            "outbound_child_payment_ref" -> randomPaymentRef,
+            "child_date_of_birth"        -> "I am a bad date string"
+          )
+
+          val res = wsClient
+            .url(s"$baseUrl/link")
+            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+            .post(linkRequest)
+            .futureValue
+
+          res.status shouldBe BAD_REQUEST
+          val resBody = res.json.as[ErrorResponse]
+          resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
+        }
+      }
+    }
+
+    s"POST $resourcePath/balance" should {
+
+      /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
+      s"respond with $BAD_REQUEST and generic error message" when {
+        forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
+          spec in withAuthNinoRetrievalExpectLog {
+            val checkBalanceRequest = randomSharedJson + (field, JsString(badValue))
+
+            val res = wsClient
+              .url(s"$baseUrl/balance")
+              .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+              .post(checkBalanceRequest)
+              .futureValue
+
+            res.status shouldBe BAD_REQUEST
+            val resBody = res.json.as[ErrorResponse]
+            resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
+          }
+        }
+      }
+    }
+
+    s"POST $resourcePath/" should {
+
+      /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
+      s"respond with $BAD_REQUEST and generic error message" when {
+        forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
+          spec in withAuthNinoRetrievalExpectLog {
+            val makePaymentRequest = randomPaymentRequestJson + (field, JsString(badValue))
+
+            val res = wsClient
+              .url(s"$baseUrl/")
+              .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+              .post(makePaymentRequest)
+              .futureValue
+
+            res.status shouldBe BAD_REQUEST
+            val resBody = res.json.as[ErrorResponse]
+            resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
+          }
+        }
+      }
+    }
+
+    /** Covers `else` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
+    "GET /knil" should {
+      s"respond with $NOT_FOUND and a JSON ErrorResponse" in {
+        val res = wsClient
+          .url(s"$baseUrl/knil")
+          .withHttpHeaders(
+            AUTHORIZATION  -> "Bearer qwertyuiop",
+            CORRELATION_ID -> UUID.randomUUID().toString
+          )
+          .get()
+          .futureValue
+
+        res.status shouldBe NOT_FOUND
+        val resBody = res.json.as[ErrorResponse]
+        resBody.statusCode shouldBe NOT_FOUND
+      }
+    }
+
+    def withAuthNinoRetrievalExpectLog(doTest: => Assertion): Unit = {
+      withCaptureOfLoggingFrom(
+        Logger(classOf[CustomJsonErrorHandler])
+      ) { logs =>
+        withAuthNinoRetrieval {
+          doTest
+        }
+
+        val log = logs.loneElement
+        log.getLevel shouldBe Level.INFO
+        log.getMessage should startWith("Json validation error")
+      }
+    }
   }
 }

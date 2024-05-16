@@ -18,7 +18,7 @@ package controllers
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, RequestMetadata}
+import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import play.api.libs.json.{Json, OWrites, Reads}
 import play.api.mvc.{Action, ControllerComponents}
@@ -37,7 +37,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
 
   def link(): Action[LinkRequest] = messageBrokerAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
 
-  def balance(): Action[RequestMetadata] = messageBrokerAction[RequestMetadata, BalanceResponse](implicit req => nsiConnector.checkBalance)
+  def balance(): Action[SharedRequestData] = messageBrokerAction[SharedRequestData, BalanceResponse](implicit req => nsiConnector.checkBalance)
 
   def payment(): Action[PaymentRequest] = messageBrokerAction[PaymentRequest, PaymentResponse](implicit req => nsiConnector.makePayment)
 

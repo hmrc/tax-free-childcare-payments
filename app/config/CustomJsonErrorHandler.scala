@@ -16,7 +16,7 @@
 
 package config
 
-import play.api.Configuration
+import play.api.{Configuration, Logging}
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc.{RequestHeader, Result, Results}
@@ -33,10 +33,12 @@ class CustomJsonErrorHandler @Inject() (
     httpAuditEvent: HttpAuditEvent,
     configuration: Configuration
   )(implicit ec: ExecutionContext
-  ) extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) with Results with Status {
+  ) extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) with Results with Status with Logging {
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     if (statusCode == BAD_REQUEST && (message startsWith "Json validation error")) {
+      logger.info(message)
+
       Future.successful(
         BadRequest(
           Json.toJson(
