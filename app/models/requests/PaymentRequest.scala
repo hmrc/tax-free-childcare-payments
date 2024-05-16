@@ -23,11 +23,11 @@ import play.api.libs.json._
 import scala.util.Try
 
 final case class PaymentRequest(
-                                 metadata: SharedRequestData,
-                                 payment_amount: BigDecimal,
-                                 ccp_reg_reference: String,
-                                 ccp_postcode: String,
-                                 payee_type: PayeeType.Value
+    metadata: SharedRequestData,
+    payment_amount: BigDecimal,
+    ccp_reg_reference: String,
+    ccp_postcode: String,
+    payee_type: PayeeType.Value
   )
 
 object PaymentRequest {

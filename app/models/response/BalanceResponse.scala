@@ -26,6 +26,7 @@ final case class BalanceResponse(
     cleared_funds: BigDecimal,
     top_up_allowance: BigDecimal
   )
+
 object BalanceResponse {
   implicit val format: OFormat[BalanceResponse] = Json.format
 }
