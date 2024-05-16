@@ -22,13 +22,13 @@ import play.api.libs.json.{__, OFormat}
 import java.time.LocalDate
 
 final case class LinkRequest(
-    metadata: RequestMetadata,
-    child_date_of_birth: LocalDate
+                              metadata: SharedRequestData,
+                              child_date_of_birth: LocalDate
   )
 
 object LinkRequest {
   implicit val format: OFormat[LinkRequest] = (
-    __.format[RequestMetadata] ~
+    __.format[SharedRequestData] ~
       (__ \ "child_date_of_birth").format[LocalDate]
   )(apply, unlift(unapply))
 }

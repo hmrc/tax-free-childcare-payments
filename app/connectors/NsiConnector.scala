@@ -16,7 +16,7 @@
 
 package connectors
 
-import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, RequestMetadata}
+import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import play.api.libs.json._
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -41,11 +41,11 @@ class NsiConnector @Inject() (
       .withBody(enrichedWithNino[LinkRequest])
       .execute[LinkResponse]
 
-  def checkBalance(implicit req: IdentifierRequest[RequestMetadata]): Future[BalanceResponse] =
+  def checkBalance(implicit req: IdentifierRequest[SharedRequestData]): Future[BalanceResponse] =
     httpClient
       .post(checkBalanceUrl)
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
-      .withBody(enrichedWithNino[RequestMetadata])
+      .withBody(enrichedWithNino[SharedRequestData])
       .execute[BalanceResponse]
 
   def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[PaymentResponse] =
