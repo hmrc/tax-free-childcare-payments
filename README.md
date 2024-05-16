@@ -45,12 +45,12 @@ Then, if the parent has an invoice to pay, then they can select the amount and t
 
 ### Explicit
 
-| Scenario               | Level  | Logger Name                      | Message Pattern                                    |
-|------------------------|--------|----------------------------------|----------------------------------------------------|
-| Empty Nino Retrieval   | `INFO` | `controllers.actions.AuthAction` | `Unable to retrieve NI number.`                    |
-| Missing Correlation ID | `INFO` | `controllers.actions.AuthAction` | `Correlation ID is missing.`                       |
-| Invalid Correlation ID | `INFO` | `controllers.actions.AuthAction` | `(UUID string too large\|Invalid UUID string: .*)` |
-| Bad Request Payload    | `INFO` | `config.customJsonErrorHandler`  | `Json validation error.*`                          |
+| Scenario               | Level  | Logger Name                      | Message Pattern                                                                                |
+|------------------------|--------|----------------------------------|------------------------------------------------------------------------------------------------|
+| Missing Correlation ID | `INFO` | `controllers.actions.AuthAction` | `<null> Missing Correlation-ID header.`                                                        |
+| Invalid Correlation ID | `INFO` | `controllers.actions.AuthAction` | `<(.{37,}> UUID string too large\|.{0,36}> Invalid UUID string: .*)`                           |
+| Empty Nino Retrieval   | `INFO` | `controllers.actions.AuthAction` | `<[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}> Unable to retrieve NI number.` |
+| Bad Request Payload    | `INFO` | `config.customJsonErrorHandler`  | `Json validation error.*`                                                                      |
 
 [BS]: https://github.com/hmrc/bootstrap-play/blob/7a8a302b63cda07119f13ec21ad7ae82a45c966f/bootstrap-common-play-30/src/main/scala/uk/gov/hmrc/play/bootstrap/filters/LoggingFilter.scala#L61-L69
 
