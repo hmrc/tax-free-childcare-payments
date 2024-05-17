@@ -84,18 +84,20 @@ paths:
                 schema:
                   type: object
                   properties:
-                    Correlation-ID:
-                      format: uuid
-                      type: string
-                      description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                      example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
                     child_full_name:
                       type: string
                       description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
                       example: Full Name
           "400":
             description: Bad request
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -106,7 +108,14 @@ paths:
                         errorDescription: "Request data is invalid or missing"
           "401":
             description: Unauthorised
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -117,7 +126,14 @@ paths:
                         errorDescription: "Invalid authentication credentials"
           "403":
             description: Forbidden
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -128,7 +144,14 @@ paths:
                         errorDescription: "The requested action is not supported"
           "429":
             description: Too many requests
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -139,7 +162,14 @@ paths:
                         errorDescription: "Too many requests have been submitted"
           "500":
             description: Internal server error
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -150,7 +180,14 @@ paths:
                         errorDescription: "The server encountered an error and couldn't process the request"
             "504":
               description: Gateway timeout
-              content:
+              headers:
+                Correlation-ID:
+                  schema:
+                    format: uuid
+                    type: string
+                    description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                    example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+              content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -253,7 +290,14 @@ paths:
                       description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in.
           "400":
             description: Bad request
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -264,7 +308,14 @@ paths:
                         errorDescription: "Request data is invalid or missing"
           "401":
             description: Unauthorised
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -275,7 +326,14 @@ paths:
                         errorDescription: "Invalid authentication credentials"
           "403":
             description: Forbidden
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -286,7 +344,14 @@ paths:
                         errorDescription: "The requested action is not supported"
           "429":
             description: Too many requests
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -297,7 +362,14 @@ paths:
                         errorDescription: "Too many requests have been submitted"
           "500":
             description: Internal server error
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -306,17 +378,24 @@ paths:
                       value:
                         errorCode: INTERNAL_SERVER_ERROR
                         errorDescription: "The server encountered an error and couldn't process the request"
-            "504":
-              description: Gateway timeout
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    gateway_timeout:
-                      value:
-                        errorCode: GATEWAY_TIMEOUT
-                        errorDescription: "The server is taking too long to respond. Please try again later" 
+          "504":
+            description: Gateway timeout
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/errorResponse'
+                examples:
+                  gateway_timeout:
+                    value:
+                      errorCode: GATEWAY_TIMEOUT
+                      errorDescription: "The server is taking too long to respond. Please try again later" 
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -392,10 +471,17 @@ paths:
                     estimated_payment_date:
                       type: string
                       description: The estimated date the payment will leave the child's TFC account. This is used for audit purposes and to give childcare providers an expectation of when they will receive funds.
-                      example: YYYY-MM-DD
+                      example: YYYY-MM-DD          
           "400":
             description: Bad request
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -406,7 +492,14 @@ paths:
                         errorDescription: "Request data is invalid or missing"
           "401":
             description: Unauthorised
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -417,7 +510,14 @@ paths:
                         errorDescription: "Invalid authentication credentials"
           "403":
             description: Forbidden
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -425,10 +525,17 @@ paths:
                     forbidden:
                       value:
                         errorCode: FORBIDDEN
-                        errorDescription: "This request is not authorised"
+                        errorDescription: "The requested action is not supported"
           "429":
             description: Too many requests
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -439,7 +546,14 @@ paths:
                         errorDescription: "Too many requests have been submitted"
           "500":
             description: Internal server error
-            content:
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
                 application/json:
                   schema:
                     $ref: '#/components/schemas/errorResponse'
@@ -448,17 +562,24 @@ paths:
                       value:
                         errorCode: INTERNAL_SERVER_ERROR
                         errorDescription: "The server encountered an error and couldn't process the request"
-            "504":
-              description: Gateway timeout
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    gateway_timeout:
-                      value:
-                        errorCode: GATEWAY_TIMEOUT
-                        errorDescription: "The server is taking too long to respond. Please try again later"
+          "504":
+            description: Gateway timeout
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"200":
+            content: 
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/errorResponse'
+                examples:
+                  gateway_timeout:
+                    value:
+                      errorCode: GATEWAY_TIMEOUT
+                      errorDescription: "The server is taking too long to respond. Please try again later" 
       security:
         - user-restricted:
           - tax-free-childcare-payments
