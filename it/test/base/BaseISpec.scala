@@ -16,16 +16,13 @@
 
 package base
 
-import org.scalatest.Assertion
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.http.{HeaderNames, Status}
-import play.api.libs.json.Json
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
-import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 
-class BaseISpec
+abstract class BaseISpec
     extends BaseSpec
     with WireMockSupport
     with ScalaFutures
@@ -34,10 +31,16 @@ class BaseISpec
     with WsTestClient
     with HeaderNames
     with Status {
+
   import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
   import com.github.tomakehurst.wiremock.stubbing.StubMapping
+  import org.scalatest.Assertion
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
+  import play.api.libs.json.Json
+  import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
+
+  import scala.util.matching.Regex
 
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder().configure(
@@ -57,6 +60,9 @@ class BaseISpec
   protected def expectAuthNinoRetrieval: StubMapping = stubFor(
     post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
   )
+
+  protected lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
+    raw"^\[Error] - \[([^]]+)] - \[([^:]+): ([^]]+)]$$".r
 
   protected lazy val EXPECTED_JSON_ERROR_RESPONSE: ErrorResponse = ErrorResponse(
     statusCode = BAD_REQUEST,
