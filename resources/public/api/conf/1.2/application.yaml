@@ -95,6 +95,13 @@ paths:
                       example: Full Name
           "400":
             description: Bad request
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -106,6 +113,13 @@ paths:
                         errorDescription: "Request data is invalid or missing"
           "401":
             description: Unauthorised
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -117,6 +131,13 @@ paths:
                         errorDescription: "Invalid authentication credentials"
           "403":
             description: Forbidden
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -128,6 +149,20 @@ paths:
                         errorDescription: "The requested action is not supported"
           "429":
             description: Too many requests
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -139,6 +174,13 @@ paths:
                         errorDescription: "Too many requests have been submitted"
           "500":
             description: Internal server error
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -150,6 +192,13 @@ paths:
                         errorDescription: "The server encountered an error and couldn't process the request"
           "504":
             description: Gateway timeout
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
               application/json:
                 schema:
@@ -253,6 +302,13 @@ paths:
                       description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in.
           "400":
             description: Bad request
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -264,6 +320,13 @@ paths:
                         errorDescription: "Request data is invalid or missing"
           "401":
             description: Unauthorised
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -275,6 +338,13 @@ paths:
                         errorDescription: "Invalid authentication credentials"
           "403":
             description: Forbidden
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -286,6 +356,13 @@ paths:
                         errorDescription: "The requested action is not supported"
           "429":
             description: Too many requests
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -297,6 +374,13 @@ paths:
                         errorDescription: "Too many requests have been submitted"
           "500":
             description: Internal server error
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -308,6 +392,13 @@ paths:
                         errorDescription: "The server encountered an error and couldn't process the request"
           "504":
             description: Gateway timeout
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
               application/json:
                 schema:
@@ -395,6 +486,13 @@ paths:
                       example: YYYY-MM-DD
           "400":
             description: Bad request
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -406,6 +504,13 @@ paths:
                         errorDescription: "Request data is invalid or missing"
           "401":
             description: Unauthorised
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -417,6 +522,13 @@ paths:
                         errorDescription: "Invalid authentication credentials"
           "403":
             description: Forbidden
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -428,6 +540,13 @@ paths:
                         errorDescription: "This request is not authorised"
           "429":
             description: Too many requests
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -439,6 +558,13 @@ paths:
                         errorDescription: "Too many requests have been submitted"
           "500":
             description: Internal server error
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
@@ -450,6 +576,13 @@ paths:
                         errorDescription: "The server encountered an error and couldn't process the request"
           "504":
             description: Gateway timeout
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
               application/json:
                 schema:
