@@ -156,13 +156,6 @@ paths:
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
                   example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
             content:
                 application/json:
                   schema:
