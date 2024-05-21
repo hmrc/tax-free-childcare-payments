@@ -18,8 +18,8 @@ package config
 
 import base.BaseISpec
 import ch.qos.logback.classic.Level
-import org.scalatest.{Assertion, LoneElement}
 import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatest.{Assertion, LoneElement}
 import play.api.Logger
 import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
@@ -39,11 +39,12 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
 
     val expectedCorrelationId = UUID.randomUUID().toString
 
-    val linkEndpoint = s"POST $resourcePath/link"
+    val linkEndpoint    = s"POST $resourcePath/link"
     val balanceEndpoint = s"POST $resourcePath/balance"
     val paymentEndpoint = s"POST $resourcePath/"
 
     linkEndpoint should {
+
       /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
@@ -53,7 +54,7 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
             val res = wsClient
               .url(s"$baseUrl/link")
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId
               )
               .post(linkRequest)
@@ -76,7 +77,8 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
           val res = wsClient
             .url(s"$baseUrl/link")
             .withHttpHeaders(
-              AUTHORIZATION -> "Bearer qwertyuiop"
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId
             )
             .post(linkRequest)
             .futureValue
@@ -87,7 +89,6 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
         }
       }
     }
-
 
     balanceEndpoint should {
 
@@ -100,7 +101,8 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
             val res = wsClient
               .url(s"$baseUrl/balance")
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop"
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId
               )
               .post(checkBalanceRequest)
               .futureValue
@@ -113,7 +115,8 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
       }
     }
 
-     paymentEndpoint should {
+    paymentEndpoint should {
+
       /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
@@ -123,7 +126,7 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
             val res = wsClient
               .url(s"$baseUrl/")
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId
               )
               .post(makePaymentRequest)
@@ -142,7 +145,7 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
       s"respond with $NOT_FOUND and a JSON ErrorResponse" in {
         val res = wsClient
           .url(s"$baseUrl/knil")
-          .withHttpHeaders(AUTHORIZATION  -> "Bearer qwertyuiop")
+          .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
           .get()
           .futureValue
 

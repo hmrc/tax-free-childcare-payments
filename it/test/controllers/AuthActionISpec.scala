@@ -58,7 +58,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
           val invalidUuid = "asdfghkj"
 
           s"request header $CORRELATION_ID is not a valid UUID" in
-            expect400With(endpoint, invalidUuid, "Invalid UUID string: $invalidUuid") {
+            expect400With(endpoint, invalidUuid, s"Invalid UUID string: $invalidUuid") {
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
@@ -71,7 +71,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
           val validCorrelationId = UUID.randomUUID().toString
 
           s"Auth service does not return a nino" in
-            expect400With(validCorrelationId, endpoint, "Unable to retrieve NI number") {
+            expect400With(endpoint, validCorrelationId, "Unable to retrieve NI number") {
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(

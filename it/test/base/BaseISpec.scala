@@ -62,7 +62,7 @@ abstract class BaseISpec
   )
 
   protected lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
-    raw"^\[Error] - \[([^]]+)] - \[([^:]+): ([^]]+)]$$".r
+    raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
 
   protected lazy val EXPECTED_JSON_ERROR_RESPONSE: ErrorResponse = ErrorResponse(
     statusCode = BAD_REQUEST,
