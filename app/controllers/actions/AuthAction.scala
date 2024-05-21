@@ -61,14 +61,14 @@ class AuthAction @Inject() (
             }
 
           case Left(errorMessage) => Future.successful {
-            val fullMessage = s"<${optCorrelationIdHeader.orNull}> $errorMessage"
+              val fullMessage = s"<${optCorrelationIdHeader.orNull}> $errorMessage"
 
               logger.info(fullMessage)
 
-            BadRequest(Json.toJson(
-              ErrorResponse(BAD_REQUEST, fullMessage)
-            ))
-          }
+              BadRequest(Json.toJson(
+                ErrorResponse(BAD_REQUEST, fullMessage)
+              ))
+            }
         }
       }
   }
