@@ -48,7 +48,7 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
       /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
-          spec in withAuthNinoRetrievalExpectLog(linkEndpoint, expectedCorrelationId) {
+          spec in withAuthNinoRetrievalExpectLog("link", expectedCorrelationId) {
             val linkRequest = randomLinkRequestJson + (field, JsString(badValue))
 
             val res = wsClient
@@ -66,7 +66,7 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
           }
         }
 
-        s"child DOB is invalid" in withAuthNinoRetrievalExpectLog(linkEndpoint, expectedCorrelationId) {
+        s"child DOB is invalid" in withAuthNinoRetrievalExpectLog("link", expectedCorrelationId) {
           val linkRequest = Json.obj(
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
@@ -95,7 +95,7 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
       /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
-          spec in withAuthNinoRetrievalExpectLog(balanceEndpoint, expectedCorrelationId) {
+          spec in withAuthNinoRetrievalExpectLog("balance", expectedCorrelationId) {
             val checkBalanceRequest = randomSharedJson + (field, JsString(badValue))
 
             val res = wsClient
@@ -120,7 +120,7 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
       /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
-          spec in withAuthNinoRetrievalExpectLog(paymentEndpoint, expectedCorrelationId) {
+          spec in withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId) {
             val makePaymentRequest = randomPaymentRequestJson + (field, JsString(badValue))
 
             val res = wsClient
