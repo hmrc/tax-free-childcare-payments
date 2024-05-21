@@ -18,13 +18,13 @@ package util
 
 import play.api.Logging
 import play.api.mvc.RequestHeader
-import util.FormattedLogging.CORRELATION_ID
 
 trait FormattedLogging extends Logging {
+  import util.FormattedLogging.{endpoints, CORRELATION_ID}
 
   def formattedLog(msg: String)(implicit req: RequestHeader): String = {
 
-    val endpoint      = s"${req.method} ${req.uri}"
+    val endpoint      = endpoints.getOrElse(req.uri, s"${req.method} ${req.uri}")
     val correlationId = req.headers.get(CORRELATION_ID).orNull
 
     s"[Error] - [$endpoint] - [$correlationId: $msg]"
@@ -33,4 +33,12 @@ trait FormattedLogging extends Logging {
 
 object FormattedLogging {
   val CORRELATION_ID = "Correlation-ID"
+
+  private val resourcePath = "/individuals/tax-free-childcare/payments"
+
+  private val endpoints = Map(
+    s"$resourcePath/link"    -> "link",
+    s"$resourcePath/balance" -> "balance",
+    s"$resourcePath/"        -> "payment"
+  )
 }
