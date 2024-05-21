@@ -37,17 +37,25 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
       ("payment ref is invalid", "outbound_child_payment_ref", "I am a bad payment reference.")
     )
 
-    s"POST $resourcePath/link" should {
+    val expectedCorrelationId = UUID.randomUUID().toString
 
+    val linkEndpoint = s"POST $resourcePath/link"
+    val balanceEndpoint = s"POST $resourcePath/balance"
+    val paymentEndpoint = s"POST $resourcePath/"
+
+    linkEndpoint should {
       /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
-          spec in withAuthNinoRetrievalExpectLog {
+          spec in withAuthNinoRetrievalExpectLog(linkEndpoint, expectedCorrelationId) {
             val linkRequest = randomLinkRequestJson + (field, JsString(badValue))
 
             val res = wsClient
               .url(s"$baseUrl/link")
-              .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId
+              )
               .post(linkRequest)
               .futureValue
 
@@ -57,7 +65,7 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
           }
         }
 
-        s"child DOB is invalid" in withAuthNinoRetrievalExpectLog {
+        s"child DOB is invalid" in withAuthNinoRetrievalExpectLog(linkEndpoint, expectedCorrelationId) {
           val linkRequest = Json.obj(
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
@@ -67,7 +75,9 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
 
           val res = wsClient
             .url(s"$baseUrl/link")
-            .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+            .withHttpHeaders(
+              AUTHORIZATION -> "Bearer qwertyuiop"
+            )
             .post(linkRequest)
             .futureValue
 
@@ -78,17 +88,20 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
       }
     }
 
-    s"POST $resourcePath/balance" should {
+
+    balanceEndpoint should {
 
       /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
-          spec in withAuthNinoRetrievalExpectLog {
+          spec in withAuthNinoRetrievalExpectLog(balanceEndpoint, expectedCorrelationId) {
             val checkBalanceRequest = randomSharedJson + (field, JsString(badValue))
 
             val res = wsClient
               .url(s"$baseUrl/balance")
-              .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop"
+              )
               .post(checkBalanceRequest)
               .futureValue
 
@@ -100,17 +113,19 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
       }
     }
 
-    s"POST $resourcePath/" should {
-
+     paymentEndpoint should {
       /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
-          spec in withAuthNinoRetrievalExpectLog {
+          spec in withAuthNinoRetrievalExpectLog(paymentEndpoint, expectedCorrelationId) {
             val makePaymentRequest = randomPaymentRequestJson + (field, JsString(badValue))
 
             val res = wsClient
               .url(s"$baseUrl/")
-              .withHttpHeaders(AUTHORIZATION -> "Bearer qwertyuiop")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId
+              )
               .post(makePaymentRequest)
               .futureValue
 
@@ -127,10 +142,7 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
       s"respond with $NOT_FOUND and a JSON ErrorResponse" in {
         val res = wsClient
           .url(s"$baseUrl/knil")
-          .withHttpHeaders(
-            AUTHORIZATION  -> "Bearer qwertyuiop",
-            CORRELATION_ID -> UUID.randomUUID().toString
-          )
+          .withHttpHeaders(AUTHORIZATION  -> "Bearer qwertyuiop")
           .get()
           .futureValue
 
@@ -140,7 +152,12 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
       }
     }
 
-    def withAuthNinoRetrievalExpectLog(doTest: => Assertion): Unit = {
+    def withAuthNinoRetrievalExpectLog(
+        expectedEndpoint: String,
+        expectedCorrelationId: String
+      )(
+        doTest: => Assertion
+      ): Unit = {
       withCaptureOfLoggingFrom(
         Logger(classOf[CustomJsonErrorHandler])
       ) { logs =>
@@ -150,7 +167,14 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
 
         val log = logs.loneElement
         log.getLevel shouldBe Level.INFO
-        log.getMessage should startWith("Json validation error")
+        log.getMessage match {
+          case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
+            loggedEndpoint shouldBe expectedEndpoint
+            loggedCorrelationId shouldBe expectedCorrelationId
+            loggedMessage should startWith("Json validation error")
+
+          case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
+        }
       }
     }
   }
