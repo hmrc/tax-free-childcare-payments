@@ -17,15 +17,15 @@
 package controllers.actions
 
 import models.requests.IdentifierRequest
-import play.api.Logging
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import util.FormattedLogging
+import util.FormattedLogging.CORRELATION_ID
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -37,19 +37,23 @@ class AuthAction @Inject() (
     val authConnector: AuthConnector,
     val parser: BodyParsers.Default
   )(implicit val executionContext: ExecutionContext
-  ) extends ActionBuilder[IdentifierRequest, AnyContent] with AuthorisedFunctions with Logging with Results with Status {
+  ) extends ActionBuilder[IdentifierRequest, AnyContent]
+    with BackendHeaderCarrierProvider
+    with AuthorisedFunctions
+    with FormattedLogging
+    with Results
+    with Status {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
-
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+    implicit val req: Request[A] = request
 
     authorised(ConfidenceLevel.L250)
       .retrieve(Retrievals.nino) { optNino =>
         val optCorrelationIdHeader = request.headers get CORRELATION_ID
         val optIdentifierRequest   = for {
-          correlationIdHeader <- optCorrelationIdHeader toRight s"Missing $CORRELATION_ID header."
+          correlationIdHeader <- optCorrelationIdHeader toRight s"Missing $CORRELATION_ID header"
           correlationId       <- Try(UUID fromString correlationIdHeader).toEither.left.map(_.getMessage)
-          nino                <- optNino toRight "Unable to retrieve NI number."
+          nino                <- optNino toRight "Unable to retrieve NI number"
         } yield IdentifierRequest(nino, correlationId, request)
 
         optIdentifierRequest match {
@@ -61,17 +65,14 @@ class AuthAction @Inject() (
             }
 
           case Left(errorMessage) => Future.successful {
-              val fullMessage = s"<${optCorrelationIdHeader.orNull}> $errorMessage"
 
-              logger.info(fullMessage)
+              logger.info(formattedLog(errorMessage))
 
               BadRequest(Json.toJson(
-                ErrorResponse(BAD_REQUEST, fullMessage)
+                ErrorResponse(BAD_REQUEST, errorMessage)
               ))
             }
         }
       }
   }
-
-  private val CORRELATION_ID = "Correlation-ID"
 }

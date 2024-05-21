@@ -16,13 +16,14 @@
 
 package config
 
-import play.api.{Configuration, Logging}
+import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc.{RequestHeader, Result, Results}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.http.{ErrorResponse, JsonErrorHandler}
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
+import util.FormattedLogging
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,11 +34,12 @@ class CustomJsonErrorHandler @Inject() (
     httpAuditEvent: HttpAuditEvent,
     configuration: Configuration
   )(implicit ec: ExecutionContext
-  ) extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) with Results with Status with Logging {
+  ) extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) with Results with Status with FormattedLogging {
 
-  override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
+  override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] =
     if (statusCode == BAD_REQUEST && (message startsWith "Json validation error")) {
-      logger.info(message)
+
+      logger.info(formattedLog(message)(request))
 
       Future.successful(
         BadRequest(
@@ -50,5 +52,4 @@ class CustomJsonErrorHandler @Inject() (
         )
       )
     } else super.onClientError(request, statusCode, message)
-  }
 }
