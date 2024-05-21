@@ -56,19 +56,22 @@ paths:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
                   type: string
                   example: 12345678901
+                  pattern: ^[0-9]{11}$
                 epp_reg_reference:
                   description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
                   type: string
                   example: 1a2b3c4d5e6f7g8h
+                  pattern: ^[0-9a-zA-Z]{16}$
                 outbound_child_payment_ref:
                   description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
                   type: string
                   example: ABCD12345TFC
+                  pattern: ^([A-Z]{4})([0-9]{5})TFC$
                 child_date_of_birth:
                   description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
                   type: string
                   example: YYYY-MM-DD
-
+                  pattern: ^\d{4}-\d{2}-\d{2}$
       responses:
           "200":
             description: Confirmation that a link has been established
@@ -84,11 +87,6 @@ paths:
                 schema:
                   type: object
                   properties:
-                    Correlation-ID:
-                      format: uuid
-                      type: string
-                      description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                      example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
                     child_full_name:
                       type: string
                       description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
@@ -239,19 +237,23 @@ paths:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
                   type: string
                   example: 12345678901
+                  pattern: ^[0-9]{11}$
                 epp_reg_reference:
                   description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
                   type: string
                   example: 1a2b3c4d5e6f7g8h
+                  pattern: ^[0-9a-zA-Z]{16}$
                 outbound_child_payment_ref:
                   description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
                   type: string
                   example: ABCD12345TFC
+                  pattern: ^([A-Z]{4})([0-9]{5})TFC$
                 child_date_of_birth:
                   format: date
                   description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
                   type: string
                   example: YYYY-MM-DD
+                  pattern: ^\d{4}-\d{2}-\d{2}$
       responses:
           "200":
             description: The TFC account balance is returned
@@ -267,10 +269,6 @@ paths:
                 schema:
                   type: object
                   properties:
-                    Correlation-ID:
-                      type: string
-                      description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the EPP.
-                      example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
                     tfc_account_status:
                       type: string
                       description: The status of the child's TFC account. Indicates whether the account is active or not.
@@ -281,18 +279,23 @@ paths:
                     paid_in_by_you:
                       type: string
                       description: The amount of money paid in to the child's TFC account by the parent or guardian.
+                      pattern: ^-?£(?:0|[1-9]\d{0,2}(?:,?\d{3})*)(?:\.\d+)?$
                     government_top_up:
                       type: string
                       description: The amount paid in by the government, this amount has cleared and is available to the parent or guardian.
+                      pattern: ^-?£(?:0|[1-9]\d{0,2}(?:,?\d{3})*)(?:\.\d+)?$
                     total_balance:
                       type: string
                       description: The sum of paid_in_by_you and government_top_up, this is the total amount paid into the account.
+                      pattern: ^-?£(?:0|[1-9]\d{0,2}(?:,?\d{3})*)(?:\.\d+)?$
                     cleared_funds:
                       type: string
                       description: The total amount of money available to the parent or guardian to use to make payments to childcare providers. This is equal to total_balance minus any uncleared funds from paid_in_by_you.
+                      pattern: ^-?£(?:0|[1-9]\d{0,2}(?:,?\d{3})*)(?:\.\d+)?$
                     top_up_allowance:
                       type: string
                       description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in.
+                      pattern: ^-?£(?:0|[1-9]\d{0,2}(?:,?\d{3})*)(?:\.\d+)?$
           "400":
             description: Bad request
             headers:
@@ -434,21 +437,27 @@ paths:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
                   type: string
                   example: 12345678901
+                  pattern: ^[0-9]{11}$
                 epp_reg_reference:
                   description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
                   type: string
                   example: 1a2b3c4d5e6f7g8h
+                  pattern: ^[0-9a-zA-Z]{16}$
                 payment_amount:
                   description: The amount of money the parent or guardian wants to pay the childcare provider from their TFC balance.
                   type: string
                   example: £1234.56
+                  pattern: ^-?£(?:0|[1-9]\d{0,2}(?:,?\d{3})*)(?:\.\d+)?$
                 ccp_reg_reference:
                   description: The unique reference number given to the childcare provider by the childcare regulator (e.g. Ofsted). The online payment provider needs to provide this to HMRC. 
                   type: string
+                  example: RP123456
+                  pattern: ^RP([0-9]{6})|([0-9]{7})$
                 ccp_postcode:
                   description: The postcode associated with the childcare provider, this enables further verification.
                   type: string
                   example: AB12 3CD
+                  pattern: ^([A-Z][A-HJ-Y]?[0-9][A-Z0-9]? ?[0-9][A-Z]{2})$
                 payee_type:
                   description: The initial recipient of the funds from the child's TFC account. Depending on the online payment provider's policies, payment may initially go to the childcare provider directly or to the online payment provider for initial processing. There are two options, CCP for the childcare provider and EPP for the online payment provider.
                   type: string
@@ -477,6 +486,7 @@ paths:
                       type: string
                       description: The estimated date the payment will leave the child's TFC account. This is used for audit purposes and to give childcare providers an expectation of when they will receive funds.
                       example: YYYY-MM-DD
+                      pattern: ^\d{4}-\d{2}-\d{2}$
           "400":
             description: Bad request
             headers:
