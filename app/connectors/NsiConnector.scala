@@ -33,6 +33,7 @@ class NsiConnector @Inject() (
     servicesConfig: ServicesConfig
   )(implicit ec: ExecutionContext
   ) extends BackendHeaderCarrierProvider {
+  import uk.gov.hmrc.http.HttpReads.Implicits._
 
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[LinkResponse] =
     httpClient

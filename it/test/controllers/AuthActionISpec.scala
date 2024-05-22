@@ -33,18 +33,20 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
 
   withClient { wsClient =>
     val resources = Table(
-      "URL"                    -> "Valid Payload",
-      s"$resourcePath/link"    -> randomLinkRequestJson,
-      s"$resourcePath/balance" -> randomSharedJson,
-      s"$resourcePath/"        -> randomPaymentRequestJson
+      ("Endpoint Name", "URL", "Valid Payload"),
+      ("link", s"$resourcePath/link", randomLinkRequestJson),
+      ("balance", s"$resourcePath/balance", randomSharedJson),
+      ("payment", s"$resourcePath/", randomPaymentRequestJson)
     )
 
     /** Covers `case None` of [[controllers.actions.AuthAction.invokeBlock().]] */
-    forAll(resources) { (resource, payload) =>
-      s"POST $resource" should {
+    forAll(resources) { (endpointName, resource, payload) =>
+      val endpoint = s"POST $resource"
+
+      endpoint should {
         s"respond $BAD_REQUEST and give expected error message" when {
           s"request header $CORRELATION_ID is missing" in
-            expect400With("<null> Missing Correlation-ID header.") {
+            expect400With(endpointName, "null", "Missing Correlation-ID header") {
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
@@ -56,7 +58,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
           val invalidUuid = "asdfghkj"
 
           s"request header $CORRELATION_ID is not a valid UUID" in
-            expect400With(s"<$invalidUuid> Invalid UUID string: $invalidUuid") {
+            expect400With(endpointName, invalidUuid, s"Invalid UUID string: $invalidUuid") {
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
@@ -69,7 +71,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
           val validCorrelationId = UUID.randomUUID().toString
 
           s"Auth service does not return a nino" in
-            expect400With(s"<$validCorrelationId> Unable to retrieve NI number.") {
+            expect400With(endpointName, validCorrelationId, "Unable to retrieve NI number") {
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
@@ -82,7 +84,13 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
       }
     }
 
-    def expect400With(expectedErrorMessage: String)(block: Future[WSRequest#Self#Response]): Unit =
+    def expect400With(
+        expectedEndpoint: String,
+        expectedCorrelationId: String,
+        expectedErrorMessage: String
+      )(
+        block: Future[WSRequest#Self#Response]
+      ): Unit =
       withCaptureOfLoggingFrom(Logger(classOf[AuthAction])) { logs =>
         stubFor(
           post("/auth/authorise") willReturn okJson("{}")
@@ -100,7 +108,14 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
         val log = logs.last
 
         log.getLevel shouldBe Level.INFO
-        log.getMessage shouldBe expectedErrorMessage
+        log.getMessage match {
+          case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
+            loggedEndpoint shouldBe expectedEndpoint
+            loggedCorrelationId shouldBe expectedCorrelationId
+            loggedMessage shouldBe expectedErrorMessage
+
+          case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
+        }
       }
   }
 }
