@@ -127,42 +127,6 @@ paths:
                       value:
                         errorCode: UNAUTHORISED
                         errorDescription: "Invalid authentication credentials"
-          "403":
-            description: Forbidden
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    forbidden:
-                      value:
-                        errorCode: FORBIDDEN
-                        errorDescription: "The requested action is not supported"
-          "429":
-            description: Too many requests
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    too_many_requests:
-                      value:
-                        errorCode: TOO_MANY_REQUESTS
-                        errorDescription: "Too many requests have been submitted"
           "500":
             description: Internal server error
             headers:
@@ -181,24 +145,6 @@ paths:
                       value:
                         errorCode: INTERNAL_SERVER_ERROR
                         errorDescription: "The server encountered an error and couldn't process the request"
-          "504":
-            description: Gateway timeout
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
-            content:
-              application/json:
-                schema:
-                    $ref: '#/components/schemas/errorResponse'
-                examples:
-                    gateway_timeout:
-                      value:
-                        errorCode: GATEWAY_TIMEOUT
-                        errorDescription: "The server is taking too long to respond. Please try again later" 
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -332,42 +278,6 @@ paths:
                       value:
                         errorCode: UNAUTHORISED
                         errorDescription: "Invalid authentication credentials"
-          "403":
-            description: Forbidden
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    forbidden:
-                      value:
-                        errorCode: FORBIDDEN
-                        errorDescription: "The requested action is not supported"
-          "429":
-            description: Too many requests
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    too_many_requests:
-                      value:
-                        errorCode: TOO_MANY_REQUESTS
-                        errorDescription: "Too many requests have been submitted"
           "500":
             description: Internal server error
             headers:
@@ -386,24 +296,6 @@ paths:
                       value:
                         errorCode: INTERNAL_SERVER_ERROR
                         errorDescription: "The server encountered an error and couldn't process the request"
-          "504":
-            description: Gateway timeout
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/errorResponse'
-                examples:
-                  gateway_timeout:
-                    value:
-                      errorCode: GATEWAY_TIMEOUT
-                      errorDescription: "The server is taking too long to respond. Please try again later" 
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -523,42 +415,6 @@ paths:
                       value:
                         errorCode: UNAUTHORISED
                         errorDescription: "Invalid authentication credentials"
-          "403":
-            description: Forbidden
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    forbidden:
-                      value:
-                        errorCode: FORBIDDEN
-                        errorDescription: "This request is not authorised"
-          "429":
-            description: Too many requests
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    too_many_requests:
-                      value:
-                        errorCode: TOO_MANY_REQUESTS
-                        errorDescription: "Too many requests have been submitted"
           "500":
             description: Internal server error
             headers:
@@ -577,24 +433,6 @@ paths:
                       value:
                         errorCode: INTERNAL_SERVER_ERROR
                         errorDescription: "The server encountered an error and couldn't process the request"
-          "504":
-            description: Gateway timeout
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/errorResponse'
-                examples:
-                  gateway_timeout:
-                    value:
-                      errorCode: GATEWAY_TIMEOUT
-                      errorDescription: "The server is taking too long to respond. Please try again later"
       security:
         - user-restricted:
           - tax-free-childcare-payments

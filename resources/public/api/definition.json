@@ -11,7 +11,7 @@
         "access": {
           "type": "PUBLIC"
         },
-        "version": "1.1",
+        "version": "1.2",
         "status": "ALPHA",
         "endpointsEnabled": false
       }
