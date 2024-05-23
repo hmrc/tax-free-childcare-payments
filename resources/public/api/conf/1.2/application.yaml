@@ -70,7 +70,7 @@ paths:
                 child_date_of_birth:
                   description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
                   type: string
-                  example: YYYY-MM-DD
+                  example: 2020-01-01
                   pattern: ^\d{4}-\d{2}-\d{2}$
       responses:
           "200":
@@ -198,7 +198,7 @@ paths:
                   format: date
                   description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
                   type: string
-                  example: YYYY-MM-DD
+                  example: 2020-01-01
                   pattern: ^\d{4}-\d{2}-\d{2}$
       responses:
           "200":
@@ -377,7 +377,7 @@ paths:
                     estimated_payment_date:
                       type: string
                       description: The estimated date the payment will leave the child's TFC account. This is used for audit purposes and to give childcare providers an expectation of when they will receive funds.
-                      example: YYYY-MM-DD
+                      example: 2024-01-01
                       pattern: ^\d{4}-\d{2}-\d{2}$
           "400":
             description: Bad request
