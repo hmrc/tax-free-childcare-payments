@@ -44,8 +44,6 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
     val paymentEndpoint = s"POST $resourcePath/"
 
     linkEndpoint should {
-
-      /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
           spec in withAuthNinoRetrievalExpectLog("link", expectedCorrelationId) {
@@ -61,8 +59,7 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
               .futureValue
 
             res.status shouldBe BAD_REQUEST
-            val resBody = res.json.as[ErrorResponse]
-            resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
+            res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
           }
         }
 
@@ -84,15 +81,12 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
             .futureValue
 
           res.status shouldBe BAD_REQUEST
-          val resBody = res.json.as[ErrorResponse]
-          resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
+          res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
       }
     }
 
     balanceEndpoint should {
-
-      /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
           spec in withAuthNinoRetrievalExpectLog("balance", expectedCorrelationId) {
@@ -108,16 +102,13 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
               .futureValue
 
             res.status shouldBe BAD_REQUEST
-            val resBody = res.json.as[ErrorResponse]
-            resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
+            res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
           }
         }
       }
     }
 
     paymentEndpoint should {
-
-      /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
           spec in withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId) {
@@ -133,14 +124,12 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
               .futureValue
 
             res.status shouldBe BAD_REQUEST
-            val resBody = res.json.as[ErrorResponse]
-            resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
+            res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
           }
         }
       }
     }
 
-    /** Covers `else` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
     "GET /knil" should {
       s"respond with $NOT_FOUND and a JSON ErrorResponse" in {
         val res = wsClient
