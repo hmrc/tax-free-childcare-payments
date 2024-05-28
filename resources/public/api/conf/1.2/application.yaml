@@ -142,6 +142,42 @@ paths:
                       value:
                         errorCode: INTERNAL_SERVER_ERROR
                         errorDescription: "The server encountered an error and couldn't process the request"
+          "502":
+            description: Bad gateway
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+            content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorResponse'
+                  examples:
+                    bad_gateway:
+                      value:
+                        errorCode: BAD_GATEWAY
+                        errorDescription: "Bad gateway"
+          "503":
+            description: Service unavailable
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+            content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorResponse'
+                  examples:
+                    service_unavailable:
+                      value:
+                        errorCode: SERVICE_UNAVAILABLE
+                        errorDescription: "The service is currently unavailable"
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -284,6 +320,42 @@ paths:
                       value:
                         errorCode: INTERNAL_SERVER_ERROR
                         errorDescription: "The server encountered an error and couldn't process the request"
+          "502":
+            description: Bad gateway
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+            content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorResponse'
+                  examples:
+                    bad_gateway:
+                      value:
+                        errorCode: BAD_GATEWAY
+                        errorDescription: "Bad gateway"
+          "503":
+            description: Service unavailable
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+            content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorResponse'
+                  examples:
+                    service_unavailable:
+                      value:
+                        errorCode: SERVICE_UNAVAILABLE
+                        errorDescription: "The service is currently unavailable"
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -414,6 +486,42 @@ paths:
                       value:
                         errorCode: INTERNAL_SERVER_ERROR
                         errorDescription: "The server encountered an error and couldn't process the request"
+          "502":
+            description: Bad gateway
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+            content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorResponse'
+                  examples:
+                    bad_gateway:
+                      value:
+                        errorCode: BAD_GATEWAY
+                        errorDescription: "Bad gateway"
+          "503":
+            description: Service unavailable
+            headers:
+              Correlation-ID:
+                schema:
+                  format: uuid
+                  type: string
+                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+            content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorResponse'
+                  examples:
+                    service_unavailable:
+                      value:
+                        errorCode: SERVICE_UNAVAILABLE
+                        errorDescription: "The service is currently unavailable"
       security:
         - user-restricted:
           - tax-free-childcare-payments
