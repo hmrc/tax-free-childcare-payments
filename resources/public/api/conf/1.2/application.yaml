@@ -84,11 +84,6 @@ paths:
                 schema:
                   type: object
                   properties:
-                    Correlation-ID:
-                      format: uuid
-                      type: string
-                      description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                      example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
                     child_full_name:
                       type: string
                       description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
@@ -213,10 +208,6 @@ paths:
                 schema:
                   type: object
                   properties:
-                    Correlation-ID:
-                      type: string
-                      description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the EPP.
-                      example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
                     tfc_account_status:
                       type: string
                       description: The status of the child's TFC account. Indicates whether the account is active or not.
