@@ -20,10 +20,9 @@ import base.BaseISpec
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
 import controllers.actions.AuthAction
-import org.scalatest.Assertion
 import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.Logger
-import play.api.libs.ws.WSRequest
+import play.api.libs.ws.WSResponse
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
@@ -45,81 +44,82 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
       endpoint should {
         s"respond $BAD_REQUEST and give expected error message" when {
           s"request header $CORRELATION_ID is missing" in
-            withEmptyNinoRetrievalAndLogCheck(endpointName, "null", "Missing Correlation-ID header") {
-              val response = wsClient
+            withEmptyNinoRetrievalAndLogCheck(
+              wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
                   AUTHORIZATION -> "Bearer qwertyuiop"
                 )
                 .post(payload)
-                .futureValue
-
-              check(
-                BAD_REQUEST,
-                "BAD_REQUEST",
-                "Correlation-ID header is invalid or missing" ,
-                response
-              )
-            }
+                .futureValue,
+              endpointName,
+              "null",
+              expectedStatus = BAD_REQUEST,
+              expectedCode = "BAD_REQUEST",
+              expectedErrorMessage = "Correlation-ID header is invalid or missing"
+            )
 
           val invalidUuid = "asdfghkj"
 
           s"request header $CORRELATION_ID is not a valid UUID" in
-            withEmptyNinoRetrievalAndLogCheck(endpointName, invalidUuid, s"Invalid UUID string: $invalidUuid") {
-              val response  = wsClient
+            withEmptyNinoRetrievalAndLogCheck(
+              wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> invalidUuid
                 )
                 .post(payload)
-                .futureValue
-
-              check(
-                BAD_REQUEST,
-                "BAD_REQUEST",
-                "Correlation-ID header is invalid or missing" ,
-                response
-              )
-            }
+                .futureValue,
+              expectedEndpoint = endpointName,
+              expectedCorrelationId = invalidUuid,
+              expectedStatus = BAD_REQUEST,
+              expectedCode = "BAD_REQUEST",
+              expectedErrorMessage = "Correlation-ID header is invalid or missing"
+            )
 
           val validCorrelationId = UUID.randomUUID().toString
 
           s"Auth service does not return a nino" in
-            withEmptyNinoRetrievalAndLogCheck(endpointName, validCorrelationId, "Unable to retrieve NI number") {
-              val response = wsClient
+            withEmptyNinoRetrievalAndLogCheck(
+              wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> validCorrelationId
                 )
                 .post(payload)
-                .futureValue
-
-              check(
-                INTERNAL_SERVER_ERROR,
-                "INTERNAL_SERVER_ERROR",
-                "The server encountered an error and couldn't process the request",
-                response
-              )
-            }
+                .futureValue,
+              expectedEndpoint = endpointName,
+              expectedCorrelationId = validCorrelationId,
+              expectedStatus = INTERNAL_SERVER_ERROR,
+              expectedCode = "INTERNAL_SERVER_ERROR",
+              expectedErrorMessage = "Unable to retrieve NI number"
+            )
         }
       }
     }
 
     def withEmptyNinoRetrievalAndLogCheck(
+        response: => WSResponse,
         expectedEndpoint: String,
         expectedCorrelationId: String,
+        expectedStatus: Int,
+        expectedCode: String,
         expectedErrorMessage: String
-      )(
-        doCheck: => Assertion
       ): Unit =
       withCaptureOfLoggingFrom(Logger(classOf[AuthAction])) { logs =>
         stubFor(
           post("/auth/authorise") willReturn okJson("{}")
         )
 
-        doCheck
+        response.status shouldBe expectedStatus
+
+        val actualCode        = (response.json \ "errorCode").as[String]
+        val actualDescription = (response.json \ "errorDescription").as[String]
+
+        actualCode shouldBe expectedCode
+        actualDescription shouldBe expectedErrorMessage
 
         val log = logs.last
 
@@ -133,20 +133,5 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
           case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
         }
       }
-
-    def check(
-               expectedStatus: Int,
-               expectedCode: String,
-               expectedDescription: String,
-               response: WSRequest#Self#Response
-             ): Assertion = {
-      response.status shouldBe expectedStatus
-
-      val actualCode = (response.json \ "errorCode").as[String]
-      val actualDescription = (response.json \ "errorDescription").as[String]
-
-      actualCode shouldBe expectedCode
-      actualDescription shouldBe expectedDescription
-    }
   }
 }

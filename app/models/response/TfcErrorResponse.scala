@@ -16,12 +16,20 @@
 
 package models.response
 
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
+import play.api.mvc.Results.Status
 
-final case class TfcErrorResponse(httpStatus: String, message: String) {
+final case class TfcErrorResponse(statusCode: Int, errorDescription: String) {
 
-  def toJson: JsValue = Json.obj(
-    "errorCode"        -> httpStatus,
-    "errorDescription" -> message
+  def toResult = new Status(statusCode)(Json.obj(
+    "errorCode"        -> statusCodes(statusCode),
+    "errorDescription" -> errorDescription
+  ))
+
+  private val statusCodes = Map(
+    400 -> "BAD_REQUEST",
+    500 -> "INTERNAL_SERVER_ERROR",
+    502 -> "BAD_GATEWAY",
+    503 -> "SERVICE_UNAVAILABLE"
   )
 }

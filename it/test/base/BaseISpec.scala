@@ -39,7 +39,6 @@ abstract class BaseISpec
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
   import play.api.libs.json.Json
-  import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 
   import scala.util.matching.Regex
 

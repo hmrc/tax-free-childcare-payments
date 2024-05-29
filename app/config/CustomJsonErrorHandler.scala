@@ -40,9 +40,7 @@ class CustomJsonErrorHandler @Inject() (
     if (message startsWith "Json validation error") Future.successful {
       logger.info(formattedLog(message)(request))
 
-      BadRequest(
-        TfcErrorResponse("BAD_REQUEST", "Request data is invalid or missing").toJson
-      )
+      TfcErrorResponse(BAD_REQUEST, "Request data is invalid or missing").toResult
     }
     else super.onClientError(request, statusCode, message)
 }
