@@ -19,7 +19,6 @@ package controllers
 import base.BaseISpec
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 
 import java.util.UUID
 
