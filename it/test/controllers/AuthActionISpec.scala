@@ -89,7 +89,7 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
         expectedCorrelationId: String,
         expectedErrorMessage: String
       )(
-        block: Future[WSRequest#Self#Response]
+        block: => Future[WSRequest#Self#Response]
       ): Unit =
       withCaptureOfLoggingFrom(Logger(classOf[AuthAction])) { logs =>
         stubFor(
