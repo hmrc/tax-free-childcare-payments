@@ -25,7 +25,6 @@ import java.util.UUID
 class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
 
   withClient { wsClient =>
-
     /** Covers [[TaxFreeChildcarePaymentsController.link()]] */
     "POST /link" should {
       s"respond with status $OK and correct JSON body" when {
@@ -131,6 +130,66 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
           resCorrelationId shouldBe expectedCorrelationId
           res.json shouldBe expectedResponse
         }
+      }
+    }
+
+    val endpoints = Table(
+      ("Name", "TFC URL", "NSI URL", "Valid Payload"),
+      ("link", s"$resourcePath/link", "/individuals/tax-free-childcare/payments/link", randomLinkRequestJson),
+      ("balance", s"$resourcePath/balance", "/individuals/tax-free-childcare/payments/balance", randomSharedJson),
+      ("payment", s"$resourcePath/", "/individuals/tax-free-childcare/payments/", randomPaymentRequestJson)
+    )
+
+    val nsiErrorScenarios = Table(
+      ("NSI Error Code", "Expected Upstream Status Code", "Expected Error Code", "Expected Error Description"),
+      ("E0000", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      ("E0001", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      ("E0002", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      ("E0003", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      ("E0004", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      ("E0005", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      ("E0006", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      ("E0087", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      ("E0008", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      ("E0009", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      ("E0010", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      ("E0020", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      ("E0021", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      ("E0022", 502, "BAD_GATEWAY", "Bad Gateway"),
+      ("E0024", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      ("E9000", 502, "BAD_GATEWAY", "Bad Gateway"),
+      ("E9999", 502, "BAD_GATEWAY", "Bad Gateway"),
+      ("E0000", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable"),
+      ("E8001", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable")
+    )
+
+    forAll(endpoints) { (_, tfc_url, nsi_url, validPayload) =>
+      s"POST $tfc_url" should forAll(nsiErrorScenarios) {
+        (nsiErrorCode, expectedUpstreamStatusCode, expectedErrorCode, expectedErrorDescription) =>
+          s"respond with status $expectedUpstreamStatusCode, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
+            s"NSI responds with $nsiErrorCode" in withAuthNinoRetrieval {
+              val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
+              stubFor(
+                post(nsi_url) willReturn aResponse().withBody(nsiResponseBody.toString)
+              )
+
+              val response = wsClient
+                .url(s"$domain$tfc_url")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> UUID.randomUUID().toString
+                )
+                .post(validPayload)
+                .futureValue
+
+              val actualErrorCode        = (response.json \ "errorCode").as[String]
+              val actualErrorDescription = (response.json \ "errorDescription").as[String]
+
+              response.status shouldBe expectedUpstreamStatusCode
+              actualErrorCode shouldBe expectedErrorCode
+              actualErrorDescription shouldBe expectedErrorDescription
+            }
+          }
       }
     }
   }

@@ -17,6 +17,7 @@
 package base
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.JsValue
@@ -31,7 +32,8 @@ abstract class BaseISpec
     with GuiceOneServerPerSuite
     with WsTestClient
     with HeaderNames
-    with Status {
+    with Status
+    with TableDrivenPropertyChecks {
 
   import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
   import com.github.tomakehurst.wiremock.stubbing.StubMapping

@@ -20,14 +20,13 @@ import base.BaseISpec
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
 import controllers.actions.AuthAction
-import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.Logger
 import play.api.libs.ws.WSResponse
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
 
-class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogCapturing {
+class AuthActionISpec extends BaseISpec with LogCapturing {
 
   withClient { wsClient =>
     val resources = Table(

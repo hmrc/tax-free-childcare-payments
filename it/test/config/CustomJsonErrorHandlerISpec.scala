@@ -18,7 +18,6 @@ package config
 
 import base.BaseISpec
 import ch.qos.logback.classic.Level
-import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{Assertion, LoneElement}
 import play.api.Logger
 import play.api.libs.json.{JsString, Json}
@@ -27,7 +26,7 @@ import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
 
-class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChecks with LogCapturing with LoneElement {
+class CustomJsonErrorHandlerISpec extends BaseISpec with LogCapturing with LoneElement {
 
   withClient { wsClient =>
     val sharedBadRequestScenarios = Table(
