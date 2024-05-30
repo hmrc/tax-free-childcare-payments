@@ -149,7 +149,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
       ("E0004", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
       ("E0005", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
       ("E0006", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      ("E0087", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      ("E0007", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
       ("E0008", 400, "BAD_REQUEST", "Request data is invalid or missing"),
       ("E0009", 400, "BAD_REQUEST", "Request data is invalid or missing"),
       ("E0010", 400, "BAD_REQUEST", "Request data is invalid or missing"),
@@ -159,7 +159,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
       ("E0024", 400, "BAD_REQUEST", "Request data is invalid or missing"),
       ("E9000", 502, "BAD_GATEWAY", "Bad Gateway"),
       ("E9999", 502, "BAD_GATEWAY", "Bad Gateway"),
-      ("E0000", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable"),
+      ("E8000", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable"),
       ("E8001", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable")
     )
 

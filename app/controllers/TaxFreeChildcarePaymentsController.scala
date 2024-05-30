@@ -16,17 +16,17 @@
 
 package controllers
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
 import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
-import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
-
-import play.api.libs.json.{Json, OWrites, Reads}
+import models.response.NsiErrorResponse.Maybe
+import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
+import play.api.libs.json.{Json, Reads, Writes}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (
@@ -42,10 +42,11 @@ class TaxFreeChildcarePaymentsController @Inject() (
 
   def payment(): Action[PaymentRequest] = messageBrokerAction[PaymentRequest, PaymentResponse](implicit req => nsiConnector.makePayment)
 
-  private def messageBrokerAction[Req: Reads, Res: OWrites](block: IdentifierRequest[Req] => Future[Res]) =
+  private def messageBrokerAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[Maybe[Res]]) =
     identify.async(parse.json[Req]) { request =>
-      block(request) map { response =>
-        Ok(Json.toJson(response))
+      block(request) map {
+        case Left(nsiError)    => TfcErrorResponse(nsiError.reportAs, nsiError.message).toResult
+        case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
       }
     }
 }

@@ -16,17 +16,19 @@
 
 package connectors
 
-import java.net.URL
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
+import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
-
 import play.api.libs.json._
+import uk.gov.hmrc.http.HttpReads
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import java.net.URL
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 @Singleton
 class NsiConnector @Inject() (
@@ -36,26 +38,32 @@ class NsiConnector @Inject() (
   ) extends BackendHeaderCarrierProvider {
   import uk.gov.hmrc.http.HttpReads.Implicits._
 
-  def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[LinkResponse] =
+  private implicit def httpReadsEither[A, B](implicit readsA: HttpReads[A], readsB: HttpReads[B]): HttpReads[Either[B, A]] =
+    (method, url, response) =>
+      Try(readsA.read(method, url, response))
+        .toOption
+        .toRight(readsB.read(method, url, response))
+
+  def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] =
     httpClient
       .post(linkAccountsUrl)
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[LinkRequest])
-      .execute[LinkResponse]
+      .execute[Maybe[LinkResponse]]
 
-  def checkBalance(implicit req: IdentifierRequest[SharedRequestData]): Future[BalanceResponse] =
+  def checkBalance(implicit req: IdentifierRequest[SharedRequestData]): Future[Maybe[BalanceResponse]] =
     httpClient
       .post(checkBalanceUrl)
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[SharedRequestData])
-      .execute[BalanceResponse]
+      .execute[Maybe[BalanceResponse]]
 
-  def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[PaymentResponse] =
+  def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[Maybe[PaymentResponse]] =
     httpClient
       .post(makePaymentUrl)
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[PaymentRequest])
-      .execute[PaymentResponse]
+      .execute[Maybe[PaymentResponse]]
 
   private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]) =
     Json.toJsObject(req.body) + ("nino" -> JsString(req.nino))
