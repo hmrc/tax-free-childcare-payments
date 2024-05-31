@@ -20,15 +20,14 @@ import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRe
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import play.api.libs.json._
-import uk.gov.hmrc.http.HttpReads
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.net.URL
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 @Singleton
 class NsiConnector @Inject() (
@@ -38,11 +37,10 @@ class NsiConnector @Inject() (
   ) extends BackendHeaderCarrierProvider {
   import uk.gov.hmrc.http.HttpReads.Implicits._
 
-  private implicit def httpReadsEither[A, B](implicit readsA: HttpReads[A], readsB: HttpReads[B]): HttpReads[Either[B, A]] =
-    (method, url, response) =>
-      Try(readsA.read(method, url, response))
-        .toOption
-        .toRight(readsB.read(method, url, response))
+  private implicit def httpReadsEither[A: Reads, B: Reads]: HttpReads[Either[B, A]] =
+    HttpReads[HttpResponse].map { response =>
+      response.json.validate[A].asOpt toRight response.json.as[B]
+    }
 
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] =
     httpClient

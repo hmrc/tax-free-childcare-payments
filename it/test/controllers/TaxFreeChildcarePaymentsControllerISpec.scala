@@ -141,37 +141,36 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
     )
 
     val nsiErrorScenarios = Table(
-      ("NSI Error Code", "Expected Upstream Status Code", "Expected Error Code", "Expected Error Description"),
-      ("E0000", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      ("E0001", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      ("E0002", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      ("E0003", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      ("E0004", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      ("E0005", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      ("E0006", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      ("E0007", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      ("E0008", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      ("E0009", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      ("E0010", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      ("E0020", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      ("E0021", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      ("E0022", 502, "BAD_GATEWAY", "Bad Gateway"),
-      ("E0024", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      ("E9000", 502, "BAD_GATEWAY", "Bad Gateway"),
-      ("E9999", 502, "BAD_GATEWAY", "Bad Gateway"),
-      ("E8000", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable"),
-      ("E8001", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable")
+      ("NSI Status Code", "NSI Error Code", "Expected Upstream Status Code", "Expected Error Code", "Expected Error Description"),
+      (400, "E0000", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      (400, "E0001", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      (400, "E0002", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      (400, "E0003", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      (400, "E0004", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      (400, "E0005", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      (400, "E0006", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      (400, "E0007", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      (400, "E0008", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      (400, "E0009", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      (400, "E0010", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      (400, "E0020", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      (400, "E0021", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      (400, "E0022", 502, "BAD_GATEWAY", "Bad Gateway"),
+      (400, "E0024", 400, "BAD_REQUEST", "Request data is invalid or missing"),
+      (500, "E9000", 502, "BAD_GATEWAY", "Bad Gateway"),
+      (500, "E9999", 502, "BAD_GATEWAY", "Bad Gateway"),
+      (503, "E8000", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable"),
+      (503, "E8001", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable")
     )
 
     forAll(endpoints) { (_, tfc_url, nsi_url, validPayload) =>
       s"POST $tfc_url" should forAll(nsiErrorScenarios) {
-        (nsiErrorCode, expectedUpstreamStatusCode, expectedErrorCode, expectedErrorDescription) =>
+        (nsiStatusCode, nsiErrorCode, expectedUpstreamStatusCode, expectedErrorCode, expectedErrorDescription) =>
           s"respond with status $expectedUpstreamStatusCode, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
             s"NSI responds with $nsiErrorCode" in withAuthNinoRetrieval {
               val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
-              stubFor(
-                post(nsi_url) willReturn aResponse().withBody(nsiResponseBody.toString)
-              )
+              val nsiResponse = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
+              stubFor(post(nsi_url) willReturn nsiResponse)
 
               val response = wsClient
                 .url(s"$domain$tfc_url")
