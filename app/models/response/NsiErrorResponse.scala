@@ -30,15 +30,13 @@ object NsiErrorResponse extends Status {
   private case object E0003 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "The server encountered an error and couldn't process the request")
   private case object E0004 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "The server encountered an error and couldn't process the request")
   private case object E0005 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "The server encountered an error and couldn't process the request")
-  private case object E0006 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "The server encountered an error and couldn't process the request")
+  private case object E0006 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway")
   private case object E0007 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "The server encountered an error and couldn't process the request")
-
   private case object E0008 extends NsiErrorResponse(BAD_REQUEST, "Request data is invalid or missing")
   private case object E0009 extends NsiErrorResponse(BAD_REQUEST, "Request data is invalid or missing")
   private case object E0010 extends NsiErrorResponse(BAD_REQUEST, "Request data is invalid or missing")
   private case object E0020 extends NsiErrorResponse(BAD_REQUEST, "Request data is invalid or missing")
   private case object E0021 extends NsiErrorResponse(BAD_REQUEST, "Request data is invalid or missing")
-
   private case object E0022 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway")
   private case object E0024 extends NsiErrorResponse(BAD_REQUEST, "Request data is invalid or missing")
 

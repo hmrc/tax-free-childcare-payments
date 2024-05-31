@@ -25,7 +25,6 @@ import java.util.UUID
 class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
 
   withClient { wsClient =>
-    /** Covers [[TaxFreeChildcarePaymentsController.link()]] */
     "POST /link" should {
       s"respond with status $OK and correct JSON body" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
@@ -58,7 +57,6 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
       }
     }
 
-    /** Covers [[TaxFreeChildcarePaymentsController.balance()]] */
     "POST /balance" should {
       s"respond with status $OK and correct JSON body" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
@@ -96,7 +94,6 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
       }
     }
 
-    /** Covers [[TaxFreeChildcarePaymentsController.payment()]] */
     "POST /" should {
       s"respond $OK" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
@@ -148,7 +145,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
       (400, "E0003", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
       (400, "E0004", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
       (400, "E0005", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      (400, "E0006", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
+      (400, "E0006", 502, "BAD_GATEWAY", "Bad Gateway"),
       (400, "E0007", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
       (400, "E0008", 400, "BAD_REQUEST", "Request data is invalid or missing"),
       (400, "E0009", 400, "BAD_REQUEST", "Request data is invalid or missing"),
@@ -167,7 +164,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
       s"POST $tfc_url" should forAll(nsiErrorScenarios) {
         (nsiStatusCode, nsiErrorCode, expectedUpstreamStatusCode, expectedErrorCode, expectedErrorDescription) =>
           s"respond with status $expectedUpstreamStatusCode, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
-            s"NSI responds with $nsiErrorCode" in withAuthNinoRetrieval {
+            s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in withAuthNinoRetrieval {
               val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
               val nsiResponse = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
               stubFor(post(nsi_url) willReturn nsiResponse)
