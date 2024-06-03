@@ -177,12 +177,11 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
               .post(validPayload)
               .futureValue
 
-            val actualErrorCode = (response.json \ "errorCode").as[String]
-            val actualErrorDescription = (response.json \ "errorDescription").as[String]
-
             response.status shouldBe UNAUTHORIZED
-            actualErrorCode shouldBe "UNAUTHORISED"
-            actualErrorDescription shouldBe "Invalid authentication credentials"
+            response.json shouldBe Json.obj(
+              "errorCode" -> "UNAUTHORISED",
+              "errorDescription" -> "Invalid authentication credentials"
+            )
           }
         }
 
@@ -203,12 +202,11 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
                   .post(validPayload)
                   .futureValue
 
-                val actualErrorCode = (response.json \ "errorCode").as[String]
-                val actualErrorDescription = (response.json \ "errorDescription").as[String]
-
                 response.status shouldBe expectedUpstreamStatusCode
-                actualErrorCode shouldBe expectedErrorCode
-                actualErrorDescription shouldBe expectedErrorDescription
+                response.json shouldBe Json.obj(
+                  "errorCode" -> expectedErrorCode,
+                  "errorDescription" -> expectedErrorDescription
+                )
               }
             }
         }

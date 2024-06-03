@@ -22,12 +22,13 @@ import play.api.mvc.Results.Status
 final case class TfcErrorResponse(statusCode: Int, errorDescription: String) {
 
   def toResult = new Status(statusCode)(Json.obj(
-    "errorCode"        -> statusCodes(statusCode),
+    "errorCode"        -> errorCodes(statusCode),
     "errorDescription" -> errorDescription
   ))
 
-  private val statusCodes = Map(
+  private val errorCodes = Map(
     400 -> "BAD_REQUEST",
+    401 -> "UNAUTHORISED",
     500 -> "INTERNAL_SERVER_ERROR",
     502 -> "BAD_GATEWAY",
     503 -> "SERVICE_UNAVAILABLE"
