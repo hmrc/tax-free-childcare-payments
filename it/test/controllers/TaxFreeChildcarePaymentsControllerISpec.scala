@@ -161,31 +161,57 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
     )
 
     forAll(endpoints) { (_, tfc_url, nsi_url, validPayload) =>
-      s"POST $tfc_url" should forAll(nsiErrorScenarios) {
-        (nsiStatusCode, nsiErrorCode, expectedUpstreamStatusCode, expectedErrorCode, expectedErrorDescription) =>
-          s"respond with status $expectedUpstreamStatusCode, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
-            s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in withAuthNinoRetrieval {
-              val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
-              val nsiResponse = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
-              stubFor(post(nsi_url) willReturn nsiResponse)
+      s"POST $tfc_url" should {
+        s"respond with status $UNAUTHORIZED" when {
+          s"POST /auth/authorise responds $UNAUTHORIZED" in {
+            stubFor(
+              post("/auth/authorise") willReturn unauthorized()
+            )
 
-              val response = wsClient
-                .url(s"$domain$tfc_url")
-                .withHttpHeaders(
-                  AUTHORIZATION  -> "Bearer qwertyuiop",
-                  CORRELATION_ID -> UUID.randomUUID().toString
-                )
-                .post(validPayload)
-                .futureValue
+            val response = wsClient
+              .url(s"$domain$tfc_url")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> UUID.randomUUID().toString
+              )
+              .post(validPayload)
+              .futureValue
 
-              val actualErrorCode        = (response.json \ "errorCode").as[String]
-              val actualErrorDescription = (response.json \ "errorDescription").as[String]
+            val actualErrorCode = (response.json \ "errorCode").as[String]
+            val actualErrorDescription = (response.json \ "errorDescription").as[String]
 
-              response.status shouldBe expectedUpstreamStatusCode
-              actualErrorCode shouldBe expectedErrorCode
-              actualErrorDescription shouldBe expectedErrorDescription
-            }
+            response.status shouldBe UNAUTHORIZED
+            actualErrorCode shouldBe "UNAUTHORISED"
+            actualErrorDescription shouldBe "Invalid authentication credentials"
           }
+        }
+
+        forAll(nsiErrorScenarios) {
+          (nsiStatusCode, nsiErrorCode, expectedUpstreamStatusCode, expectedErrorCode, expectedErrorDescription) =>
+            s"respond with status $expectedUpstreamStatusCode, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
+              s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in withAuthNinoRetrieval {
+                val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
+                val nsiResponse = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
+                stubFor(post(nsi_url) willReturn nsiResponse)
+
+                val response = wsClient
+                  .url(s"$domain$tfc_url")
+                  .withHttpHeaders(
+                    AUTHORIZATION -> "Bearer qwertyuiop",
+                    CORRELATION_ID -> UUID.randomUUID().toString
+                  )
+                  .post(validPayload)
+                  .futureValue
+
+                val actualErrorCode = (response.json \ "errorCode").as[String]
+                val actualErrorDescription = (response.json \ "errorDescription").as[String]
+
+                response.status shouldBe expectedUpstreamStatusCode
+                actualErrorCode shouldBe expectedErrorCode
+                actualErrorDescription shouldBe expectedErrorDescription
+              }
+            }
+        }
       }
     }
   }
