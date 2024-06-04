@@ -28,7 +28,7 @@ tags:
 - name: Check balance
 - name: Make payment
 paths: 
-  /individuals/tax-free-childcare/payments/link/:
+  /individuals/tax-free-childcare/payments/link:
    post:
       tags:
       - Link accounts
@@ -182,7 +182,7 @@ paths:
         - user-restricted:
           - tax-free-childcare-payments
       
-  /individuals/tax-free-childcare/payments/balance/:
+  /individuals/tax-free-childcare/payments/balance:
     post:
       tags:
       - Check balance

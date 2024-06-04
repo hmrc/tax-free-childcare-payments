@@ -16,9 +16,9 @@
 
 package models.requests
 
-import play.api.mvc.{Request, WrappedRequest}
-
 import java.util.UUID
+
+import play.api.mvc.{Request, WrappedRequest}
 
 final case class IdentifierRequest[A](
     nino: String,
