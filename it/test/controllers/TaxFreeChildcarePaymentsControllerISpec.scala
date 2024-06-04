@@ -82,7 +82,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
             .futureValue
 
           res.status shouldBe BAD_REQUEST
-          res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
+          res.body shouldBe EXPECTED_JSON_ERROR_RESPONSE.toString
         }
       }
     }
@@ -156,6 +156,34 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
           res.status shouldBe OK
           resCorrelationId shouldBe expectedCorrelationId
           res.json shouldBe expectedResponse
+        }
+      }
+
+      s"respond with $BAD_REQUEST and generic error message" when {
+        val expectedCorrelationId = UUID.randomUUID()
+
+        s"payment amount is invalid" in withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
+          val invalidPaymentRequest = Json.obj(
+            "epp_unique_customer_id"     -> randomCustomerId,
+            "epp_reg_reference"          -> randomRegistrationRef,
+            "outbound_child_payment_ref" -> randomPaymentRef,
+            "payment_amount"             -> "I am a bad payment reference",
+            "ccp_reg_reference"          -> "qwertyui",
+            "ccp_postcode"               -> "AS12 3DF",
+            "payee_type"                 -> randomPayeeType
+          )
+
+          val res = wsClient
+            .url(s"$baseUrl/")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId.toString
+            )
+            .post(invalidPaymentRequest)
+            .futureValue
+
+          res.status shouldBe BAD_REQUEST
+          res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
       }
     }
