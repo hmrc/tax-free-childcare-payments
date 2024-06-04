@@ -17,12 +17,17 @@
 package controllers
 
 import base.BaseISpec
+import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
-import play.api.libs.json.Json
+import config.CustomJsonErrorHandler
+import org.scalatest.{Assertion, LoneElement}
+import play.api.Logger
+import play.api.libs.json.{JsString, Json}
+import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
 
-class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
+class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturing with LoneElement {
 
   withClient { wsClient =>
     "POST /link" should {
@@ -53,6 +58,31 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
           res.status shouldBe OK
           resCorrelationId shouldBe expectedCorrelationId
           res.json shouldBe expectedResponseJson
+        }
+      }
+
+      s"respond with $BAD_REQUEST and generic error message" when {
+        val expectedCorrelationId = UUID.randomUUID()
+
+        s"child DOB is invalid" in withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+          val linkRequest = Json.obj(
+            "epp_unique_customer_id"     -> randomCustomerId,
+            "epp_reg_reference"          -> randomRegistrationRef,
+            "outbound_child_payment_ref" -> randomPaymentRef,
+            "child_date_of_birth"        -> "I am a bad date string"
+          )
+
+          val res = wsClient
+            .url(s"$baseUrl/link")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId.toString
+            )
+            .post(linkRequest)
+            .futureValue
+
+          res.status shouldBe BAD_REQUEST
+          res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
       }
     }
@@ -160,8 +190,37 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
       (503, "E8001", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable")
     )
 
-    forAll(endpoints) { (_, tfc_url, nsi_url, validPayload) =>
+    val sharedBadRequestScenarios = Table(
+      ("Spec", "Field", "Bad Value"),
+      ("customer ID is invalid", "epp_unique_customer_id", "I am a bad customer ID."),
+      ("registration ref is invalid", "epp_reg_reference", "I am a bad registration reference"),
+      ("payment ref is invalid", "outbound_child_payment_ref", "I am a bad payment reference.")
+    )
+
+    forAll(endpoints) { (name, tfc_url, nsi_url, validPayload) =>
       s"POST $tfc_url" should {
+        s"respond with $BAD_REQUEST and generic error message" when {
+          forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
+            val expectedCorrelationId = UUID.randomUUID().toString
+
+            spec in withAuthNinoRetrievalExpectLog(name, expectedCorrelationId) {
+              val makePaymentRequest = randomPaymentRequestJson + (field, JsString(badValue))
+
+              val res = wsClient
+                .url(s"$domain$tfc_url")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId
+                )
+                .post(makePaymentRequest)
+                .futureValue
+
+              res.status shouldBe BAD_REQUEST
+              res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
+            }
+          }
+        }
+
         s"respond with status $UNAUTHORIZED" when {
           s"POST /auth/authorise responds $UNAUTHORIZED" in {
             stubFor(
@@ -171,7 +230,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
             val response = wsClient
               .url(s"$domain$tfc_url")
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> UUID.randomUUID().toString
               )
               .post(validPayload)
@@ -179,7 +238,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
 
             response.status shouldBe UNAUTHORIZED
             response.json shouldBe Json.obj(
-              "errorCode" -> "UNAUTHORISED",
+              "errorCode"        -> "UNAUTHORISED",
               "errorDescription" -> "Invalid authentication credentials"
             )
           }
@@ -190,13 +249,13 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
             s"respond with status $expectedUpstreamStatusCode, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
               s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in withAuthNinoRetrieval {
                 val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
-                val nsiResponse = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
+                val nsiResponse     = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
                 stubFor(post(nsi_url) willReturn nsiResponse)
 
                 val response = wsClient
                   .url(s"$domain$tfc_url")
                   .withHttpHeaders(
-                    AUTHORIZATION -> "Bearer qwertyuiop",
+                    AUTHORIZATION  -> "Bearer qwertyuiop",
                     CORRELATION_ID -> UUID.randomUUID().toString
                   )
                   .post(validPayload)
@@ -204,12 +263,38 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
 
                 response.status shouldBe expectedUpstreamStatusCode
                 response.json shouldBe Json.obj(
-                  "errorCode" -> expectedErrorCode,
+                  "errorCode"        -> expectedErrorCode,
                   "errorDescription" -> expectedErrorDescription
                 )
               }
             }
         }
+      }
+    }
+  }
+
+  private def withAuthNinoRetrievalExpectLog(
+      expectedEndpoint: String,
+      expectedCorrelationId: String
+    )(
+      doTest: => Assertion
+    ): Unit = {
+    withCaptureOfLoggingFrom(
+      Logger(classOf[CustomJsonErrorHandler])
+    ) { logs =>
+      withAuthNinoRetrieval {
+        doTest
+      }
+
+      val log = logs.loneElement
+      log.getLevel shouldBe Level.INFO
+      log.getMessage match {
+        case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
+          loggedEndpoint shouldBe expectedEndpoint
+          loggedCorrelationId shouldBe expectedCorrelationId
+          loggedMessage should startWith("Json validation error")
+
+        case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
       }
     }
   }
