@@ -16,16 +16,17 @@
 
 package connectors
 
+import java.net.URL
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
+
 import play.api.libs.json._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-
-import java.net.URL
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NsiConnector @Inject() (

@@ -12,8 +12,8 @@
           "type": "PUBLIC"
         },
         "version": "1.2",
-        "status": "BETA",
-        "endpointsEnabled": true
+        "status": "Alpha",
+        "endpointsEnabled": false
       }
     ]
   }
