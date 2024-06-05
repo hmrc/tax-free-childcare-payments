@@ -32,33 +32,32 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
   withClient { wsClient =>
     "POST /link" should {
       s"respond with status $OK and correct JSON body" when {
-        s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
-          val expectedCorrelationId = UUID.randomUUID()
-          val expectedResponseJson  = Json.obj(
-            "child_full_name" -> "Peter Pan"
-          )
 
-          stubFor(
-            post("/tax-free-childcare-payments-nsi-stub/link")
-              .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
-              .willReturn(okJson(expectedResponseJson.toString))
-          )
+        val expectedResponseJson = Json.obj("child_full_name" -> "Peter Pan")
 
-          val res = wsClient
-            .url(s"$baseUrl/link")
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
+        s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in
+          withAuthNinoRetrieval {
+            val expectedCorrelationId = UUID.randomUUID()
+
+            stubFor(
+              post(nsiResource("/link")) willReturn okJson(expectedResponseJson.toString)
             )
-            .post(randomLinkRequestJson)
-            .futureValue
 
-          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
+            val res = wsClient
+              .url(s"$baseUrl/link")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(randomLinkRequestJson)
+              .futureValue
 
-          res.status shouldBe OK
-          resCorrelationId shouldBe expectedCorrelationId
-          res.json shouldBe expectedResponseJson
-        }
+            val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
+
+            res.status shouldBe OK
+            resCorrelationId shouldBe expectedCorrelationId
+            res.json shouldBe expectedResponseJson
+          }
       }
 
       s"respond with $BAD_REQUEST and generic error message" when {
@@ -101,7 +100,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
           )
 
           stubFor(
-            post("/tax-free-childcare-payments-nsi-stub/balance")
+            get(nsiResource("/balance"))
               .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
               .willReturn(okJson(expectedResponse.toString))
           )
@@ -137,7 +136,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
           )
 
           stubFor(
-            post("/tax-free-childcare-payments-nsi-stub/")
+            post(nsiResource("/payments"))
               .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
               .willReturn(okJson(expectedResponse.toString))
           )
@@ -189,10 +188,10 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
     }
 
     val endpoints = Table(
-      ("Name", "TFC URL", "NSI URL", "Valid Payload"),
-      ("link", s"/link", "/tax-free-childcare-payments-nsi-stub/link", randomLinkRequestJson),
-      ("balance", s"/balance", "/tax-free-childcare-payments-nsi-stub/balance", randomSharedJson),
-      ("payment", s"/", "/tax-free-childcare-payments-nsi-stub/", randomPaymentRequestJson)
+      ("Name", "TFC URL", "NSI Mapping", "Valid Payload"),
+      ("link", s"$resourcePath/link", post(nsiResource("/link")), randomLinkRequestJson),
+      ("balance", s"$resourcePath/balance", get(nsiResource("/balance")), randomSharedJson),
+      ("payment", s"$resourcePath/", post(nsiResource("/payments")), randomPaymentRequestJson)
     )
 
     val nsiErrorScenarios = Table(
@@ -225,7 +224,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
       ("payment ref is invalid", "outbound_child_payment_ref", "I am a bad payment reference.")
     )
 
-    forAll(endpoints) { (name, tfc_url, nsi_url, validPayload) =>
+    forAll(endpoints) { (name, tfc_url, nsiMapping, validPayload) =>
       s"POST $tfc_url" should {
         s"respond with $BAD_REQUEST and generic error message" when {
           forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
@@ -235,7 +234,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
               val makePaymentRequest = randomPaymentRequestJson + (field, JsString(badValue))
 
               val res = wsClient
-                .url(s"$baseUrl$tfc_url")
+                .url(s"$domain$tfc_url")
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> expectedCorrelationId
@@ -256,7 +255,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
             )
 
             val response = wsClient
-              .url(s"$baseUrl$tfc_url")
+              .url(s"$domain$tfc_url")
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> UUID.randomUUID().toString
@@ -278,10 +277,10 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
               s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in withAuthNinoRetrieval {
                 val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
                 val nsiResponse     = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
-                stubFor(post(nsi_url) willReturn nsiResponse)
+                stubFor(nsiMapping willReturn nsiResponse)
 
                 val response = wsClient
-                  .url(s"$baseUrl$tfc_url")
+                  .url(s"$domain$tfc_url")
                   .withHttpHeaders(
                     AUTHORIZATION  -> "Bearer qwertyuiop",
                     CORRELATION_ID -> UUID.randomUUID().toString
