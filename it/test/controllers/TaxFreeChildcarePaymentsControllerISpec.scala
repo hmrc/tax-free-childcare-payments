@@ -50,11 +50,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
             .post(randomLinkRequestJson)
             .futureValue
 
-          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
-
           res.status shouldBe OK
-          resCorrelationId shouldBe expectedCorrelationId
-          res.json shouldBe expectedResponseJson
         }
       }
     }

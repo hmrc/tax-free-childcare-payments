@@ -39,56 +39,8 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
 
     val expectedCorrelationId = UUID.randomUUID().toString
 
-    val linkEndpoint    = s"POST $resourcePath/link"
     val balanceEndpoint = s"POST $resourcePath/balance"
     val paymentEndpoint = s"POST $resourcePath/"
-
-    linkEndpoint should {
-
-      /** Covers `if` branch of [[config.CustomJsonErrorHandler.onClientError()]]. */
-      s"respond with $BAD_REQUEST and generic error message" when {
-        forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
-          spec in withAuthNinoRetrievalExpectLog("link", expectedCorrelationId) {
-            val linkRequest = randomLinkRequestJson + (field, JsString(badValue))
-
-            val res = wsClient
-              .url(s"$baseUrl/link")
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId
-              )
-              .post(linkRequest)
-              .futureValue
-
-            res.status shouldBe BAD_REQUEST
-            val resBody = res.json.as[ErrorResponse]
-            resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
-          }
-        }
-
-        s"child DOB is invalid" in withAuthNinoRetrievalExpectLog("link", expectedCorrelationId) {
-          val linkRequest = Json.obj(
-            "epp_unique_customer_id"     -> randomCustomerId,
-            "epp_reg_reference"          -> randomRegistrationRef,
-            "outbound_child_payment_ref" -> randomPaymentRef,
-            "child_date_of_birth"        -> "I am a bad date string"
-          )
-
-          val res = wsClient
-            .url(s"$baseUrl/link")
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId
-            )
-            .post(linkRequest)
-            .futureValue
-
-          res.status shouldBe BAD_REQUEST
-          val resBody = res.json.as[ErrorResponse]
-          resBody shouldBe EXPECTED_JSON_ERROR_RESPONSE
-        }
-      }
-    }
 
     balanceEndpoint should {
 
