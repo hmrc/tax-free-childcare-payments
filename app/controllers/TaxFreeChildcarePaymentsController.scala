@@ -18,12 +18,14 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
-import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
+import models.requests.{IdentifierRequest, PaymentRequest, SharedRequestData}
+import models.response.{BalanceResponse, PaymentResponse}
+
 import play.api.libs.json.{Json, OWrites, Reads}
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 @Singleton()
@@ -34,6 +36,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
   )(implicit ec: ExecutionContext
   ) extends BackendController(cc) {
 
+//  def link(): Action[LinkRequest] = messageBrokerAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
   def link(): Action[AnyContent] = Action.async { implicit request =>
     Future.successful(Ok("Hello from TFCP API"))
   }
