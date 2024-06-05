@@ -35,8 +35,8 @@ abstract class BaseISpec
     with Status
     with TableDrivenPropertyChecks {
 
-  import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
-  import com.github.tomakehurst.wiremock.stubbing.StubMapping
+  import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor, urlMatching}
+  import com.github.tomakehurst.wiremock.matching.UrlPattern
   import org.scalatest.Assertion
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
@@ -55,13 +55,11 @@ abstract class BaseISpec
   protected lazy val baseUrl      = s"$domain$resourcePath"
 
   protected def withAuthNinoRetrieval(check: => Assertion): Assertion = {
-    expectAuthNinoRetrieval
+    stubFor(
+      post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
+    )
     check
   }
-
-  protected def expectAuthNinoRetrieval: StubMapping = stubFor(
-    post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
-  )
 
   protected lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
     raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
@@ -72,4 +70,6 @@ abstract class BaseISpec
   )
 
   protected lazy val CORRELATION_ID = "Correlation-ID"
+
+  protected def nsiResource(path: String): UrlPattern = urlMatching(s"/accounts/v1/account/[0-9a-zA-Z]+$path")
 }
