@@ -20,16 +20,13 @@ import base.BaseISpec
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
 import controllers.actions.AuthAction
-import org.scalatest.prop.TableDrivenPropertyChecks
 import play.api.Logger
-import play.api.libs.json.Json
-import play.api.libs.ws.WSRequest
+import play.api.libs.ws.WSResponse
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
-import scala.concurrent.Future
 
-class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogCapturing {
+class AuthActionISpec extends BaseISpec with LogCapturing {
 
   withClient { wsClient =>
     val resources = Table(
@@ -46,19 +43,25 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
       endpoint should {
         s"respond $BAD_REQUEST and give expected error message" when {
           s"request header $CORRELATION_ID is missing" in
-            expect400With(endpointName, "null", "Missing Correlation-ID header") {
+            withEmptyNinoRetrievalAndLogCheck(
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
                   AUTHORIZATION -> "Bearer qwertyuiop"
                 )
                 .post(payload)
-            }
+                .futureValue,
+              endpointName,
+              "null",
+              expectedStatus = BAD_REQUEST,
+              expectedCode = "BAD_REQUEST",
+              expectedErrorMessage = "Correlation-ID header is invalid or missing"
+            )
 
           val invalidUuid = "asdfghkj"
 
           s"request header $CORRELATION_ID is not a valid UUID" in
-            expect400With(endpointName, invalidUuid, s"Invalid UUID string: $invalidUuid") {
+            withEmptyNinoRetrievalAndLogCheck(
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
@@ -66,12 +69,18 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
                   CORRELATION_ID -> invalidUuid
                 )
                 .post(payload)
-            }
+                .futureValue,
+              expectedEndpoint = endpointName,
+              expectedCorrelationId = invalidUuid,
+              expectedStatus = BAD_REQUEST,
+              expectedCode = "BAD_REQUEST",
+              expectedErrorMessage = "Correlation-ID header is invalid or missing"
+            )
 
           val validCorrelationId = UUID.randomUUID().toString
 
           s"Auth service does not return a nino" in
-            expect400With(endpointName, validCorrelationId, "Unable to retrieve NI number") {
+            withEmptyNinoRetrievalAndLogCheck(
               wsClient
                 .url(domain + resource)
                 .withHttpHeaders(
@@ -79,31 +88,37 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
                   CORRELATION_ID -> validCorrelationId
                 )
                 .post(payload)
-            }
+                .futureValue,
+              expectedEndpoint = endpointName,
+              expectedCorrelationId = validCorrelationId,
+              expectedStatus = INTERNAL_SERVER_ERROR,
+              expectedCode = "INTERNAL_SERVER_ERROR",
+              expectedErrorMessage = "Unable to retrieve NI number"
+            )
         }
       }
     }
 
-    def expect400With(
+    def withEmptyNinoRetrievalAndLogCheck(
+        response: => WSResponse,
         expectedEndpoint: String,
         expectedCorrelationId: String,
+        expectedStatus: Int,
+        expectedCode: String,
         expectedErrorMessage: String
-      )(
-        block: => Future[WSRequest#Self#Response]
       ): Unit =
       withCaptureOfLoggingFrom(Logger(classOf[AuthAction])) { logs =>
         stubFor(
           post("/auth/authorise") willReturn okJson("{}")
         )
 
-        val response             = block.futureValue
-        val expectedResponseBody = Json.obj(
-          "statusCode" -> BAD_REQUEST,
-          "message"    -> expectedErrorMessage
-        )
+        response.status shouldBe expectedStatus
 
-        response.status shouldBe BAD_REQUEST
-        response.json shouldBe expectedResponseBody
+        val actualCode        = (response.json \ "errorCode").as[String]
+        val actualDescription = (response.json \ "errorDescription").as[String]
+
+        actualCode shouldBe expectedCode
+        actualDescription shouldBe expectedErrorMessage
 
         val log = logs.last
 
