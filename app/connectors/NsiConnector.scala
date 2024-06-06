@@ -45,21 +45,20 @@ class NsiConnector @Inject() (
 
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] =
     httpClient
-      .post(linkAccountsUrl)
+      .post(resource(req.body.metadata.outbound_child_payment_ref, "link"))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[LinkRequest])
       .execute[Maybe[LinkResponse]]
 
   def checkBalance(implicit req: IdentifierRequest[SharedRequestData]): Future[Maybe[BalanceResponse]] =
     httpClient
-      .post(checkBalanceUrl)
+      .get(resource(req.body.outbound_child_payment_ref, "balance"))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
-      .withBody(enrichedWithNino[SharedRequestData])
       .execute[Maybe[BalanceResponse]]
 
   def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[Maybe[PaymentResponse]] =
     httpClient
-      .post(makePaymentUrl)
+      .post(resource(req.body.metadata.outbound_child_payment_ref, "payments"))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[PaymentRequest])
       .execute[Maybe[PaymentResponse]]
@@ -69,16 +68,12 @@ class NsiConnector @Inject() (
 
   private val serviceName = "nsi"
 
-  private def getConfig(path: String) = servicesConfig.getString(s"microservice.services.$serviceName.$path")
+  private def resource(accountRef: String, endpoint: String) = {
+    val domain      = servicesConfig.baseUrl(serviceName)
+    val accountPath = servicesConfig.getString(s"microservice.services.$serviceName.path")
 
-  private val baseUrl = {
-    val domain = servicesConfig.baseUrl(serviceName)
-    domain + getConfig("resourcePath")
+    new URL(s"$domain$accountPath/$accountRef/$endpoint")
   }
-
-  private val linkAccountsUrl = new URL(baseUrl + getConfig("resources.link"))
-  private val checkBalanceUrl = new URL(baseUrl + getConfig("resources.balance"))
-  private val makePaymentUrl  = new URL(baseUrl + getConfig("resources.payment"))
 
   private val CORRELATION_ID = "Correlation-ID"
 }
