@@ -23,6 +23,7 @@ import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.requests.{IdentifierRequest, PaymentRequest, SharedRequestData}
 import models.response.{BalanceResponse, PaymentResponse}
+import util.FormattedLogging
 
 import play.api.libs.json.{Json, OWrites, Reads}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
@@ -34,10 +35,11 @@ class TaxFreeChildcarePaymentsController @Inject() (
     identify: AuthAction,
     nsiConnector: NsiConnector
   )(implicit ec: ExecutionContext
-  ) extends BackendController(cc) {
+  ) extends BackendController(cc) with FormattedLogging {
 
 //  def link(): Action[LinkRequest] = messageBrokerAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
   def link(): Action[AnyContent] = Action.async { implicit request =>
+    logger.info(s"[info] - [link what would only return a hello]")
     Future.successful(Ok("Hello from TFCP API"))
   }
 
