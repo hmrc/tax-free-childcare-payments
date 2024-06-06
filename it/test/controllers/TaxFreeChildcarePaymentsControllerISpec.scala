@@ -36,7 +36,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
           )
 
           stubFor(
-            post("/tax-free-childcare-payments-nsi-stub/individuals/tax-free-childcare/payments/linknsi")
+            post("/tax-free-childcare-payments-nsi-stub/linknsi")
               .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
               .willReturn(okJson(expectedResponseJson.toString))
           )
@@ -70,7 +70,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
           )
 
           stubFor(
-            post("/tax-free-childcare-payments-nsi-stub/individuals/tax-free-childcare/payments/balancensi")
+            post("/tax-free-childcare-payments-nsi-stub/balancensi")
               .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
               .willReturn(okJson(expectedResponse.toString))
           )
@@ -107,7 +107,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec {
           )
 
           stubFor(
-            post("/tax-free-childcare-payments-nsi-stub/individuals/tax-free-childcare/payments/pnsi")
+            post("/tax-free-childcare-payments-nsi-stub/pnsi")
               .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
               .willReturn(okJson(expectedResponse.toString))
           )
