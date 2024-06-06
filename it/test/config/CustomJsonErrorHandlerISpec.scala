@@ -39,8 +39,8 @@ class CustomJsonErrorHandlerISpec extends BaseISpec with TableDrivenPropertyChec
 
     val expectedCorrelationId = UUID.randomUUID().toString
 
-    val balanceEndpoint = s"POST $resourcePath/balance"
-    val paymentEndpoint = s"POST $resourcePath/"
+    val balanceEndpoint = s"POST /balance"
+    val paymentEndpoint = s"POST /"
 
     balanceEndpoint should {
 

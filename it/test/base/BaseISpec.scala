@@ -49,8 +49,7 @@ abstract class BaseISpec
     ).build()
 
   protected lazy val domain       = s"http://localhost:$port"
-  protected lazy val resourcePath = "/individuals/tax-free-childcare/payments"
-  protected lazy val baseUrl      = s"$domain$resourcePath"
+  protected lazy val baseUrl      = s"$domain"
 
   protected def withAuthNinoRetrieval(check: => Assertion): Assertion = {
     expectAuthNinoRetrieval

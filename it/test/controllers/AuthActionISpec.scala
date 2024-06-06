@@ -34,8 +34,8 @@ class AuthActionISpec extends BaseISpec with TableDrivenPropertyChecks with LogC
   withClient { wsClient =>
     val resources = Table(
       ("Endpoint Name", "URL", "Valid Payload"),
-      ("balance", s"$resourcePath/balance", randomSharedJson),
-      ("payment", s"$resourcePath/", randomPaymentRequestJson)
+      ("balance", s"/balance", randomSharedJson),
+      ("payment", s"/", randomPaymentRequestJson)
     )
 
     /** Covers `case None` of [[controllers.actions.AuthAction.invokeBlock().]] */

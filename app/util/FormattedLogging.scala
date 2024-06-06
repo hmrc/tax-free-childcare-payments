@@ -34,11 +34,9 @@ trait FormattedLogging extends Logging {
 object FormattedLogging {
   val CORRELATION_ID = "Correlation-ID"
 
-  private val resourcePath = "/individuals/tax-free-childcare/payments"
-
   private val endpoints = Map(
-    s"$resourcePath/link"    -> "link",
-    s"$resourcePath/balance" -> "balance",
-    s"$resourcePath/"        -> "payment"
+    "/link"    -> "link",
+    "/balance" -> "balance",
+    "/"        -> "payment"
   )
 }
