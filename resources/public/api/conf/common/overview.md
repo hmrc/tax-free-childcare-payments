@@ -8,13 +8,21 @@ Requests are passed for processing to National Savings and Investments (NS&I), w
 
 ### Prerequisites
 
-For the technical details on how to integrate the API with your application, please read the [Using the Developer Hub](https://developer.service.hmrc.gov.uk/api-documentation/docs/using-the-hub) page.
-, 
-The online payment provider will need to be registered with NS&I. NS&I will provide them with a unique ID which is required by this API.
+For the technical details on how to start using our APIs, please read the [Using the Developer Hub](https://developer.service.hmrc.gov.uk/api-documentation/docs/using-the-hub) page.
 
+#### Subscribing to the TFC API
+
+Due to the nature of the TFC API, you will need to request to subscribe to the API from our Software Developers Support Team (SDST).
+
+1. In the Developer hub, click [Support](https://developer.service.hmrc.gov.uk/developer/support) in the menu bar to go to the Support request page.
+2. Enter your details in the **Full name** and **Email address** fields.
+3. In the **What do you need help with?** field, enter your sandbox application's client ID and request that you would like this application to be subscribed to the TFC APIs. You will also need to provide a brief
+explanation of why you need this access.
+4. Click **Submit**, this will generate a ticket which will be actioned or acknowledged within two working days.
+ 
 ### Security considerations
 
-Refer to the [user restricted endpoints page](https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/user-restricted-endpoints) to learn about the user-restricted authentication used by the API.
+Refer to the [Authorisation page](https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/user-restricted-endpoints) to learn about the user-restricted authentication used by the API.
 
 HMRC supports OAuth 2.0 for authenticating user restricted API requests using an OAuth 2.0 Bearer Token in the AUTHORIZATION header. The [Authorisation](https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation) page describes this approach in detail.
 
