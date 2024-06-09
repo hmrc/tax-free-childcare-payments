@@ -16,17 +16,18 @@
 
 package config
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import models.response.TfcErrorResponse
+import util.FormattedLogging
+
 import play.api.Configuration
 import play.api.http.Status
 import play.api.mvc.{RequestHeader, Result, Results}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.http.JsonErrorHandler
 import uk.gov.hmrc.play.bootstrap.config.HttpAuditEvent
-import util.FormattedLogging
-
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CustomJsonErrorHandler @Inject() (
