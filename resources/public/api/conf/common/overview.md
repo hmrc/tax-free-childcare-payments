@@ -12,7 +12,7 @@ For the technical details on how to start using our APIs, please read the [Using
 
 #### Subscribing to the TFC API
 
-Due to the nature of the TFC API, you will need to request to subscribe to the API from our Software Developers Support Team (SDST).
+Due to the nature of the TFC payment API, you will need to request to subscribe to the API from our Software Developers Support Team (SDST).
 
 1. In the Developer hub, click [Support](https://developer.service.hmrc.gov.uk/developer/support) in the menu bar to go to the Support request page.
 2. Enter your details in the **Full name** and **Email address** fields.
