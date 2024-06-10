@@ -39,7 +39,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
           )
 
           stubFor(
-            post("/individuals/tax-free-childcare/payments/link")
+            post("/tax-free-childcare-payments-nsi-stub/link")
               .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
               .willReturn(okJson(expectedResponseJson.toString))
           )
@@ -101,7 +101,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
           )
 
           stubFor(
-            post("/individuals/tax-free-childcare/payments/balance")
+            post("/tax-free-childcare-payments-nsi-stub/balance")
               .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
               .willReturn(okJson(expectedResponse.toString))
           )
@@ -137,7 +137,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
           )
 
           stubFor(
-            post("/individuals/tax-free-childcare/payments/")
+            post("/tax-free-childcare-payments-nsi-stub/")
               .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
               .willReturn(okJson(expectedResponse.toString))
           )
@@ -190,9 +190,9 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
 
     val endpoints = Table(
       ("Name", "TFC URL", "NSI URL", "Valid Payload"),
-      ("link", s"$resourcePath/link", "/individuals/tax-free-childcare/payments/link", randomLinkRequestJson),
-      ("balance", s"$resourcePath/balance", "/individuals/tax-free-childcare/payments/balance", randomSharedJson),
-      ("payment", s"$resourcePath/", "/individuals/tax-free-childcare/payments/", randomPaymentRequestJson)
+      ("link", s"/link", "/tax-free-childcare-payments-nsi-stub/link", randomLinkRequestJson),
+      ("balance", s"/balance", "/tax-free-childcare-payments-nsi-stub/balance", randomSharedJson),
+      ("payment", s"/", "/tax-free-childcare-payments-nsi-stub/", randomPaymentRequestJson)
     )
 
     val nsiErrorScenarios = Table(
@@ -235,7 +235,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
               val makePaymentRequest = randomPaymentRequestJson + (field, JsString(badValue))
 
               val res = wsClient
-                .url(s"$domain$tfc_url")
+                .url(s"$baseUrl$tfc_url")
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> expectedCorrelationId
@@ -256,7 +256,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
             )
 
             val response = wsClient
-              .url(s"$domain$tfc_url")
+              .url(s"$baseUrl$tfc_url")
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> UUID.randomUUID().toString
@@ -281,7 +281,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
                 stubFor(post(nsi_url) willReturn nsiResponse)
 
                 val response = wsClient
-                  .url(s"$domain$tfc_url")
+                  .url(s"$baseUrl$tfc_url")
                   .withHttpHeaders(
                     AUTHORIZATION  -> "Bearer qwertyuiop",
                     CORRELATION_ID -> UUID.randomUUID().toString

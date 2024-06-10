@@ -31,9 +31,9 @@ class AuthActionISpec extends BaseISpec with LogCapturing {
   withClient { wsClient =>
     val resources = Table(
       ("Endpoint Name", "URL", "Valid Payload"),
-      ("link", s"$resourcePath/link", randomLinkRequestJson),
-      ("balance", s"$resourcePath/balance", randomSharedJson),
-      ("payment", s"$resourcePath/", randomPaymentRequestJson)
+      ("link", s"/link", randomLinkRequestJson),
+      ("balance", s"/balance", randomSharedJson),
+      ("payment", s"/", randomPaymentRequestJson)
     )
 
     /** Covers `case None` of [[controllers.actions.AuthAction.invokeBlock().]] */
@@ -45,7 +45,7 @@ class AuthActionISpec extends BaseISpec with LogCapturing {
           s"request header $CORRELATION_ID is missing" in
             withEmptyNinoRetrievalAndLogCheck(
               wsClient
-                .url(domain + resource)
+                .url(baseUrl + resource)
                 .withHttpHeaders(
                   AUTHORIZATION -> "Bearer qwertyuiop"
                 )
@@ -63,7 +63,7 @@ class AuthActionISpec extends BaseISpec with LogCapturing {
           s"request header $CORRELATION_ID is not a valid UUID" in
             withEmptyNinoRetrievalAndLogCheck(
               wsClient
-                .url(domain + resource)
+                .url(baseUrl + resource)
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> invalidUuid
@@ -82,7 +82,7 @@ class AuthActionISpec extends BaseISpec with LogCapturing {
           s"Auth service does not return a nino" in
             withEmptyNinoRetrievalAndLogCheck(
               wsClient
-                .url(domain + resource)
+                .url(baseUrl + resource)
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> validCorrelationId
