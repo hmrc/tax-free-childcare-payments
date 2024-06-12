@@ -1,22 +1,16 @@
 openapi: "3.0.3"
 info:
   title: Tax-free childcare payment integration API
-  description: "# Overview
+  description: "An API which allows online cashless payment providers to give parents the option of paying for their childcare with funds from their Tax-free Childcare (TFC) account.
   
-  It is a government initiative to encourage more parents to use the tax-free childcare (TFC) allowance available to them. To promote this service we want to make it easier for parents to make payments using the funds in their tax-free childcare account.   
+  
+  There are three different operations involved in this process:
 
+- Linking the parent's TFC account with their account on the online payment provider's platform.
 
-This API allows online cashless payment providers for schools to offer their users the opportunity to use their TFC balance to pay for their childcare through the providers platform.
+- Checking the balance on the child's TFC account.
 
-
-    There are three different operations involved in this process:\n\
-    - Linking the parent's TFC account with their account on the online payment provider platform.
-    
-    - Checking the balance on the child's TFC account.
-    
-    - Making a payment from the child's TFC account to the childcare provider.
-    
-    Requests are passed to National Savings and Investments (NS&I), who hold the TFC account funds."
+- Making a payment from the child's TFC account to the childcare provider."
   version: 1.2.0
 servers:
 - url: https://test-api.service.hmrc.gov.uk
@@ -28,7 +22,7 @@ tags:
 - name: Check balance
 - name: Make payment
 paths: 
-  /individuals/tax-free-childcare/payments/link/:
+  /individuals/tax-free-childcare/payments/link:
    post:
       tags:
       - Link accounts
@@ -36,6 +30,17 @@ paths:
       description: 
         "This endpoint links the parent's TFC account with an account they hold with an online payment provider. This linking will be initiated by the payment provider's platform when offering TFC to the parent as an option to pay for their child's care. The parent will be required to confirm if they want this link to be created. This link is essential if the parent wishes to use TFC within the payment provider's platform."
       parameters:
+      - name: Accept
+        in: header
+        description: Specifies the response format and the [version](/api-documentation/docs/reference-guide#versioning)
+          of the API to be used.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - application/vnd.hmrc.2.0+json
       - name: Correlation-ID
         in: header
         required: true
@@ -65,9 +70,9 @@ paths:
                   type: string
                   example: ABCD12345TFC
                 child_date_of_birth:
-                  description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
+                  description: The date of birth (YYYY-MM-DD) of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
                   type: string
-                  example: YYYY-MM-DD
+                  example: 2020-01-01
 
       responses:
           "200":
@@ -87,7 +92,7 @@ paths:
                     child_full_name:
                       type: string
                       description: The full name of the child whose accounts have been linked. Providing this confirms the link has been successful.
-                      example: Full Name
+                      example: Jane Doe
           "400":
             description: Bad request
             headers:
@@ -182,7 +187,7 @@ paths:
         - user-restricted:
           - tax-free-childcare-payments
       
-  /individuals/tax-free-childcare/payments/balance/:
+  /individuals/tax-free-childcare/payments/balance:
     post:
       tags:
       - Check balance
@@ -194,9 +199,20 @@ paths:
         
         - Government top-up - The amount of top-up funds paid in by the government.
         
-        - Total balance - The sum of the two previous amounts"
+        - Total balance - The sum of the two previous amounts."
       parameters:
-      - name: Correlation-ID
+       - name: Accept
+        in: header
+        description: Specifies the response format and the [version](/api-documentation/docs/reference-guide#versioning)
+          of the API to be used.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - application/vnd.hmrc.2.0+json
+     - name: Correlation-ID
         in: header
         required: true
         style: simple
@@ -226,9 +242,9 @@ paths:
                   example: ABCD12345TFC
                 child_date_of_birth:
                   format: date
-                  description: The date of birth of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
+                  description: The date of birth (YYYY-MM-DD) of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
                   type: string
-                  example: YYYY-MM-DD
+                  example: 2020-01-01
       responses:
           "200":
             description: The TFC account balance is returned
@@ -361,14 +377,25 @@ paths:
           - tax-free-childcare-payments
       
 
-  /individuals/tax-free-childcare/payments/:
+  /individuals/tax-free-childcare/payments:
     post:
       tags:
       - Make payment
       summary: Sending payment from the TFC account to the intended recipient
       description: 
-        "This endpoint sends the selected amount to the intended recipient from the child's TFC account."
+        "This endpoint requests the payment of the selected amount from the child's TFC account to the intended recipient."
       parameters:
+      - name: Accept
+        in: header
+        description: Specifies the response format and the [version](/api-documentation/docs/reference-guide#versioning)
+          of the API to be used.
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          enum:
+          - application/vnd.hmrc.1.2+json
       - name: Correlation-ID
         in: header
         required: true
@@ -396,7 +423,7 @@ paths:
                 payment_amount:
                   description: The amount of money the parent or guardian wants to pay the childcare provider from their TFC balance.
                   type: string
-                  example: £1234.56
+                  example: 1234.56
                 ccp_reg_reference:
                   description: The unique reference number given to the childcare provider by the childcare regulator (e.g. Ofsted). The online payment provider needs to provide this to HMRC. 
                   type: string
@@ -430,8 +457,8 @@ paths:
                       description: A unique identifier that is used as confirmation that the payment has been successful. This can be used to track the payment.
                     estimated_payment_date:
                       type: string
-                      description: The estimated date the payment will leave the child's TFC account. This is used for audit purposes and to give childcare providers an expectation of when they will receive funds.
-                      example: YYYY-MM-DD
+                      description: The estimated date (YYYY-MM-DD) the payment will leave the child's TFC account. This is used for audit purposes and to give childcare providers an expectation of when they will receive funds.
+                      example: 2024-10-10
           "400":
             description: Bad request
             headers:
