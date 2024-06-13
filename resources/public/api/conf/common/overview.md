@@ -1,4 +1,4 @@
-There is a government initiative to encourage more parents to use the tax-free childcare (TFC) allowance available to them. To promote this service, this API allows online cashless payment providers for schools to offer parents the opportunity to use their TFC balance to pay for their childcare through the providers platform.
+There is a government initiative to encourage more parents to use the tax-free childcare (TFC) allowance available to them. To promote this service, this API allows online cashless payment providers for schools to offer parents the opportunity to use their TFC balance to pay for their childcare through the provider's platform.
 There are three different operations involved in this process:
 - Linking the parent's TFC account with their account on the online payment provider's platform
 - Checking the balance on the child's TFC account.
