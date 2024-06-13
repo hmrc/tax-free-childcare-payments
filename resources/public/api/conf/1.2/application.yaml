@@ -40,7 +40,7 @@ paths:
         schema:
           type: string
           enum:
-          - application/vnd.hmrc.2.0+json
+          - application/vnd.hmrc.1.2+json
       - name: Correlation-ID
         in: header
         required: true
@@ -211,7 +211,7 @@ paths:
         schema:
           type: string
           enum:
-          - application/vnd.hmrc.2.0+json
+          - application/vnd.hmrc.1.2+json
      - name: Correlation-ID
         in: header
         required: true
@@ -421,9 +421,9 @@ paths:
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 payment_amount:
-                  description: The amount of money the parent or guardian wants to pay the childcare provider from their TFC balance.
-                  type: string
-                  example: 1234.56
+                  description: The amount of money the parent or guardian wants to pay the childcare provider from their TFC balance.  Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                  type: integer
+                  example: 20000
                 ccp_reg_reference:
                   description: The unique reference number given to the childcare provider by the childcare regulator (e.g. Ofsted). The online payment provider needs to provide this to HMRC. 
                   type: string
