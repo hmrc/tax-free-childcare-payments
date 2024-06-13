@@ -202,26 +202,26 @@ paths:
         - Total balance - The sum of the two previous amounts."
       parameters:
        - name: Accept
-        in: header
-        description: Specifies the response format and the [version](/api-documentation/docs/reference-guide#versioning)
+         in: header
+         description: Specifies the response format and the [version](/api-documentation/docs/reference-guide#versioning)
           of the API to be used.
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-          enum:
-          - application/vnd.hmrc.1.2+json
-     - name: Correlation-ID
-        in: header
-        required: true
-        style: simple
-        explode: false
-        description: A unique key shared between all parties which can be used for tracing and error tracking. This 32 character, hyphen separated alphanumeric string is generated and sent by the online payment provider.
-        schema:
-          format: uuid
-          type: string
-          example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
+         required: true
+         style: simple
+         explode: false
+         schema:
+           type: string
+           enum:
+           - application/vnd.hmrc.1.2+json
+       - name: Correlation-ID
+         in: header
+         required: true
+         style: simple
+         explode: false
+         description: A unique key shared between all parties which can be used for tracing and error tracking. This 32 character, hyphen separated alphanumeric string is generated and sent by the online payment provider.
+         schema:
+           format: uuid
+           type: string
+           example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
       requestBody:
         content:
           application/json:
