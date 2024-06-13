@@ -231,7 +231,7 @@ paths:
                 epp_unique_customer_id:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
                   type: string
-                  example: 12345678901
+                  example: "12345678901"
                 epp_reg_reference:
                   description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
                   type: string
@@ -420,7 +420,7 @@ paths:
                 epp_unique_customer_id:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
                   type: string
-                  example: 12345678901
+                  example: "12345678901"
                 epp_reg_reference:
                   description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
                   type: string
