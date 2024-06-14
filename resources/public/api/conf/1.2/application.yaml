@@ -60,7 +60,7 @@ paths:
                 epp_unique_customer_id:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
                   type: string
-                  example: 12345678901
+                  example: "12345678901"
                 epp_reg_reference:
                   description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
                   type: string
@@ -231,7 +231,7 @@ paths:
                 epp_unique_customer_id:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
                   type: string
-                  example: 12345678901
+                  example: "12345678901"
                 epp_reg_reference:
                   description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
                   type: string
@@ -268,20 +268,25 @@ paths:
                        - Blocked
                       example: Active
                     paid_in_by_you:
-                      type: string
-                      description: The amount of money paid in to the child's TFC account by the parent or guardian.
+                      type: integer
+                      description: The amount of money paid in to the child's TFC account by the parent or guardian. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      example: 80000
                     government_top_up:
-                      type: string
-                      description: The amount paid in by the government, this amount has cleared and is available to the parent or guardian.
+                      type: integer
+                      description: The amount paid in by the government, this amount has cleared and is available to the parent or guardian. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      example: 20000
                     total_balance:
-                      type: string
-                      description: The sum of paid_in_by_you and government_top_up, this is the total amount paid into the account.
+                      type: integer
+                      description: The sum of paid_in_by_you and government_top_up, this is the total amount paid into the account. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      example: 100000
                     cleared_funds:
-                      type: string
-                      description: The total amount of money available to the parent or guardian to use to make payments to childcare providers. This is equal to total_balance minus any uncleared funds from paid_in_by_you.
+                      type: integer
+                      description: The total amount of money available to the parent or guardian to use to make payments to childcare providers. This is equal to total_balance minus any uncleared funds from paid_in_by_you. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      example: 100000
                     top_up_allowance:
-                      type: string
-                      description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in.
+                      type: integer
+                      description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      example: 15000
           "400":
             description: Bad request
             headers:
@@ -377,7 +382,7 @@ paths:
           - tax-free-childcare-payments
       
 
-  /individuals/tax-free-childcare/payments:
+  /individuals/tax-free-childcare/payments/:
     post:
       tags:
       - Make payment
@@ -415,7 +420,7 @@ paths:
                 epp_unique_customer_id:
                   description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
                   type: string
-                  example: 12345678901
+                  example: "12345678901"
                 epp_reg_reference:
                   description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
                   type: string
@@ -455,6 +460,7 @@ paths:
                     payment_reference:
                       type: string
                       description: A unique identifier that is used as confirmation that the payment has been successful. This can be used to track the payment.
+                      example: C4E09ZY4A00A0009
                     estimated_payment_date:
                       type: string
                       description: The estimated date (YYYY-MM-DD) the payment will leave the child's TFC account. This is used for audit purposes and to give childcare providers an expectation of when they will receive funds.
