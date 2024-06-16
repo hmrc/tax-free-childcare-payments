@@ -17,15 +17,25 @@
 package connectors
 
 import base.BaseISpec
+import models.requests.{IdentifierRequest, LinkRequest}
+import org.scalatest.EitherValues
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class NsiConnectorISpec extends BaseISpec {
+class NsiConnectorISpec extends BaseISpec with ScalaCheckPropertyChecks with EitherValues {
   private val connector = app.injector.instanceOf[NsiConnector]
 
   "method linkAccounts" should {
     s"respond $OK with a defined LinkResponse" when {
-      s"NSI responds $CREATED with expected JSON format" in {
+      s"NSI responds $CREATED with expected JSON format" in
+        forAll{ scenario: NsiLinkAccounts201Scenario =>
+          scenario.stubNsiResponse()
 
-      }
+          implicit val req: IdentifierRequest[LinkRequest] = scenario.identifierRequest
+
+          val actualLinkResponse = connector.linkAccounts.futureValue.value
+
+          actualLinkResponse shouldBe scenario.expectedLinkResponse
+        }
     }
   }
 
