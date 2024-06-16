@@ -50,4 +50,9 @@ class TaxFreeChildcarePaymentsController @Inject() (
         case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
       }
     }
+
+  private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
+    Json.obj(
+      "child_full_name" -> lr.childFullName
+    )
 }

@@ -45,7 +45,7 @@ class NsiConnector @Inject() (
 
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] =
     httpClient
-      .post(resource(req.body.metadata.outbound_child_payment_ref, "link"))
+      .post(resource(req.body.metadata.outbound_child_payment_ref, "linkAccounts"))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[LinkRequest])
       .execute[Maybe[LinkResponse]]
@@ -69,11 +69,15 @@ class NsiConnector @Inject() (
   private val serviceName = "nsi"
 
   private def resource(accountRef: String, endpoint: String) = {
-    val domain      = servicesConfig.baseUrl(serviceName)
-    val accountPath = servicesConfig.getString(s"microservice.services.$serviceName.path")
+    val domain       = servicesConfig.baseUrl(serviceName)
+    val rootPath     = servicesConfig.getString(s"microservice.services.$serviceName.path")
+    val resourcePath = servicesConfig.getString(s"microservice.services.$serviceName.$endpoint")
 
-    new URL(s"$domain$accountPath/$accountRef/$endpoint")
+    new URL(s"$domain$rootPath$resourcePath/$accountRef")
   }
 
   private val CORRELATION_ID = "Correlation-ID"
+
+  implicit val readsLinkResponse: Reads[LinkResponse] =
+    (__ \ "childFullName").read[String] map LinkResponse.apply
 }

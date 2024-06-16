@@ -40,7 +40,7 @@ final case class NsiLinkAccounts201Scenario(
   ) {
 
   def stubNsiResponse(): StubMapping = stubFor {
-    val body = Json.obj("childFullName" -> expectedLinkResponse.child_full_name)
+    val body = Json.obj("childFullName" -> expectedLinkResponse.childFullName)
 
     WireMock.post(s"/account/v1/accounts/link-to-epp/$childAccountPaymentRef") willReturn
       created().withBody(body.toString)
