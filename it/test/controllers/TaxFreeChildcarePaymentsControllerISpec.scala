@@ -91,7 +91,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
           val expectedResponse      = Json.obj(
-            "tfc_account_status" -> "active",
+            "tfc_account_status" -> "ACTIVE",
             "paid_in_by_you"     -> 0,
             "government_top_up"  -> 0,
             "total_balance"      -> 0,

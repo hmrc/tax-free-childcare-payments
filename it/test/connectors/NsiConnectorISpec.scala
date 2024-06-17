@@ -17,7 +17,7 @@
 package connectors
 
 import base.BaseISpec
-import models.requests.{IdentifierRequest, LinkRequest}
+import models.requests.{IdentifierRequest, LinkRequest, SharedRequestData}
 import org.scalatest.EitherValues
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
@@ -27,31 +27,36 @@ class NsiConnectorISpec extends BaseISpec with ScalaCheckPropertyChecks with Eit
   "method linkAccounts" should {
     s"respond $OK with a defined LinkResponse" when {
       s"NSI responds $CREATED with expected JSON format" in
-        forAll{ scenario: NsiLinkAccounts201Scenario =>
+        forAll { scenario: NsiLinkAccounts201Scenario =>
           scenario.stubNsiResponse()
 
           implicit val req: IdentifierRequest[LinkRequest] = scenario.identifierRequest
 
           val actualLinkResponse = connector.linkAccounts.futureValue.value
 
-          actualLinkResponse shouldBe scenario.expectedLinkResponse
+          actualLinkResponse shouldBe scenario.expectedResponse
         }
     }
   }
 
   "method checkBalance" should {
     s"respond $OK with a defined BalanceResponse" when {
-      s"NSI responds $OK with expected JSON format" in {
+      s"NSI responds $OK with expected JSON format" in
+        forAll { scenario: NsiCheckBalance200Scenario =>
+          scenario.stubNsiResponse()
 
-      }
+          implicit val req: IdentifierRequest[SharedRequestData] = scenario.identifierRequest
+
+          val actualLinkResponse = connector.checkBalance.futureValue.value
+
+          actualLinkResponse shouldBe scenario.expectedResponse
+        }
     }
   }
 
   "method makePayment" should {
     s"respond $OK with a defined PaymentResponse" when {
-      s"NSI responds $CREATED with expected JSON format" in {
-
-      }
+      s"NSI responds $CREATED with expected JSON format" in {}
     }
   }
 }

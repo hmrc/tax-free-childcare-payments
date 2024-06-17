@@ -16,12 +16,10 @@
 
 package models.response
 
-/** All currency quantities are in pence. For example, £250.00 is given as 25000. */
-final case class BalanceResponse(
-    accountStatus: AccountStatus.Value,
-    topUpAvailable: Int,
-    topUpRemaining: Int,
-    paidIn: Int,
-    totalBalance: Int,
-    clearedFunds: Int
-  )
+import play.api.libs.json.{Json, Reads}
+
+object AccountStatus extends Enumeration {
+  val ACTIVE, BLOCKED, CLOSED = Value
+
+  implicit val reads: Reads[AccountStatus.Value] = Json.formatEnum(this)
+}

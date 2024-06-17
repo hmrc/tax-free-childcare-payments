@@ -22,8 +22,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse.Maybe
-import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
-
+import models.response.{AccountStatus, BalanceResponse, LinkResponse, PaymentResponse}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
@@ -36,6 +36,7 @@ class NsiConnector @Inject() (
     servicesConfig: ServicesConfig
   )(implicit ec: ExecutionContext
   ) extends BackendHeaderCarrierProvider {
+  import NsiConnector._
   import uk.gov.hmrc.http.HttpReads.Implicits._
 
   private implicit def httpReadsEither[A: Reads, B: Reads]: HttpReads[Either[B, A]] =
@@ -52,7 +53,7 @@ class NsiConnector @Inject() (
 
   def checkBalance(implicit req: IdentifierRequest[SharedRequestData]): Future[Maybe[BalanceResponse]] =
     httpClient
-      .get(resource(req.body.outbound_child_payment_ref, "balance"))
+      .get(resource(req.body.outbound_child_payment_ref, "checkBalance"))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .execute[Maybe[BalanceResponse]]
 
@@ -63,11 +64,6 @@ class NsiConnector @Inject() (
       .withBody(enrichedWithNino[PaymentRequest])
       .execute[Maybe[PaymentResponse]]
 
-  private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]) =
-    Json.toJsObject(req.body) + ("nino" -> JsString(req.nino))
-
-  private val serviceName = "nsi"
-
   private def resource(accountRef: String, endpoint: String) = {
     val domain       = servicesConfig.baseUrl(serviceName)
     val rootPath     = servicesConfig.getString(s"microservice.services.$serviceName.path")
@@ -76,8 +72,25 @@ class NsiConnector @Inject() (
     new URL(s"$domain$rootPath$resourcePath/$accountRef")
   }
 
-  private val CORRELATION_ID = "Correlation-ID"
+  private val CORRELATION_ID = servicesConfig.getString(s"microservice.services.$serviceName.correlation-id-header")
+}
 
-  implicit val readsLinkResponse: Reads[LinkResponse] =
+object NsiConnector {
+
+  private val serviceName = "nsi"
+
+  private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]) =
+    Json.toJsObject(req.body) + ("nino" -> JsString(req.nino))
+
+  private implicit val readsLinkResponse: Reads[LinkResponse] =
     (__ \ "childFullName").read[String] map LinkResponse.apply
+
+  private implicit val readsBalanceResponse: Reads[BalanceResponse] = (
+    (__ \ "accountStatus").read[AccountStatus.Value] ~
+      (__ \ "topUpAvailable").read[Int] ~
+      (__ \ "topUpRemaining").read[Int] ~
+      (__ \ "paidIn").read[Int] ~
+      (__ \ "totalBalance").read[Int] ~
+      (__ \ "clearedFunds").read[Int]
+  )(BalanceResponse.apply _)
 }
