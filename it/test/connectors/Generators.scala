@@ -17,7 +17,7 @@
 package connectors
 
 import models.requests.IdentifierRequest
-import models.response.{BalanceResponse, PaymentResponse}
+import models.response.PaymentResponse
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
@@ -28,22 +28,12 @@ import java.util.UUID
 trait Generators {
   import Arbitrary.arbitrary
 
-  protected lazy val balanceResponses: Gen[BalanceResponse] = Gen const BalanceResponse("", 0, 0, 0, 0, 0)
-
   protected lazy val paymentResponses: Gen[PaymentResponse] = Gen const PaymentResponse("", LocalDate.now())
 
   protected lazy val nonEmptyAlphaNumStrings: Gen[String] = for {
     char0 <- Gen.alphaNumChar
     chars <- Gen.alphaNumStr
   } yield char0 +: chars
-
-  implicit protected def arbIdentifierRequest[A: Arbitrary]: Arbitrary[IdentifierRequest[A]] =
-    Arbitrary(
-      for {
-        nino <- ninos
-        body <- arbitrary[A]
-      } yield IdentifierRequest(nino, UUID.randomUUID(), FakeRequest("", "", Headers(), body))
-    )
 
   protected lazy val ninos: Gen[String] = for {
     char0 <- Gen.alphaUpperChar

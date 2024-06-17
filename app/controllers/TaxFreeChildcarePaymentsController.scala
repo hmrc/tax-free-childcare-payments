@@ -35,6 +35,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
     nsiConnector: NsiConnector
   )(implicit ec: ExecutionContext
   ) extends BackendController(cc) {
+  import TaxFreeChildcarePaymentsController._
 
   def link(): Action[LinkRequest] = messageBrokerAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
 
@@ -49,9 +50,22 @@ class TaxFreeChildcarePaymentsController @Inject() (
         case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
       }
     }
+}
+
+object TaxFreeChildcarePaymentsController {
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(
       "child_full_name" -> lr.childFullName
+    )
+
+  private implicit val writesBalanceResponse: Writes[BalanceResponse] = br =>
+    Json.obj(
+      "tfc_account_status" -> br.accountStatus,
+      "government_top_up"  -> br.topUpAvailable,
+      "top_up_allowance"   -> br.topUpRemaining,
+      "paid_in_by_you"     -> br.paidIn,
+      "total_balance"      -> br.totalBalance,
+      "cleared_funds"      -> br.clearedFunds
     )
 }
