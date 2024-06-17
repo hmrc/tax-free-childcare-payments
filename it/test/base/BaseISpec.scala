@@ -17,8 +17,10 @@
 package base
 
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.http.{HeaderNames, Status}
+import play.api.libs.json.JsValue
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
 
@@ -30,7 +32,8 @@ abstract class BaseISpec
     with GuiceOneServerPerSuite
     with WsTestClient
     with HeaderNames
-    with Status {
+    with Status
+    with TableDrivenPropertyChecks {
 
   import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
   import com.github.tomakehurst.wiremock.stubbing.StubMapping
@@ -38,7 +41,6 @@ abstract class BaseISpec
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
   import play.api.libs.json.Json
-  import uk.gov.hmrc.play.bootstrap.backend.http.ErrorResponse
 
   import scala.util.matching.Regex
 
@@ -48,9 +50,7 @@ abstract class BaseISpec
       "microservice.services.nsi.port"  -> wireMockPort
     ).build()
 
-  protected lazy val domain       = s"http://localhost:$port"
-  protected lazy val resourcePath = "/individuals/tax-free-childcare/payments"
-  protected lazy val baseUrl      = s"$domain$resourcePath"
+  protected lazy val baseUrl      = s"http://localhost:$port"
 
   protected def withAuthNinoRetrieval(check: => Assertion): Assertion = {
     expectAuthNinoRetrieval
@@ -64,9 +64,9 @@ abstract class BaseISpec
   protected lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
     raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
 
-  protected lazy val EXPECTED_JSON_ERROR_RESPONSE: ErrorResponse = ErrorResponse(
-    statusCode = BAD_REQUEST,
-    message = "Provided parameters do not match expected format."
+  protected lazy val EXPECTED_JSON_ERROR_RESPONSE: JsValue = Json.obj(
+    "errorCode"        -> "BAD_REQUEST",
+    "errorDescription" -> "Request data is invalid or missing"
   )
 
   protected lazy val CORRELATION_ID = "Correlation-ID"

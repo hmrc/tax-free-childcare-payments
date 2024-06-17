@@ -19,6 +19,7 @@ You will need to request to subscribe to the API from our Software Developers Su
 3. In **What do you need help with?**, enter your sandbox application's client ID and ask for this application to be subscribed to the TFC API. Provide a brief
 explanation of why you need this access.
 4. Click **Submit**, a ticket will be generated which will be acknowledged within 2 working days.
+
  
 ### Security considerations
 

@@ -16,11 +16,12 @@
 
 package models.requests
 
+import scala.util.Try
+
 import models.requests.PaymentRequest.PayeeType
+
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json._
-
-import scala.util.Try
 
 final case class PaymentRequest(
     metadata: SharedRequestData,

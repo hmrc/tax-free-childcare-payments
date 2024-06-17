@@ -16,15 +16,21 @@
 
 package models.response
 
-import java.time.LocalDate
+import play.api.libs.json.Json
+import play.api.mvc.Results.Status
 
-import play.api.libs.json.{Json, OFormat}
+final case class TfcErrorResponse(statusCode: Int, errorDescription: String) {
 
-final case class PaymentResponse(
-    payment_reference: String,
-    estimated_payment_date: LocalDate
+  def toResult = new Status(statusCode)(Json.obj(
+    "errorCode"        -> errorCodes(statusCode),
+    "errorDescription" -> errorDescription
+  ))
+
+  private val errorCodes = Map(
+    400 -> "BAD_REQUEST",
+    401 -> "UNAUTHORISED",
+    500 -> "INTERNAL_SERVER_ERROR",
+    502 -> "BAD_GATEWAY",
+    503 -> "SERVICE_UNAVAILABLE"
   )
-
-object PaymentResponse {
-  implicit val format: OFormat[PaymentResponse] = Json.format
 }

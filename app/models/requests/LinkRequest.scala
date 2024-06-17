@@ -16,10 +16,10 @@
 
 package models.requests
 
+import java.time.LocalDate
+
 import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json.{__, OFormat}
-
-import java.time.LocalDate
 
 final case class LinkRequest(
     metadata: SharedRequestData,

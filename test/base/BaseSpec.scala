@@ -16,13 +16,14 @@
 
 package base
 
+import java.time.LocalDate
+import scala.util.Random
+
 import org.scalatest.OptionValues
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsObject, Json}
 
-import java.time.LocalDate
-import scala.util.Random
+import play.api.libs.json.{JsObject, Json}
 
 class BaseSpec
     extends AnyWordSpec
