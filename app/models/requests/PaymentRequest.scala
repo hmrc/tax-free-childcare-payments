@@ -25,7 +25,7 @@ import play.api.libs.json._
 
 final case class PaymentRequest(
     metadata: SharedRequestData,
-    payment_amount: BigDecimal,
+    payment_amount: Int,
     ccp_reg_reference: String,
     ccp_postcode: String,
     payee_type: PayeeType.Value
@@ -46,7 +46,7 @@ object PaymentRequest {
 
   implicit val format: OFormat[PaymentRequest] = (
     __.format[SharedRequestData] ~
-      (__ \ "payment_amount").format[BigDecimal] ~
+      (__ \ "payment_amount").format[Int] ~
       (__ \ "ccp_reg_reference").format[String] ~
       (__ \ "ccp_postcode").format[String] ~
       (__ \ "payee_type").format[PayeeType.Value]
