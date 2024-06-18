@@ -16,19 +16,9 @@
 
 package connectors
 
-import models.requests.IdentifierRequest
-import models.response.PaymentResponse
-import org.scalacheck.{Arbitrary, Gen}
-import play.api.mvc.Headers
-import play.api.test.FakeRequest
-
-import java.time.LocalDate
-import java.util.UUID
+import org.scalacheck.Gen
 
 trait Generators {
-  import Arbitrary.arbitrary
-
-  protected lazy val paymentResponses: Gen[PaymentResponse] = Gen const PaymentResponse("", LocalDate.now())
 
   protected lazy val nonEmptyAlphaNumStrings: Gen[String] = for {
     char0 <- Gen.alphaNumChar
