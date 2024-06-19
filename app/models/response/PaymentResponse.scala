@@ -18,13 +18,7 @@ package models.response
 
 import java.time.LocalDate
 
-import play.api.libs.json.{Json, OFormat}
-
 final case class PaymentResponse(
     payment_reference: String,
     estimated_payment_date: LocalDate
   )
-
-object PaymentResponse {
-  implicit val format: OFormat[PaymentResponse] = Json.format
-}
