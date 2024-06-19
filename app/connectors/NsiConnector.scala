@@ -18,6 +18,7 @@ package connectors
 
 import java.net.URL
 import javax.inject.{Inject, Singleton}
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
@@ -46,30 +47,31 @@ class NsiConnector @Inject() (
 
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] =
     httpClient
-      .post(resource(req.body.metadata.outbound_child_payment_ref, "linkAccounts"))
+      .post(resource("linkAccounts", req.body.metadata.outbound_child_payment_ref))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[LinkRequest])
       .execute[Maybe[LinkResponse]]
 
   def checkBalance(implicit req: IdentifierRequest[SharedRequestData]): Future[Maybe[BalanceResponse]] =
     httpClient
-      .get(resource(req.body.outbound_child_payment_ref, "checkBalance"))
+      .get(resource("checkBalance", req.body.outbound_child_payment_ref))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .execute[Maybe[BalanceResponse]]
 
   def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[Maybe[PaymentResponse]] =
     httpClient
-      .post(resource(req.body.metadata.outbound_child_payment_ref, "payments"))
+      .post(resource("makePayment"))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[PaymentRequest])
       .execute[Maybe[PaymentResponse]]
 
-  private def resource(accountRef: String, endpoint: String) = {
+  private def resource(endpoint: String, params: String*) = {
     val domain       = servicesConfig.baseUrl(serviceName)
     val rootPath     = servicesConfig.getString(s"microservice.services.$serviceName.path")
     val resourcePath = servicesConfig.getString(s"microservice.services.$serviceName.$endpoint")
+    val pathParams   = params.map("/" + _).mkString
 
-    new URL(s"$domain$rootPath$resourcePath/$accountRef")
+    new URL(s"$domain$rootPath$resourcePath$pathParams")
   }
 
   private val CORRELATION_ID = servicesConfig.getString(s"microservice.services.$serviceName.correlation-id-header")
@@ -93,4 +95,9 @@ object NsiConnector {
       (__ \ "totalBalance").read[Int] ~
       (__ \ "clearedFunds").read[Int]
   )(BalanceResponse.apply _)
+
+  private implicit val readsPaymentResponse: Reads[PaymentResponse] = (
+    (__ \ "paymentReference").read[String] ~
+      (__ \ "paymentDate").read[LocalDate]
+  )(PaymentResponse.apply _)
 }
