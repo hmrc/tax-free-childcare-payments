@@ -16,14 +16,11 @@
 
 package connectors
 
-import com.github.tomakehurst.wiremock.client.MappingBuilder
-import com.github.tomakehurst.wiremock.client.WireMock.{created, stubFor}
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import models.requests.PaymentRequest.PayeeType
 import models.requests.{IdentifierRequest, PaymentRequest, SharedRequestData}
 import models.response.PaymentResponse
 import org.scalacheck.{Arbitrary, Gen}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
 
@@ -42,14 +39,10 @@ final case class NsiMakePayment201Scenario(
   ) {
   private val payeeType = if (opt_ccp_urn.isDefined) PayeeType.CCP else PayeeType.EPP
 
-  def stubNsiResponse(endpoint: MappingBuilder): StubMapping = stubFor {
-    val body = Json.obj(
-      "paymentReference" -> expectedResponse.payment_reference,
-      "paymentDate"      -> expectedResponse.estimated_payment_date
-    )
-
-    endpoint willReturn created().withBody(body.toString)
-  }
+  val expectedRequestJson: JsObject = Json.obj(
+    "paymentReference" -> expectedResponse.payment_reference,
+    "paymentDate"      -> expectedResponse.estimated_payment_date
+  )
 
   val identifierRequest: IdentifierRequest[PaymentRequest] = {
     val sharedRequestData = SharedRequestData(eppAccount, epp_urn, childAccountPaymentRef)
