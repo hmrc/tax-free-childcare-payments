@@ -16,7 +16,7 @@
 
 package connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.{MappingBuilder, WireMock}
 import com.github.tomakehurst.wiremock.client.WireMock.{okJson, stubFor}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import models.requests.{IdentifierRequest, SharedRequestData}
@@ -37,7 +37,7 @@ final case class NsiCheckBalance200Scenario(
     expectedResponse: BalanceResponse
   ) {
 
-  def stubNsiResponse(): StubMapping = stubFor {
+  def stubNsiResponse(endpoint: MappingBuilder): StubMapping = stubFor {
     val body = Json.obj(
       "accountStatus"  -> expectedResponse.accountStatus,
       "topUpAvailable" -> expectedResponse.topUpAvailable,
@@ -47,7 +47,7 @@ final case class NsiCheckBalance200Scenario(
       "clearedFunds"   -> expectedResponse.clearedFunds
     )
 
-    WireMock.get(s"/account/v1/accounts/balance/$childAccountPaymentRef") willReturn okJson(body.toString)
+    endpoint willReturn okJson(body.toString)
   }
 
   val identifierRequest: IdentifierRequest[SharedRequestData] = {
