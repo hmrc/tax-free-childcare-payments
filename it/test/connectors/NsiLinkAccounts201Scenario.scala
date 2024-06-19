@@ -16,13 +16,10 @@
 
 package connectors
 
-import com.github.tomakehurst.wiremock.client.{MappingBuilder, WireMock}
-import com.github.tomakehurst.wiremock.client.WireMock.{created, stubFor}
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import models.requests.{IdentifierRequest, LinkRequest, SharedRequestData}
 import models.response.LinkResponse
 import org.scalacheck.{Arbitrary, Gen}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
 
@@ -39,11 +36,7 @@ final case class NsiLinkAccounts201Scenario(
     expectedResponse: LinkResponse
   ) {
 
-  def stubNsiResponse(endpoint: MappingBuilder): StubMapping = stubFor {
-    val body = Json.obj("childFullName" -> expectedResponse.childFullName)
-
-    endpoint willReturn created().withBody(body.toString)
-  }
+  val expectedRequestJson: JsObject = Json.obj("childFullName" -> expectedResponse.childFullName)
 
   val identifierRequest: IdentifierRequest[LinkRequest] = {
     val sharedRequestData = SharedRequestData(eppAccount, eppURN, childAccountPaymentRef)

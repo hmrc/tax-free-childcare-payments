@@ -16,13 +16,10 @@
 
 package connectors
 
-import com.github.tomakehurst.wiremock.client.{MappingBuilder, WireMock}
-import com.github.tomakehurst.wiremock.client.WireMock.{okJson, stubFor}
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import models.requests.{IdentifierRequest, SharedRequestData}
 import models.response.{AccountStatus, BalanceResponse}
 import org.scalacheck.{Arbitrary, Gen}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
 
@@ -37,18 +34,14 @@ final case class NsiCheckBalance200Scenario(
     expectedResponse: BalanceResponse
   ) {
 
-  def stubNsiResponse(endpoint: MappingBuilder): StubMapping = stubFor {
-    val body = Json.obj(
-      "accountStatus"  -> expectedResponse.accountStatus,
-      "topUpAvailable" -> expectedResponse.topUpAvailable,
-      "topUpRemaining" -> expectedResponse.topUpRemaining,
-      "paidIn"         -> expectedResponse.paidIn,
-      "totalBalance"   -> expectedResponse.totalBalance,
-      "clearedFunds"   -> expectedResponse.clearedFunds
-    )
-
-    endpoint willReturn okJson(body.toString)
-  }
+  val expectedRequestJson: JsObject = Json.obj(
+    "accountStatus"  -> expectedResponse.accountStatus,
+    "topUpAvailable" -> expectedResponse.topUpAvailable,
+    "topUpRemaining" -> expectedResponse.topUpRemaining,
+    "paidIn"         -> expectedResponse.paidIn,
+    "totalBalance"   -> expectedResponse.totalBalance,
+    "clearedFunds"   -> expectedResponse.clearedFunds
+  )
 
   val identifierRequest: IdentifierRequest[SharedRequestData] = {
     val sharedRequestData = SharedRequestData(eppAccount, eppURN, childAccountPaymentRef)
