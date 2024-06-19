@@ -17,24 +17,37 @@
 package connectors
 
 import base.BaseISpec
-import models.requests.{IdentifierRequest, LinkRequest, SharedRequestData}
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import org.scalatest.EitherValues
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class NsiConnectorISpec extends BaseISpec with ScalaCheckPropertyChecks with EitherValues {
   private val connector = app.injector.instanceOf[NsiConnector]
 
+  private val configRoot = "microservice.services.nsi"
+
+  private val nsiRoot = app.configuration.get[String](s"$configRoot.path")
+  private val nsiLinkUrl = app.configuration.get[String](s"$configRoot.linkAccounts")
+  private val nsiBalanceUrl = app.configuration.get[String](s"$configRoot.checkBalance")
+  private val nsiPaymentUrl = app.configuration.get[String](s"$configRoot.makePayment")
+
+  private val linkEndpoint = WireMock.post(urlMatching(s"$nsiRoot$nsiLinkUrl/[a-zA-Z0-9]+"))
+  private val balanceEndpoint = WireMock.get(urlMatching(s"$nsiRoot$nsiBalanceUrl/[a-zA-Z0-9]+"))
+  private val paymentEndpoint = WireMock.post(s"$nsiRoot$nsiPaymentUrl")
+
   "method linkAccounts" should {
     s"respond $OK with a defined LinkResponse" when {
       s"NSI responds $CREATED with expected JSON format" in
         forAll { scenario: NsiLinkAccounts201Scenario =>
-          scenario.stubNsiResponse()
+          scenario.stubNsiResponse(linkEndpoint)
 
           implicit val req: IdentifierRequest[LinkRequest] = scenario.identifierRequest
 
-          val actualLinkResponse = connector.linkAccounts.futureValue.value
+          val actualResponse = connector.linkAccounts.futureValue.value
 
-          actualLinkResponse shouldBe scenario.expectedResponse
+          actualResponse shouldBe scenario.expectedResponse
         }
     }
   }
@@ -43,20 +56,29 @@ class NsiConnectorISpec extends BaseISpec with ScalaCheckPropertyChecks with Eit
     s"respond $OK with a defined BalanceResponse" when {
       s"NSI responds $OK with expected JSON format" in
         forAll { scenario: NsiCheckBalance200Scenario =>
-          scenario.stubNsiResponse()
+          scenario.stubNsiResponse(balanceEndpoint)
 
           implicit val req: IdentifierRequest[SharedRequestData] = scenario.identifierRequest
 
-          val actualLinkResponse = connector.checkBalance.futureValue.value
+          val actualResponse = connector.checkBalance.futureValue.value
 
-          actualLinkResponse shouldBe scenario.expectedResponse
+          actualResponse shouldBe scenario.expectedResponse
         }
     }
   }
 
   "method makePayment" should {
     s"respond $OK with a defined PaymentResponse" when {
-      s"NSI responds $CREATED with expected JSON format" in {}
+      s"NSI responds $CREATED with expected JSON format" in
+        forAll { scenario: NsiMakePayment201Scenario =>
+          scenario.stubNsiResponse(paymentEndpoint)
+
+          implicit val req: IdentifierRequest[PaymentRequest] = scenario.identifierRequest
+
+          val actualResponse = connector.makePayment.futureValue.value
+
+          actualResponse shouldBe scenario.expectedResponse
+        }
     }
   }
 }

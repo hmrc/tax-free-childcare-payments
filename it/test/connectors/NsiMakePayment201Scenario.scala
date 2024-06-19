@@ -16,11 +16,11 @@
 
 package connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.{created, stubFor}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import models.requests.PaymentRequest.PayeeType
-import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
+import models.requests.{IdentifierRequest, PaymentRequest, SharedRequestData}
 import models.response.PaymentResponse
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.Json
@@ -42,22 +42,16 @@ final case class NsiMakePayment201Scenario(
   ) {
   private val payeeType = if (opt_ccp_urn.isDefined) PayeeType.CCP else PayeeType.EPP
 
-  def stubNsiResponse(): StubMapping = stubFor {
+  def stubNsiResponse(endpoint: MappingBuilder): StubMapping = stubFor {
     val body = Json.obj(
-      "payeeType"              -> payeeType,
-      "amount"                 -> amount,
-      "childAccountPaymentRef" -> childAccountPaymentRef,
-      "eppURN"                 -> epp_urn,
-      "ccpURN"                 -> opt_ccp_urn,
-      "eppAccount"             -> eppAccount,
-      "parentNino"             -> parentNino
+      "paymentReference" -> expectedResponse.payment_reference,
+      "paymentDate"      -> expectedResponse.estimated_payment_date
     )
 
-    WireMock.post("/payment/v1/payments/pay-childcare") willReturn
-      created().withBody(body.toString)
+    endpoint willReturn created().withBody(body.toString)
   }
 
-  val identifierRequest: IdentifierRequest[LinkRequest] = {
+  val identifierRequest: IdentifierRequest[PaymentRequest] = {
     val sharedRequestData = SharedRequestData(eppAccount, epp_urn, childAccountPaymentRef)
 
     IdentifierRequest(
@@ -92,7 +86,10 @@ object NsiMakePayment201Scenario extends Generators {
     )
   )
 
-  private lazy val paymentResponses = nonEmptyAlphaNumStrings map { paymentRef =>
-    PaymentResponse(paymentRef, LocalDate.now())
-  }
+  private lazy val paymentResponses = for {
+    paymentRef       <- nonEmptyAlphaNumStrings
+    paymentDelayDays <- Gen.chooseNum(0, DAYS_IN_MONTH)
+  } yield PaymentResponse(paymentRef, LocalDate.now() plusDays paymentDelayDays)
+
+  private lazy val DAYS_IN_MONTH = 31
 }

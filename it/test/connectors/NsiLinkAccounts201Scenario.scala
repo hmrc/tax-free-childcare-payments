@@ -16,7 +16,7 @@
 
 package connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.{MappingBuilder, WireMock}
 import com.github.tomakehurst.wiremock.client.WireMock.{created, stubFor}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import models.requests.{IdentifierRequest, LinkRequest, SharedRequestData}
@@ -39,11 +39,10 @@ final case class NsiLinkAccounts201Scenario(
     expectedResponse: LinkResponse
   ) {
 
-  def stubNsiResponse(): StubMapping = stubFor {
+  def stubNsiResponse(endpoint: MappingBuilder): StubMapping = stubFor {
     val body = Json.obj("childFullName" -> expectedResponse.childFullName)
 
-    WireMock.post(s"/account/v1/accounts/link-to-epp/$childAccountPaymentRef") willReturn
-      created().withBody(body.toString)
+    endpoint willReturn created().withBody(body.toString)
   }
 
   val identifierRequest: IdentifierRequest[LinkRequest] = {
