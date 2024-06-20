@@ -37,8 +37,7 @@ abstract class BaseISpec
     with TableDrivenPropertyChecks
     with ScalaCheckPropertyChecks {
 
-  import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor, urlMatching}
-  import com.github.tomakehurst.wiremock.matching.UrlPattern
+  import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
   import org.scalatest.Assertion
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
@@ -70,6 +69,4 @@ abstract class BaseISpec
   )
 
   protected lazy val CORRELATION_ID = "Correlation-ID"
-
-  protected def nsiResource(path: String): UrlPattern = urlMatching(s"/accounts/v1/account/[0-9a-zA-Z]+$path")
 }
