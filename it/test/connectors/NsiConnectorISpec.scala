@@ -16,12 +16,12 @@
 
 package connectors
 
-import base.BaseISpec
+import base.{BaseISpec, NsiStubs}
+import connectors.scenarios._
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import org.scalatest.EitherValues
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class NsiConnectorISpec extends BaseISpec with NsiStubs with ScalaCheckPropertyChecks with EitherValues {
+class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues {
   private val connector = app.injector.instanceOf[NsiConnector]
 
   "method linkAccounts" should {

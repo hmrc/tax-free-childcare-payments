@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package connectors
+package base
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
@@ -36,13 +36,15 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
     urlMatching(urlPattern)
   }
 
+  private def jsonPatternFrom(expectedProps: String) =
+    expectedProps
+      .split(",")
+      .map(prop => matchingJsonPath(s"$$.$prop"))
+      .reduce(_ and _)
+
   /** NSI Link Accounts spec */
   private lazy val nsiLinkAccountsUrlPattern       = nsiUrlPattern("linkAccounts", "[a-zA-Z0-9]+")
-  private lazy val nsiLinkAccountsRequestBodyProps = "eppURN,eppAccount,parentNino,childDoB".split(",")
-
-  private lazy val nsiLinkAccountsRequestBodyPattern = nsiLinkAccountsRequestBodyProps
-    .map(prop => matchingJsonPath(s"$$.$prop"))
-    .reduce(_ and _)
+  private lazy val nsiLinkAccountsRequestBodyPattern = jsonPatternFrom("eppURN,eppAccount,parentNino,childDoB")
 
   protected def stubNsiLinkAccounts201(expectedResponseJson: JsValue): StubMapping = stubFor {
     post(nsiLinkAccountsUrlPattern)
@@ -67,11 +69,7 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
 
   /** NSI Make Payment spec */
   private lazy val nsiPaymentUrlPattern = nsiUrlPattern("makePayment")
-  private lazy val nsiPaymentBodyProps  = "payeeType,amount,childAccountPaymentRef,eppURN,eppAccount,parentNino".split(",")
-
-  private lazy val nsiPaymentRequestBodyPattern = nsiPaymentBodyProps
-    .map(prop => matchingJsonPath(s"$$.$prop"))
-    .reduce(_ and _)
+  private lazy val nsiPaymentRequestBodyPattern  = jsonPatternFrom("payeeType,amount,childAccountPaymentRef,eppURN,eppAccount,parentNino")
 
   protected def stubNsiMakePayment201(expectedResponseJson: JsValue): StubMapping = stubFor {
     post(nsiPaymentUrlPattern)
