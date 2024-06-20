@@ -47,7 +47,7 @@ class NsiConnector @Inject() (
 
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] =
     httpClient
-      .post(resource("linkAccounts", req.body.metadata.outbound_child_payment_ref))
+      .post(resource("linkAccounts", req.body.sharedRequestData.outbound_child_payment_ref))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[LinkRequest])
       .execute[Maybe[LinkResponse]]
@@ -67,14 +67,14 @@ class NsiConnector @Inject() (
 
   private def resource(endpoint: String, params: String*) = {
     val domain       = servicesConfig.baseUrl(serviceName)
-    val rootPath     = servicesConfig.getString(s"microservice.services.$serviceName.path")
+    val rootPath     = servicesConfig.getString(s"microservice.services.$serviceName.rootPath")
     val resourcePath = servicesConfig.getString(s"microservice.services.$serviceName.$endpoint")
     val pathParams   = params.map("/" + _).mkString
 
     new URL(s"$domain$rootPath$resourcePath$pathParams")
   }
 
-  private val CORRELATION_ID = servicesConfig.getString(s"microservice.services.$serviceName.correlation-id-header")
+  private val CORRELATION_ID = servicesConfig.getString(s"microservice.services.$serviceName.correlationIdHeader")
 }
 
 object NsiConnector {
@@ -82,7 +82,26 @@ object NsiConnector {
   private val serviceName = "nsi"
 
   private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]) =
-    Json.toJsObject(req.body) + ("nino" -> JsString(req.nino))
+    Json.toJsObject(req.body) + ("parentNino" -> JsString(req.nino))
+
+  private implicit val writesLinkReq: OWrites[LinkRequest] = lr =>
+    Json.toJsObject(lr.sharedRequestData) ++
+      Json.obj("childDoB" -> lr.child_date_of_birth)
+
+  private implicit val writesPaymentReq: OWrites[PaymentRequest] = pr =>
+    Json.toJsObject(pr.sharedRequestData) ++
+      Json.obj(
+        "payeeType"              -> pr.payee_type,
+        "amount"                 -> pr.payment_amount,
+        "childAccountPaymentRef" -> pr.sharedRequestData.outbound_child_payment_ref,
+        "ccpURN"                 -> pr.ccp_reg_reference
+      )
+
+  private implicit val writesSharedReqData: OWrites[SharedRequestData] = srd =>
+    Json.obj(
+      "eppAccount" -> srd.epp_unique_customer_id,
+      "eppURN"     -> srd.epp_reg_reference
+    )
 
   private implicit val readsLinkResponse: Reads[LinkResponse] =
     (__ \ "childFullName").read[String] map LinkResponse.apply

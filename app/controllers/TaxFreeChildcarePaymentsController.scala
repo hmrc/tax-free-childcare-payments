@@ -16,16 +16,19 @@
 
 package controllers
 
+import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
+import models.requests.PaymentRequest.PayeeType
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
 
-import play.api.libs.json.{Json, Reads, Writes}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{__, Json, Reads, Writes}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -54,6 +57,19 @@ class TaxFreeChildcarePaymentsController @Inject() (
 }
 
 object TaxFreeChildcarePaymentsController {
+
+  private implicit val readsLinkReq: Reads[LinkRequest] = (
+    __.read[SharedRequestData] ~
+      (__ \ "child_date_of_birth").read[LocalDate]
+  )(LinkRequest.apply _)
+
+  implicit val readsPaymentReq: Reads[PaymentRequest] = (
+    __.read[SharedRequestData] ~
+      (__ \ "payment_amount").read[Int] ~
+      (__ \ "ccp_reg_reference").read[String] ~
+      (__ \ "ccp_postcode").read[String] ~
+      (__ \ "payee_type").read[PayeeType.Value]
+  )(PaymentRequest.apply _)
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(
