@@ -16,6 +16,7 @@
 
 package base
 
+import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
@@ -27,8 +28,51 @@ import scala.jdk.CollectionConverters.MapHasAsJava
 /** The specs below should follow the NSI documentation at <https://drive.google.com/drive/folders/1ES36CjJpVumXXCM8VC5VQQa7J3xIIqoW>. */
 trait NsiStubs { self: GuiceOneServerPerSuite =>
 
-  private lazy val nsiConfig   = app.configuration.get[Configuration]("microservice.services.nsi")
-  private lazy val nsiRootPath = nsiConfig.get[String]("rootPath")
+  /** NSI Link Accounts spec */
+
+  protected def stubNsiLinkAccounts201(expectedResponseJson: JsValue): StubMapping = stubFor {
+    nsiLinkAccountsEndpoint
+      .withRequestBody(nsiLinkAccountsRequestBodyPattern)
+      .willReturn(created() withBody expectedResponseJson.toString)
+  }
+
+  protected lazy val nsiLinkAccountsEndpoint: MappingBuilder = post(nsiLinkAccountsUrlPattern)
+
+  private lazy val nsiLinkAccountsUrlPattern                 = nsiUrlPattern("linkAccounts", "[a-zA-Z0-9]+")
+  private lazy val nsiLinkAccountsRequestBodyPattern         = jsonPatternFrom("eppURN,eppAccount,parentNino,childDoB")
+
+  /** NSI Check Balance spec */
+
+  protected def stubNsiCheckBalance200(expectedResponseJson: JsValue): StubMapping = stubFor {
+    nsiCheckBalanceEndpoint
+      .withQueryParams(nsiBalanceUrlQueryParams)
+      .willReturn(created() withBody expectedResponseJson.toString)
+  }
+
+  protected lazy val nsiCheckBalanceEndpoint: MappingBuilder = get(nsiBalanceUrlPattern)
+
+  private lazy val nsiBalanceUrlQueryParams = Map(
+    "eppURN"     -> matching("[a-zA-Z0-9]+"),
+    "eppAccount" -> matching("[a-zA-Z0-9]+"),
+    "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]")
+  ).asJava
+
+  private lazy val nsiBalanceUrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
+
+  /** NSI Make Payment spec */
+
+  protected def stubNsiMakePayment201(expectedResponseJson: JsValue): StubMapping = stubFor {
+    nsiMakePaymentEndpoint
+      .withRequestBody(nsiPaymentRequestBodyPattern)
+      .willReturn(created() withBody expectedResponseJson.toString)
+  }
+
+  protected lazy val nsiMakePaymentEndpoint: MappingBuilder = post(nsiPaymentUrlPattern)
+
+  private lazy val nsiPaymentUrlPattern         = nsiUrlPattern("makePayment")
+  private lazy val nsiPaymentRequestBodyPattern = jsonPatternFrom("payeeType,amount,childAccountPaymentRef,eppURN,eppAccount,parentNino")
+
+  /** Utils */
 
   private def nsiUrlPattern(endpointName: String, pathPatterns: String*) = {
     val initPath   = nsiRootPath + nsiConfig.get[String](endpointName)
@@ -42,38 +86,6 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
       .map(prop => matchingJsonPath(s"$$.$prop"))
       .reduce(_ and _)
 
-  /** NSI Link Accounts spec */
-  private lazy val nsiLinkAccountsUrlPattern       = nsiUrlPattern("linkAccounts", "[a-zA-Z0-9]+")
-  private lazy val nsiLinkAccountsRequestBodyPattern = jsonPatternFrom("eppURN,eppAccount,parentNino,childDoB")
-
-  protected def stubNsiLinkAccounts201(expectedResponseJson: JsValue): StubMapping = stubFor {
-    post(nsiLinkAccountsUrlPattern)
-      .withRequestBody(nsiLinkAccountsRequestBodyPattern)
-      .willReturn(created() withBody expectedResponseJson.toString)
-  }
-
-  /** NSI Check Balance spec */
-  private lazy val nsiBalanceUrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
-
-  private lazy val nsiBalanceUrlQueryParams = Map(
-    "eppURN"     -> matching("[a-zA-Z0-9]+"),
-    "eppAccount" -> matching("[a-zA-Z0-9]+"),
-    "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]")
-  ).asJava
-
-  protected def stubNsiCheckBalance200(expectedResponseJson: JsValue): StubMapping = stubFor {
-    get(nsiBalanceUrlPattern)
-      .withQueryParams(nsiBalanceUrlQueryParams)
-      .willReturn(created() withBody expectedResponseJson.toString)
-  }
-
-  /** NSI Make Payment spec */
-  private lazy val nsiPaymentUrlPattern = nsiUrlPattern("makePayment")
-  private lazy val nsiPaymentRequestBodyPattern  = jsonPatternFrom("payeeType,amount,childAccountPaymentRef,eppURN,eppAccount,parentNino")
-
-  protected def stubNsiMakePayment201(expectedResponseJson: JsValue): StubMapping = stubFor {
-    post(nsiPaymentUrlPattern)
-      .withRequestBody(nsiPaymentRequestBodyPattern)
-      .willReturn(created() withBody expectedResponseJson.toString)
-  }
+  private lazy val nsiConfig   = app.configuration.get[Configuration]("microservice.services.nsi")
+  private lazy val nsiRootPath = nsiConfig.get[String]("rootPath")
 }

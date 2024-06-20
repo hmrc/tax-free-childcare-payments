@@ -193,9 +193,9 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
     val endpoints = Table(
       ("Name", "TFC URL", "NSI Mapping", "Valid Payload"),
-      ("link", s"$resourcePath/link", post(nsiResource("/link")), randomLinkRequestJson),
-      ("balance", s"$resourcePath/balance", get(nsiResource("/balance")), randomSharedJson),
-      ("payment", s"$resourcePath/", post(nsiResource("/payments")), randomPaymentRequestJson)
+      ("link", s"$resourcePath/link", nsiLinkAccountsEndpoint, randomLinkRequestJson),
+      ("balance", s"$resourcePath/balance", nsiCheckBalanceEndpoint, randomSharedJson),
+      ("payment", s"$resourcePath/", nsiMakePaymentEndpoint, randomPaymentRequestJson)
     )
 
     val nsiErrorScenarios = Table(
