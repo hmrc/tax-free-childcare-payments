@@ -16,7 +16,7 @@
 
 package models.requests
 
-import play.api.libs.json.{Json, OWrites, Reads}
+import play.api.libs.json.{Json, Reads}
 
 final case class SharedRequestData(
     epp_unique_customer_id: String,
@@ -34,6 +34,4 @@ object SharedRequestData {
     (br.epp_reg_reference matches REGISTRATION_REF_PATTERN) &&
     (br.outbound_child_payment_ref matches PAYMENT_REF_PATTERN)
   }
-
-  implicit val writes: OWrites[SharedRequestData] = Json.writes
 }
