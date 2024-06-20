@@ -47,20 +47,29 @@ class NsiConnector @Inject() (
 
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] =
     httpClient
-      .post(resource("linkAccounts", req.body.sharedRequestData.outbound_child_payment_ref))
+      .post(new URL(resource("linkAccounts", req.body.sharedRequestData.outbound_child_payment_ref)))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[LinkRequest])
       .execute[Maybe[LinkResponse]]
 
-  def checkBalance(implicit req: IdentifierRequest[SharedRequestData]): Future[Maybe[BalanceResponse]] =
+  def checkBalance(implicit req: IdentifierRequest[SharedRequestData]): Future[Maybe[BalanceResponse]] = {
+    val queryString = Map(
+      "eppURN"     -> req.body.epp_reg_reference,
+      "eppAccount" -> req.body.epp_unique_customer_id,
+      "parentNino" -> req.nino
+    ).map { case (k, v) => s"$k=$v" }.mkString("?", "&", "")
+
+    val url = new URL(resource("checkBalance", req.body.outbound_child_payment_ref) + queryString)
+
     httpClient
-      .get(resource("checkBalance", req.body.outbound_child_payment_ref))
+      .get(url)
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .execute[Maybe[BalanceResponse]]
+  }
 
   def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[Maybe[PaymentResponse]] =
     httpClient
-      .post(resource("makePayment"))
+      .post(new URL(resource("makePayment")))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .withBody(enrichedWithNino[PaymentRequest])
       .execute[Maybe[PaymentResponse]]
@@ -71,7 +80,7 @@ class NsiConnector @Inject() (
     val resourcePath = servicesConfig.getString(s"microservice.services.$serviceName.$endpoint")
     val pathParams   = params.map("/" + _).mkString
 
-    new URL(s"$domain$rootPath$resourcePath$pathParams")
+    s"$domain$rootPath$resourcePath$pathParams"
   }
 
   private val CORRELATION_ID = servicesConfig.getString(s"microservice.services.$serviceName.correlationIdHeader")

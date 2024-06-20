@@ -29,6 +29,6 @@ trait Generators {
     char0 <- Gen.alphaUpperChar
     char1 <- Gen.alphaUpperChar
     digits <- Gen.listOfN(6, Gen.numChar)
-    char8 <- Gen.alphaUpperChar
+    char8 <- Gen oneOf "ABCD"
   } yield char0 +: char1 +: digits.mkString :+ char8
 }

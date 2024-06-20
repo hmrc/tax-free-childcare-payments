@@ -51,7 +51,7 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
   }
 
   /** NSI Check Balance spec */
-  private lazy val nsiBalanceUrlPattern = nsiUrlPattern("checkBalance", "[a-zA-Z0-9]+")
+  private lazy val nsiBalanceUrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   private lazy val nsiBalanceUrlQueryParams = Map(
     "eppURN"     -> matching("[a-zA-Z0-9]+"),
