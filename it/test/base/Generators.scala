@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-package connectors
+package base
 
 import org.scalacheck.Gen
 
 trait Generators {
+
+  protected lazy val fullNames: Gen[String] = for {
+    firstName <- names
+    lastName  <- names
+  } yield s"$firstName $lastName"
+
+  private lazy val names = for {
+    char0 <- Gen.alphaUpperChar
+    char1 <- Gen.alphaLowerChar
+    chars <- Gen.alphaLowerStr
+  } yield char0 +: char1 +: chars
 
   protected lazy val nonEmptyAlphaNumStrings: Gen[String] = for {
     char0 <- Gen.alphaNumChar

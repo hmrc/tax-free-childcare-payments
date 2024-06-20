@@ -14,73 +14,73 @@
  * limitations under the License.
  */
 
-package connectors
+package connectors.scenarios
 
-import models.requests.{IdentifierRequest, LinkRequest, SharedRequestData}
-import models.response.LinkResponse
+import base.Generators
+import models.requests.{IdentifierRequest, SharedRequestData}
+import models.response.{AccountStatus, BalanceResponse}
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
 
-import java.time.LocalDate
 import java.util.UUID
 
-final case class NsiLinkAccounts201Scenario(
+final case class NsiCheckBalance200Scenario(
     correlationId: UUID,
     childAccountPaymentRef: String,
     eppURN: String,
     eppAccount: String,
     parentNino: String,
-    childDoB: LocalDate,
-    expectedResponse: LinkResponse
+    expectedResponse: BalanceResponse
   ) {
 
-  val expectedRequestJson: JsObject = Json.obj("childFullName" -> expectedResponse.childFullName)
+  val expectedRequestJson: JsObject = Json.obj(
+    "accountStatus"  -> expectedResponse.accountStatus,
+    "topUpAvailable" -> expectedResponse.topUpAvailable,
+    "topUpRemaining" -> expectedResponse.topUpRemaining,
+    "paidIn"         -> expectedResponse.paidIn,
+    "totalBalance"   -> expectedResponse.totalBalance,
+    "clearedFunds"   -> expectedResponse.clearedFunds
+  )
 
-  val identifierRequest: IdentifierRequest[LinkRequest] = {
+  val identifierRequest: IdentifierRequest[SharedRequestData] = {
     val sharedRequestData = SharedRequestData(eppAccount, eppURN, childAccountPaymentRef)
 
     IdentifierRequest(
       parentNino,
       correlationId,
-      FakeRequest("", "", Headers(), LinkRequest(sharedRequestData, childDoB))
+      FakeRequest("", "", Headers(), sharedRequestData)
     )
   }
 }
 
-object NsiLinkAccounts201Scenario extends Generators {
+object NsiCheckBalance200Scenario extends Generators {
 
-  implicit val arb: Arbitrary[NsiLinkAccounts201Scenario] = Arbitrary(
+  implicit val arb: Arbitrary[NsiCheckBalance200Scenario] = Arbitrary(
     for {
       correlationId          <- Gen.uuid
       childAccountPaymentRef <- nonEmptyAlphaNumStrings
       eppURN                 <- nonEmptyAlphaNumStrings
       eppAccount             <- nonEmptyAlphaNumStrings
       parentNino             <- ninos
-      childAgeDays           <- Gen.chooseNum(1, 18 * 365)
-      expectedLinkResponse   <- linkResponses
+      expectedResponse       <- balanceResponses
     } yield apply(
       correlationId,
       childAccountPaymentRef,
       eppURN,
       eppAccount,
       parentNino,
-      LocalDate.now() minusDays childAgeDays,
-      expectedLinkResponse
+      expectedResponse
     )
   )
 
-  private lazy val linkResponses = fullNames map LinkResponse.apply
-
-  private lazy val fullNames = for {
-    firstName <- names
-    lastName  <- names
-  } yield s"$firstName $lastName"
-
-  private lazy val names = for {
-    char0 <- Gen.alphaUpperChar
-    char1 <- Gen.alphaLowerChar
-    chars <- Gen.alphaLowerStr
-  } yield char0 +: char1 +: chars
+  private lazy val balanceResponses = for {
+    accountStatus  <- Gen oneOf AccountStatus.values
+    topUpAvailable <- Gen.chooseNum(0, Int.MaxValue)
+    topUpRemaining <- Gen.chooseNum(0, Int.MaxValue)
+    paidIn         <- Gen.chooseNum(0, Int.MaxValue)
+    totalBalance   <- Gen.chooseNum(0, Int.MaxValue)
+    clearedFunds   <- Gen.chooseNum(0, Int.MaxValue)
+  } yield BalanceResponse(accountStatus, topUpAvailable, topUpRemaining, paidIn, totalBalance, clearedFunds)
 }

@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package connectors
+package connectors.scenarios
 
+import base.Generators
 import models.requests.PaymentRequest.PayeeType
 import models.requests.{IdentifierRequest, PaymentRequest, SharedRequestData}
 import models.response.PaymentResponse

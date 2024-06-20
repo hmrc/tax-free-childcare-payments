@@ -16,7 +16,7 @@
 
 package controllers
 
-import base.BaseISpec
+import base.{BaseISpec, Generators, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
 import config.CustomJsonErrorHandler
@@ -27,36 +27,36 @@ import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
 
-class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturing with LoneElement {
+class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs with Generators with LogCapturing with LoneElement {
 
   withClient { wsClient =>
     "POST /link" should {
       s"respond with status $OK and correct JSON body" when {
 
-        val expectedResponseJson = Json.obj("child_full_name" -> "Peter Pan")
-
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in
-          withAuthNinoRetrieval {
-            val expectedCorrelationId = UUID.randomUUID()
+          forAll(fullNames) { expectedChildName =>
+            withAuthNinoRetrieval {
+              val expectedCorrelationId   = UUID.randomUUID()
+              val expectedTfcResponseBody = Json.obj("child_full_name" -> expectedChildName)
+              val expectedNsiResponseBody = Json.obj("childFullName" -> expectedChildName)
 
-            stubFor(
-              post(nsiResource("/link")) willReturn okJson(expectedResponseJson.toString)
-            )
+              stubNsiLinkAccounts201(expectedNsiResponseBody)
 
-            val res = wsClient
-              .url(s"$baseUrl/link")
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
-              )
-              .post(randomLinkRequestJson)
-              .futureValue
+              val res = wsClient
+                .url(s"$baseUrl/link")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(randomLinkRequestJson)
+                .futureValue
 
-            val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
+              val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
 
-            res.status shouldBe OK
-            resCorrelationId shouldBe expectedCorrelationId
-            res.json shouldBe expectedResponseJson
+              res.status shouldBe OK
+              resCorrelationId shouldBe expectedCorrelationId
+              res.json shouldBe expectedTfcResponseBody
+            }
           }
       }
 
@@ -89,8 +89,8 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
     "POST /balance" should {
       s"respond with status $OK and correct JSON body" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
-          val expectedCorrelationId = UUID.randomUUID()
-          val expectedResponse      = Json.obj(
+          val expectedCorrelationId   = UUID.randomUUID()
+          val expectedTfcResponseBody = Json.obj(
             "tfc_account_status" -> "ACTIVE",
             "paid_in_by_you"     -> 0,
             "government_top_up"  -> 0,
@@ -98,12 +98,16 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
             "cleared_funds"      -> 0,
             "top_up_allowance"   -> 0
           )
-
-          stubFor(
-            get(nsiResource("/balance"))
-              .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
-              .willReturn(okJson(expectedResponse.toString))
+          val expectedNsiResponseBody = Json.obj(
+            "accountStatus"  -> "ACTIVE",
+            "topUpAvailable" -> 0,
+            "topUpRemaining" -> 0,
+            "paidIn"         -> 0,
+            "totalBalance"   -> 0,
+            "clearedFunds"   -> 0
           )
+
+          stubNsiCheckBalance200(expectedNsiResponseBody)
 
           val res = wsClient
             .url(s"$baseUrl/balance")
@@ -118,7 +122,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
 
           res.status shouldBe OK
           resCorrelationId shouldBe expectedCorrelationId
-          res.json shouldBe expectedResponse
+          res.json shouldBe expectedTfcResponseBody
         }
       }
     }
@@ -130,16 +134,16 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
           val expectedPaymentRef    = randomPaymentRef
           val expectedPaymentDate   = randomPaymentDate
 
-          val expectedResponse = Json.obj(
+          val expectedTfcResponseBody = Json.obj(
             "payment_reference"      -> expectedPaymentRef,
             "estimated_payment_date" -> expectedPaymentDate
           )
-
-          stubFor(
-            post(nsiResource("/payments"))
-              .withHeader(CORRELATION_ID, equalTo(expectedCorrelationId.toString))
-              .willReturn(okJson(expectedResponse.toString))
+          val expectedNsiResponseBody = Json.obj(
+            "paymentReference" -> expectedPaymentRef,
+            "paymentDate"      -> expectedPaymentDate
           )
+
+          stubNsiMakePayment201(expectedNsiResponseBody)
 
           val res = wsClient
             .url(s"$baseUrl/")
@@ -154,7 +158,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with LogCapturin
 
           res.status shouldBe OK
           resCorrelationId shouldBe expectedCorrelationId
-          res.json shouldBe expectedResponse
+          res.json shouldBe expectedTfcResponseBody
         }
       }
 
