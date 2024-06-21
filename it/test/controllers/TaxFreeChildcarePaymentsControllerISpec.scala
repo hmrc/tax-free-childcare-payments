@@ -193,9 +193,9 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
     val endpoints = Table(
       ("Name", "TFC URL", "NSI Mapping", "Valid Payload"),
-      ("link", s"$resourcePath/link", nsiLinkAccountsEndpoint, randomLinkRequestJson),
-      ("balance", s"$resourcePath/balance", nsiCheckBalanceEndpoint, randomSharedJson),
-      ("payment", s"$resourcePath/", nsiMakePaymentEndpoint, randomPaymentRequestJson)
+      ("link", "/link", nsiLinkAccountsEndpoint, randomLinkRequestJson),
+      ("balance", "/balance", nsiCheckBalanceEndpoint, randomSharedJson),
+      ("payment", "/", nsiMakePaymentEndpoint, randomPaymentRequestJson)
     )
 
     val nsiErrorScenarios = Table(
@@ -238,7 +238,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
               val makePaymentRequest = randomPaymentRequestJson + (field, JsString(badValue))
 
               val res = wsClient
-                .url(s"$domain$tfc_url")
+                .url(s"$baseUrl$tfc_url")
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> expectedCorrelationId
@@ -259,7 +259,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
             )
 
             val response = wsClient
-              .url(s"$domain$tfc_url")
+              .url(s"$baseUrl$tfc_url")
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> UUID.randomUUID().toString
@@ -284,7 +284,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
                 stubFor(nsiMapping willReturn nsiResponse)
 
                 val response = wsClient
-                  .url(s"$domain$tfc_url")
+                  .url(s"$baseUrl$tfc_url")
                   .withHttpHeaders(
                     AUTHORIZATION  -> "Bearer qwertyuiop",
                     CORRELATION_ID -> UUID.randomUUID().toString

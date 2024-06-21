@@ -16,20 +16,21 @@
 
 package controllers.actions
 
-import models.requests.IdentifierRequest
-import models.response.TfcErrorResponse
-import play.api.http.Status
-import play.api.mvc._
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, AuthorisedFunctions, ConfidenceLevel}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
-import util.FormattedLogging
-import util.FormattedLogging.CORRELATION_ID
-
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+
+import models.requests.IdentifierRequest
+import models.response.TfcErrorResponse
+import util.FormattedLogging
+import util.FormattedLogging.CORRELATION_ID
+
+import play.api.http.Status
+import play.api.mvc._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisationException, AuthorisedFunctions, ConfidenceLevel}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 
 @Singleton
 class AuthAction @Inject() (
@@ -46,31 +47,33 @@ class AuthAction @Inject() (
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
     implicit val req: Request[A] = request
 
-    authorised(ConfidenceLevel.L250)
-      .retrieve(Retrievals.nino) { optNino =>
-        val optCorrelationIdHeader = request.headers get CORRELATION_ID
-        val optIdentifierRequest   = for {
-          correlationIdHeader <- optCorrelationIdHeader toRight correlationIdError
-          correlationId       <- Try(UUID fromString correlationIdHeader).toOption toRight correlationIdError
-          nino                <- optNino toRight ninoRetrievalError
-        } yield IdentifierRequest(nino, correlationId, request)
+    authorised(ConfidenceLevel.L250 and AffinityGroup.Individual)
+      .retrieve(Retrievals.nino) {
+        optNino =>
+          val optCorrelationIdHeader = request.headers get CORRELATION_ID
+          val optIdentifierRequest   = for {
+            correlationIdHeader <- optCorrelationIdHeader toRight correlationIdError
+            correlationId       <- Try(UUID fromString correlationIdHeader).toOption toRight correlationIdError
+            nino                <- optNino toRight ninoRetrievalError
+          } yield IdentifierRequest(nino, correlationId, request)
 
-        optIdentifierRequest match {
-          case Right(identifierRequest) =>
-            block(identifierRequest) map { result =>
-              result.withHeaders(
-                CORRELATION_ID -> identifierRequest.correlation_id.toString
-              )
-            }
+          optIdentifierRequest match {
+            case Right(identifierRequest) =>
+              block(identifierRequest) map { result =>
+                result.withHeaders(
+                  CORRELATION_ID -> identifierRequest.correlation_id.toString
+                )
+              }
 
-          case Left(errorResponse) => Future.successful {
-              logger.info(formattedLog(errorResponse.errorDescription))
+            case Left(errorResponse) => Future.successful {
+                logger.info(formattedLog(errorResponse.errorDescription))
 
-              errorResponse.toResult
-            }
-        }
+                errorResponse.toResult
+              }
+          }
       }
-      .recover { case _: AuthorisationException =>
+      .recover { case err: AuthorisationException =>
+        logger.info(formattedLog(err.getMessage)(request))
         TfcErrorResponse(UNAUTHORIZED, "Invalid authentication credentials").toResult
       }
   }

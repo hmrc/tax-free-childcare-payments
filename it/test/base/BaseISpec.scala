@@ -51,9 +51,7 @@ abstract class BaseISpec
       "microservice.services.nsi.port"  -> wireMockPort
     ).build()
 
-  protected lazy val domain       = s"http://localhost:$port"
-  protected lazy val resourcePath = "/individuals/tax-free-childcare/payments"
-  protected lazy val baseUrl      = s"$domain$resourcePath"
+  protected lazy val baseUrl      = s"http://localhost:$port"
 
   protected def withAuthNinoRetrieval(check: => Assertion): Assertion = {
     stubFor(

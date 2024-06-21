@@ -16,20 +16,21 @@
 
 package controllers
 
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.requests.PaymentRequest.PayeeType
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
+
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{__, Json, Reads, Writes}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
-import java.time.LocalDate
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (
