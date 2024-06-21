@@ -1,6 +1,7 @@
 .*
 
 !.gitignore
+!.scalafix.conf
 !.scalafmt.conf
 bin
 .bloop/

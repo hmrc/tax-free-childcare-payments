@@ -20,7 +20,6 @@ import scala.util.Try
 
 import models.requests.PaymentRequest.PayeeType
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
 import play.api.libs.json._
 
 final case class PaymentRequest(
