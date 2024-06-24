@@ -9,7 +9,7 @@
     "versions": [
       {
         "access": {
-          "type": "PUBLIC"
+          "type": "PRIVATE"
         },
         "version": "1.2",
         "status": "BETA",
