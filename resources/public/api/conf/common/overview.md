@@ -1,14 +1,12 @@
-There is a government initiative to encourage parents to use the Tax-Free Childcare (TFC) allowance available to them. This API allows online cashless payment providers for schools to offer parents the opportunity to pay for their childcare with their TFC balance through the provider's platform.
+There is a government initiative to encourage parents to use the Tax-Free Childcare (TFC) allowance available to them. This API allows online cashless payment providers to offer parents the opportunity to pay for their childcare with their TFC balance through the provider's platform.
 There are 3 different operations involved in this process:
 - Linking the parent's TFC account with their account on the online payment provider's platform
 - Checking the balance of the child's TFC account
 - Making a payment from the child's TFC account to the childcare provider
 
-Requests are sent to National Savings and Investments (NS&I), who hold the TFC account funds.
-
 ### Prerequisites
 
-For the technical details on how to start using our APIs, please read the [Using the Developer Hub](https://developer.service.hmrc.gov.uk/api-documentation/docs/using-the-hub) page.
+For the technical details on how to start using our APIs, please read the [Using the Developer Hub](https://developer.service.hmrc.gov.uk/api-documentation/docs/using-the-hub) page. Once you have created an application in our sandbox environment, you will need to follow the below process to subscribe to our API.
 
 #### Subscribing to the TFC API
 
