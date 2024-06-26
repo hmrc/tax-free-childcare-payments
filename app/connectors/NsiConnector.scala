@@ -100,10 +100,11 @@ object NsiConnector {
   private implicit val writesPaymentReq: OWrites[PaymentRequest] = pr =>
     Json.toJsObject(pr.sharedRequestData) ++
       Json.obj(
-        "payeeType"              -> pr.payee_type,
+        "payeeType"              -> (if (pr.opt_ccp.isDefined) "CCP" else "EPP"),
         "amount"                 -> pr.payment_amount,
         "childAccountPaymentRef" -> pr.sharedRequestData.outbound_child_payment_ref,
-        "ccpURN"                 -> pr.ccp_reg_reference
+        "ccpURN"                 -> pr.opt_ccp.map(_.urn),
+        "ccpPostcode"            -> pr.opt_ccp.map(_.postcode)
       )
 
   private implicit val writesSharedReqData: OWrites[SharedRequestData] = srd =>

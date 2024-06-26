@@ -16,31 +16,31 @@
 
 package models.requests
 
-import scala.util.Try
-
-import models.requests.PaymentRequest.PayeeType
-
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json._
+import models.requests.PaymentRequest.ChildCareProvider
 
 final case class PaymentRequest(
     sharedRequestData: SharedRequestData,
     payment_amount: Int,
-    ccp_reg_reference: String,
-    ccp_postcode: String,
-    payee_type: PayeeType.Value
+    opt_ccp: Option[ChildCareProvider]
   )
 
 object PaymentRequest {
+  import play.api.libs.functional.syntax.toFunctionalBuilderOps
+  import play.api.libs.json._
+
+  final case class ChildCareProvider(urn: String, postcode: String)
+
+  object ChildCareProvider {
+
+    implicit val reads: Reads[ChildCareProvider] = (
+      (__ \ "ccpURN").read[String] ~
+        (__ \ "ccpPostcode").read[String]
+    )(apply _)
+  }
 
   object PayeeType extends Enumeration {
     val CCP, EPP = Value
-  }
 
-  implicit val formatPayeeType: Format[PayeeType.Value] = Format(
-    Reads.StringReads flatMapResult { str =>
-      JsResult fromTry Try(PayeeType withName str.toUpperCase)
-    },
-    payeeType => JsString(payeeType.toString)
-  )
+    implicit val format: Format[PayeeType.Value] = Json.formatEnum(this)
+  }
 }
