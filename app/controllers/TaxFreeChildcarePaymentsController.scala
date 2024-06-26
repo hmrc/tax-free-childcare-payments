@@ -22,13 +22,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests.PaymentRequest.PayeeType
+import models.requests.PaymentRequest.{ChildCareProvider, PayeeType}
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{__, Json, Reads, Writes}
+import play.api.libs.json.{__, JsSuccess, Json, Reads, Writes}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -66,10 +66,15 @@ object TaxFreeChildcarePaymentsController {
   implicit val readsPaymentReq: Reads[PaymentRequest] = (
     __.read[SharedRequestData] ~
       (__ \ "payment_amount").read[Int] ~
-      (__ \ "ccp_reg_reference").read[String] ~
-      (__ \ "ccp_postcode").read[String] ~
-      (__ \ "payee_type").read[PayeeType.Value]
+      (__ \ "payeeType").read[PayeeType.Value].flatMap(readsOptCCP)
   )(PaymentRequest.apply _)
+
+  private def readsOptCCP(payeeType: PayeeType.Value) = Reads { json =>
+    payeeType match {
+      case PayeeType.CCP => json.validate[ChildCareProvider] map Some.apply
+      case PayeeType.EPP => JsSuccess(None)
+    }
+  }
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(

@@ -36,7 +36,6 @@ class AuthActionISpec extends BaseISpec with LogCapturing {
       ("payment", s"/", randomPaymentRequestJson)
     )
 
-    /** Covers `case None` of [[controllers.actions.AuthAction.invokeBlock().]] */
     forAll(resources) { (endpointName, resource, payload) =>
       val endpoint = s"POST $resource"
 

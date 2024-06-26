@@ -17,7 +17,7 @@
 package connectors.scenarios
 
 import base.Generators
-import models.requests.PaymentRequest.PayeeType
+import models.requests.PaymentRequest.ChildCareProvider
 import models.requests.{IdentifierRequest, PaymentRequest, SharedRequestData}
 import models.response.PaymentResponse
 import org.scalacheck.{Arbitrary, Gen}
@@ -34,12 +34,10 @@ final case class NsiMakePayment201Scenario(
     epp_urn: String,
     eppAccount: String,
     parentNino: String,
-    opt_ccp_urn: Option[String],
+    opt_ccp: Option[ChildCareProvider],
     amount: Int,
     expectedResponse: PaymentResponse
   ) {
-  private val payeeType = if (opt_ccp_urn.isDefined) PayeeType.CCP else PayeeType.EPP
-
   val expectedRequestJson: JsObject = Json.obj(
     "paymentReference" -> expectedResponse.payment_reference,
     "paymentDate"      -> expectedResponse.estimated_payment_date
@@ -51,7 +49,7 @@ final case class NsiMakePayment201Scenario(
     IdentifierRequest(
       parentNino,
       correlationId,
-      FakeRequest("", "", Headers(), PaymentRequest(sharedRequestData, amount, opt_ccp_urn getOrElse "", "", payeeType))
+      FakeRequest("", "", Headers(), PaymentRequest(sharedRequestData, amount, opt_ccp))
     )
   }
 }
@@ -65,7 +63,7 @@ object NsiMakePayment201Scenario extends Generators {
       eppURN                 <- nonEmptyAlphaNumStrings
       eppAccount             <- nonEmptyAlphaNumStrings
       parentNino             <- ninos
-      opt_ccp_urn            <- Gen option nonEmptyAlphaNumStrings
+      opt_ccp                <- Gen option childCareProviders
       amount                 <- Gen.chooseNum(0, Int.MaxValue)
       expectedResponse       <- paymentResponses
     } yield apply(
@@ -74,7 +72,7 @@ object NsiMakePayment201Scenario extends Generators {
       eppURN,
       eppAccount,
       parentNino,
-      opt_ccp_urn,
+      opt_ccp,
       amount,
       expectedResponse
     )

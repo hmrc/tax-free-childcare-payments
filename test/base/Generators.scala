@@ -16,6 +16,7 @@
 
 package base
 
+import models.requests.PaymentRequest.ChildCareProvider
 import org.scalacheck.Gen
 
 trait Generators {
@@ -37,9 +38,22 @@ trait Generators {
   } yield char0 +: chars
 
   protected lazy val ninos: Gen[String] = for {
-    char0 <- Gen.alphaUpperChar
-    char1 <- Gen.alphaUpperChar
+    char0  <- Gen.alphaUpperChar
+    char1  <- Gen.alphaUpperChar
     digits <- Gen.listOfN(6, Gen.numChar)
-    char8 <- Gen oneOf "ABCD"
+    char8  <- Gen oneOf "ABCD"
   } yield char0 +: char1 +: digits.mkString :+ char8
+
+  protected lazy val childCareProviders: Gen[ChildCareProvider] = for {
+    urn      <- nonEmptyAlphaNumStrings
+    postcode <- postcodes
+  } yield ChildCareProvider(urn, postcode)
+
+  lazy private val postcodes = for {
+    n        <- Gen.chooseNum(1, 2)
+    letters1 <- Gen.listOfN(n, Gen.alphaUpperChar)
+    num1     <- Gen.chooseNum(1, 99)
+    num2     <- Gen.chooseNum(1, 9)
+    letters2 <- Gen.listOfN(2, Gen.alphaUpperChar)
+  } yield s"$letters1$num1 $num2$letters2"
 }
