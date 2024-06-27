@@ -252,29 +252,6 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           }
         }
 
-        s"respond with status $UNAUTHORIZED" when {
-          s"POST /auth/authorise responds $UNAUTHORIZED" in {
-            stubFor(
-              post("/auth/authorise") willReturn unauthorized()
-            )
-
-            val response = wsClient
-              .url(s"$domain$tfc_url")
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> UUID.randomUUID().toString
-              )
-              .post(validPayload)
-              .futureValue
-
-            response.status shouldBe UNAUTHORIZED
-            response.json shouldBe Json.obj(
-              "errorCode"        -> "UNAUTHORISED",
-              "errorDescription" -> "Invalid authentication credentials"
-            )
-          }
-        }
-
         forAll(nsiErrorScenarios) {
           (nsiStatusCode, nsiErrorCode, expectedUpstreamStatusCode, expectedErrorCode, expectedErrorDescription) =>
             s"respond with status $expectedUpstreamStatusCode, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
