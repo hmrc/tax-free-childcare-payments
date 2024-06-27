@@ -16,7 +16,7 @@
 
 package controllers
 
-import base.{BaseISpec, Generators, NsiStubs}
+import base.{BaseISpec, JsonGenerators, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
 import config.CustomJsonErrorHandler
@@ -27,36 +27,40 @@ import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
 
-class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs with Generators with LogCapturing with LoneElement {
+class TaxFreeChildcarePaymentsControllerISpec
+    extends BaseISpec
+    with NsiStubs
+    with LogCapturing
+    with LoneElement
+    with JsonGenerators {
 
   withClient { wsClient =>
     "POST /link" should {
       s"respond with status $OK and correct JSON body" when {
 
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in
-          forAll(fullNames) { expectedChildName =>
-            withAuthNinoRetrieval {
-              val expectedCorrelationId   = UUID.randomUUID()
-              val expectedTfcResponseBody = Json.obj("child_full_name" -> expectedChildName)
-              val expectedNsiResponseBody = Json.obj("childFullName" -> expectedChildName)
+          withAuthNinoRetrieval {
+            val expectedChildName       = fullNames.sample.get
+            val expectedCorrelationId   = UUID.randomUUID()
+            val expectedTfcResponseBody = Json.obj("child_full_name" -> expectedChildName)
+            val expectedNsiResponseBody = Json.obj("childFullName" -> expectedChildName)
 
-              stubNsiLinkAccounts201(expectedNsiResponseBody)
+            stubNsiLinkAccounts201(expectedNsiResponseBody)
 
-              val res = wsClient
-                .url(s"$baseUrl/link")
-                .withHttpHeaders(
-                  AUTHORIZATION  -> "Bearer qwertyuiop",
-                  CORRELATION_ID -> expectedCorrelationId.toString
-                )
-                .post(randomLinkRequestJson)
-                .futureValue
+            val res = wsClient
+              .url(s"$baseUrl/link")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(randomLinkRequestJson)
+              .futureValue
 
-              val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
+            val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
 
-              res.status shouldBe OK
-              resCorrelationId shouldBe expectedCorrelationId
-              res.json shouldBe expectedTfcResponseBody
-            }
+            res.status shouldBe OK
+            resCorrelationId shouldBe expectedCorrelationId
+            res.json shouldBe expectedTfcResponseBody
           }
       }
 
@@ -192,10 +196,10 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     }
 
     val endpoints = Table(
-      ("Name", "TFC URL", "NSI Mapping", "Valid Payload"),
-      ("link", s"$resourcePath/link", nsiLinkAccountsEndpoint, randomLinkRequestJson),
-      ("balance", s"$resourcePath/balance", nsiCheckBalanceEndpoint, randomSharedJson),
-      ("payment", s"$resourcePath/", nsiMakePaymentEndpoint, randomPaymentRequestJson)
+      ("Name", "TFC URL", "NSI Mapping", "Valid Payloads"),
+      ("link", s"$resourcePath/link", nsiLinkAccountsEndpoint, validLinkAccountsRequestPayloads),
+      ("balance", s"$resourcePath/balance", nsiCheckBalanceEndpoint, validCheckBalanceRequestPayloads),
+      ("payment", s"$resourcePath/", nsiMakePaymentEndpoint, validLMakePaymentRequestPayloads)
     )
 
     val nsiErrorScenarios = Table(
@@ -228,53 +232,59 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       ("payment ref is invalid", "outbound_child_payment_ref", "I am a bad payment reference.")
     )
 
-    forAll(endpoints) { (name, tfc_url, nsiMapping, validPayload) =>
+    forAll(endpoints) { (name, tfc_url, nsiMapping, validPayloads) =>
       s"POST $tfc_url" should {
         s"respond with $BAD_REQUEST and generic error message" when {
           forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
             val expectedCorrelationId = UUID.randomUUID().toString
 
-            spec in withAuthNinoRetrievalExpectLog(name, expectedCorrelationId) {
-              val makePaymentRequest = randomPaymentRequestJson + (field, JsString(badValue))
+            spec in
+              forAll(validPayloads) { validPayload =>
+                val invalidPayload = validPayload + (field -> JsString(badValue))
 
-              val res = wsClient
-                .url(s"$domain$tfc_url")
-                .withHttpHeaders(
-                  AUTHORIZATION  -> "Bearer qwertyuiop",
-                  CORRELATION_ID -> expectedCorrelationId
-                )
-                .post(makePaymentRequest)
-                .futureValue
+                withAuthNinoRetrievalExpectLog(name, expectedCorrelationId) {
+                  val res = wsClient
+                    .url(s"$domain$tfc_url")
+                    .withHttpHeaders(
+                      AUTHORIZATION  -> "Bearer qwertyuiop",
+                      CORRELATION_ID -> expectedCorrelationId
+                    )
+                    .post(invalidPayload)
+                    .futureValue
 
-              res.status shouldBe BAD_REQUEST
-              res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
-            }
+                  res.status shouldBe BAD_REQUEST
+                  res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
+                }
+              }
           }
         }
 
         forAll(nsiErrorScenarios) {
           (nsiStatusCode, nsiErrorCode, expectedUpstreamStatusCode, expectedErrorCode, expectedErrorDescription) =>
             s"respond with status $expectedUpstreamStatusCode, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
-              s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in withAuthNinoRetrieval {
-                val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
-                val nsiResponse     = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
-                stubFor(nsiMapping willReturn nsiResponse)
+              s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in
+                forAll(validPayloads) { validPayload =>
+                  withAuthNinoRetrieval {
+                    val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
+                    val nsiResponse     = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
+                    stubFor(nsiMapping willReturn nsiResponse)
 
-                val response = wsClient
-                  .url(s"$domain$tfc_url")
-                  .withHttpHeaders(
-                    AUTHORIZATION  -> "Bearer qwertyuiop",
-                    CORRELATION_ID -> UUID.randomUUID().toString
-                  )
-                  .post(validPayload)
-                  .futureValue
+                    val response = wsClient
+                      .url(s"$domain$tfc_url")
+                      .withHttpHeaders(
+                        AUTHORIZATION  -> "Bearer qwertyuiop",
+                        CORRELATION_ID -> UUID.randomUUID().toString
+                      )
+                      .post(validPayload)
+                      .futureValue
 
-                response.status shouldBe expectedUpstreamStatusCode
-                response.json shouldBe Json.obj(
-                  "errorCode"        -> expectedErrorCode,
-                  "errorDescription" -> expectedErrorDescription
-                )
-              }
+                    response.status shouldBe expectedUpstreamStatusCode
+                    response.json shouldBe Json.obj(
+                      "errorCode"        -> expectedErrorCode,
+                      "errorDescription" -> expectedErrorDescription
+                    )
+                  }
+                }
             }
         }
       }

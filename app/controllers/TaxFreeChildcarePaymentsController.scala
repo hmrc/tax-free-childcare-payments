@@ -28,7 +28,7 @@ import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{__, JsSuccess, Json, Reads, Writes}
+import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -56,17 +56,17 @@ class TaxFreeChildcarePaymentsController @Inject() (
     }
 }
 
-object TaxFreeChildcarePaymentsController {
+object TaxFreeChildcarePaymentsController extends ConstraintReads {
 
   private implicit val readsLinkReq: Reads[LinkRequest] = (
     __.read[SharedRequestData] ~
       (__ \ "child_date_of_birth").read[LocalDate]
   )(LinkRequest.apply _)
 
-  implicit val readsPaymentReq: Reads[PaymentRequest] = (
+  private implicit val readsPaymentReq: Reads[PaymentRequest] = (
     __.read[SharedRequestData] ~
       (__ \ "payment_amount").read[Int] ~
-      (__ \ "payeeType").read[PayeeType.Value].flatMap(readsOptCCP)
+      (__ \ "payee_type").read[PayeeType.Value].flatMap(readsOptCCP)
   )(PaymentRequest.apply _)
 
   private def readsOptCCP(payeeType: PayeeType.Value) = Reads { json =>
@@ -75,6 +75,14 @@ object TaxFreeChildcarePaymentsController {
       case PayeeType.EPP => JsSuccess(None)
     }
   }
+
+  lazy private implicit val readsSharedRequestData: Reads[SharedRequestData] = (
+    (__ \ "epp_unique_customer_id").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN) ~
+      (__ \ "epp_reg_reference").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN) ~
+      (__ \ "outbound_child_payment_ref").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN)
+  )(SharedRequestData.apply _)
+
+  lazy private val NON_EMPTY_ALPHA_NUM_STR_PATTERN = pattern("[a-zA-Z0-9]+]".r)
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(

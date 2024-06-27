@@ -33,8 +33,8 @@ object PaymentRequest {
   object ChildCareProvider {
 
     implicit val reads: Reads[ChildCareProvider] = (
-      (__ \ "ccpURN").read[String] ~
-        (__ \ "ccpPostcode").read[String]
+      (__ \ "ccp_reg_reference").read[String] ~
+        (__ \ "ccp_postcode").read[String]
     )(apply _)
   }
 
