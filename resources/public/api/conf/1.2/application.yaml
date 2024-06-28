@@ -58,7 +58,7 @@ paths:
               type: object
               properties:
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. For guidance from NS&I on how to register with them, see [here](https://www.childcarechoices.gov.uk/guidance-and-resources/information-childcare-providers/tax-free-childcare).
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
@@ -229,7 +229,7 @@ paths:
               type: object
               properties:
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. For guidance from NS&I on how to register with them, see [here](https://www.childcarechoices.gov.uk/guidance-and-resources/information-childcare-providers/tax-free-childcare).
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
@@ -417,8 +417,12 @@ paths:
             schema: 
               type: object
               properties:
+                outbound_child_payment_ref:
+                  description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
+                  type: string
+                  example: ABCD12345TFC
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. 
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. For guidance from NS&I on how to register with them, see [here](https://www.childcarechoices.gov.uk/guidance-and-resources/information-childcare-providers/tax-free-childcare).
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
@@ -437,11 +441,10 @@ paths:
                   type: string
                   example: AB12 3CD
                 payee_type:
-                  description: The initial recipient of the funds from the child's TFC account. Depending on the online payment provider's policies, payment may initially go to the childcare provider directly or to the online payment provider for initial processing. There are two options, CCP for the childcare provider and EPP for the online payment provider.
+                  description: The initial recipient of the funds from the child's TFC account. Only `ccp` is available, meaning funds are paid directly to the childcare provider.
                   type: string
                   enum:
-                  - CCP
-                  - EPP
+                  - ccp
       responses:
           "200":
             description: Confirmation the payment was succesful
