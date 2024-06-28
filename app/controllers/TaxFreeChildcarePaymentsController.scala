@@ -82,7 +82,7 @@ object TaxFreeChildcarePaymentsController extends ConstraintReads {
       (__ \ "outbound_child_payment_ref").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN)
   )(SharedRequestData.apply _)
 
-  lazy private val NON_EMPTY_ALPHA_NUM_STR_PATTERN = pattern("[a-zA-Z0-9]+]".r)
+  lazy private val NON_EMPTY_ALPHA_NUM_STR_PATTERN = pattern("[a-zA-Z0-9]+".r)
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(

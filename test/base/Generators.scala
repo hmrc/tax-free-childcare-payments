@@ -33,9 +33,11 @@ trait Generators {
   } yield char0 +: char1 +: chars
 
   protected lazy val nonEmptyAlphaNumStrings: Gen[String] = for {
-    char0 <- Gen.alphaNumChar
-    chars <- Gen.alphaNumStr
-  } yield char0 +: chars
+    len   <- Gen.chooseNum(1, MAX_PARAM_LEN)
+    chars <- Gen.containerOfN[Array, Char](len, Gen.alphaNumChar)
+  } yield chars.mkString
+
+  private lazy val MAX_PARAM_LEN = 16
 
   protected lazy val ninos: Gen[String] = for {
     char0  <- Gen.alphaUpperChar

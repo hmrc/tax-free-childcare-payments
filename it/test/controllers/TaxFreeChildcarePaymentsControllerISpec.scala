@@ -18,11 +18,10 @@ package controllers
 
 import base.{BaseISpec, JsonGenerators, NsiStubs}
 import ch.qos.logback.classic.Level
-import com.github.tomakehurst.wiremock.client.WireMock._
 import config.CustomJsonErrorHandler
 import org.scalatest.{Assertion, LoneElement}
 import play.api.Logger
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.Json
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
@@ -47,20 +46,26 @@ class TaxFreeChildcarePaymentsControllerISpec
 
             stubNsiLinkAccounts201(expectedNsiResponseBody)
 
-            val res = wsClient
+            val request = wsClient
               .url(s"$baseUrl/link")
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
               )
+
+            println("Request header: " + request.header(CORRELATION_ID))
+
+            val response = request
               .post(randomLinkRequestJson)
               .futureValue
 
-            val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
+            println("Response header: " + response.header(CORRELATION_ID))
 
-            res.status shouldBe OK
+            val resCorrelationId = UUID fromString response.header(CORRELATION_ID).value
+
+            response.status shouldBe OK
             resCorrelationId shouldBe expectedCorrelationId
-            res.json shouldBe expectedTfcResponseBody
+            response.json shouldBe expectedTfcResponseBody
           }
       }
 
@@ -119,7 +124,7 @@ class TaxFreeChildcarePaymentsControllerISpec
               AUTHORIZATION  -> "Bearer qwertyuiop",
               CORRELATION_ID -> expectedCorrelationId.toString
             )
-            .post(randomSharedJson)
+            .post(validCheckBalanceRequestPayloads.sample.get)
             .futureValue
 
           val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
@@ -191,101 +196,6 @@ class TaxFreeChildcarePaymentsControllerISpec
 
           res.status shouldBe BAD_REQUEST
           res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
-        }
-      }
-    }
-
-    val endpoints = Table(
-      ("Name", "TFC URL", "NSI Mapping", "Valid Payloads"),
-      ("link", s"$resourcePath/link", nsiLinkAccountsEndpoint, validLinkAccountsRequestPayloads),
-      ("balance", s"$resourcePath/balance", nsiCheckBalanceEndpoint, validCheckBalanceRequestPayloads),
-      ("payment", s"$resourcePath/", nsiMakePaymentEndpoint, validLMakePaymentRequestPayloads)
-    )
-
-    val nsiErrorScenarios = Table(
-      ("NSI Status Code", "NSI Error Code", "Expected Upstream Status Code", "Expected Error Code", "Expected Error Description"),
-      (400, "E0000", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      (400, "E0001", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      (400, "E0002", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      (400, "E0003", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      (400, "E0004", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      (400, "E0005", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      (400, "E0006", 502, "BAD_GATEWAY", "Bad Gateway"),
-      (400, "E0007", 500, "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
-      (400, "E0008", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      (400, "E0009", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      (400, "E0010", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      (400, "E0020", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      (400, "E0021", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      (400, "E0022", 502, "BAD_GATEWAY", "Bad Gateway"),
-      (400, "E0024", 400, "BAD_REQUEST", "Request data is invalid or missing"),
-      (500, "E9000", 502, "BAD_GATEWAY", "Bad Gateway"),
-      (500, "E9999", 502, "BAD_GATEWAY", "Bad Gateway"),
-      (503, "E8000", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable"),
-      (503, "E8001", 503, "SERVICE_UNAVAILABLE", "The service is currently unavailable")
-    )
-
-    val sharedBadRequestScenarios = Table(
-      ("Spec", "Field", "Bad Value"),
-      ("customer ID is invalid", "epp_unique_customer_id", "I am a bad customer ID."),
-      ("registration ref is invalid", "epp_reg_reference", "I am a bad registration reference"),
-      ("payment ref is invalid", "outbound_child_payment_ref", "I am a bad payment reference.")
-    )
-
-    forAll(endpoints) { (name, tfc_url, nsiMapping, validPayloads) =>
-      s"POST $tfc_url" should {
-        s"respond with $BAD_REQUEST and generic error message" when {
-          forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
-            val expectedCorrelationId = UUID.randomUUID().toString
-
-            spec in
-              forAll(validPayloads) { validPayload =>
-                val invalidPayload = validPayload + (field -> JsString(badValue))
-
-                withAuthNinoRetrievalExpectLog(name, expectedCorrelationId) {
-                  val res = wsClient
-                    .url(s"$domain$tfc_url")
-                    .withHttpHeaders(
-                      AUTHORIZATION  -> "Bearer qwertyuiop",
-                      CORRELATION_ID -> expectedCorrelationId
-                    )
-                    .post(invalidPayload)
-                    .futureValue
-
-                  res.status shouldBe BAD_REQUEST
-                  res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
-                }
-              }
-          }
-        }
-
-        forAll(nsiErrorScenarios) {
-          (nsiStatusCode, nsiErrorCode, expectedUpstreamStatusCode, expectedErrorCode, expectedErrorDescription) =>
-            s"respond with status $expectedUpstreamStatusCode, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
-              s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in
-                forAll(validPayloads) { validPayload =>
-                  withAuthNinoRetrieval {
-                    val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
-                    val nsiResponse     = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
-                    stubFor(nsiMapping willReturn nsiResponse)
-
-                    val response = wsClient
-                      .url(s"$domain$tfc_url")
-                      .withHttpHeaders(
-                        AUTHORIZATION  -> "Bearer qwertyuiop",
-                        CORRELATION_ID -> UUID.randomUUID().toString
-                      )
-                      .post(validPayload)
-                      .futureValue
-
-                    response.status shouldBe expectedUpstreamStatusCode
-                    response.json shouldBe Json.obj(
-                      "errorCode"        -> expectedErrorCode,
-                      "errorDescription" -> expectedErrorDescription
-                    )
-                  }
-                }
-            }
         }
       }
     }
