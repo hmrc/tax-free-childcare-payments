@@ -16,24 +16,8 @@
 
 package models.requests
 
-import play.api.libs.json.{Json, OWrites, Reads}
-
 final case class SharedRequestData(
     epp_unique_customer_id: String,
     epp_reg_reference: String,
     outbound_child_payment_ref: String
   )
-
-object SharedRequestData {
-  private val CUSTOMER_ID_PATTERN      = "^[0-9]{11}$"
-  private val REGISTRATION_REF_PATTERN = "^[a-zA-Z0-9]{16}$"
-  private val PAYMENT_REF_PATTERN      = "^[A-Z]{4}[0-9]{5}TFC$"
-
-  implicit val reads: Reads[SharedRequestData] = Json.reads filter { br =>
-    (br.epp_unique_customer_id matches CUSTOMER_ID_PATTERN) &&
-    (br.epp_reg_reference matches REGISTRATION_REF_PATTERN) &&
-    (br.outbound_child_payment_ref matches PAYMENT_REF_PATTERN)
-  }
-
-  implicit val writes: OWrites[SharedRequestData] = Json.writes
-}

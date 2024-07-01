@@ -16,17 +16,12 @@
 
 package models.response
 
-import play.api.libs.json.{Json, OFormat}
-
+/** All currency quantities are in pence. For example, £250.00 is given as 25000. */
 final case class BalanceResponse(
-    tfc_account_status: String,
-    paid_in_by_you: BigDecimal,
-    government_top_up: BigDecimal,
-    total_balance: BigDecimal,
-    cleared_funds: BigDecimal,
-    top_up_allowance: BigDecimal
+    accountStatus: AccountStatus.Value,
+    topUpAvailable: Int,
+    topUpRemaining: Int,
+    paidIn: Int,
+    totalBalance: Int,
+    clearedFunds: Int
   )
-
-object BalanceResponse {
-  implicit val format: OFormat[BalanceResponse] = Json.format
-}

@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.response
 
-import base.BaseSpec
+import play.api.libs.json.{Json, Reads}
 
-class PaymentRequestSpec extends BaseSpec {
+object AccountStatus extends Enumeration {
+  val ACTIVE, BLOCKED, CLOSED = Value
 
-  "JSON format" should {
-    "successfully decode a valid JSON representation" in {
-      val validPaymentReqJson = randomPaymentRequestJson
-      validPaymentReqJson.as[PaymentRequest]
-    }
-  }
+  implicit val reads: Reads[AccountStatus.Value] = Json.formatEnum(this)
 }

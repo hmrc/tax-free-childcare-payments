@@ -19,6 +19,7 @@ package base
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.JsValue
 import play.api.test.WsTestClient
@@ -33,10 +34,10 @@ abstract class BaseISpec
     with WsTestClient
     with HeaderNames
     with Status
-    with TableDrivenPropertyChecks {
+    with TableDrivenPropertyChecks
+    with ScalaCheckPropertyChecks {
 
   import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
-  import com.github.tomakehurst.wiremock.stubbing.StubMapping
   import org.scalatest.Assertion
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
@@ -53,13 +54,11 @@ abstract class BaseISpec
   protected lazy val baseUrl      = s"http://localhost:$port"
 
   protected def withAuthNinoRetrieval(check: => Assertion): Assertion = {
-    expectAuthNinoRetrieval
+    stubFor(
+      post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
+    )
     check
   }
-
-  protected def expectAuthNinoRetrieval: StubMapping = stubFor(
-    post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
-  )
 
   protected lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
     raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r

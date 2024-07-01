@@ -18,18 +18,7 @@ package models.requests
 
 import java.time.LocalDate
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json.{__, OFormat}
-
 final case class LinkRequest(
-    metadata: SharedRequestData,
+    sharedRequestData: SharedRequestData,
     child_date_of_birth: LocalDate
   )
-
-object LinkRequest {
-
-  implicit val format: OFormat[LinkRequest] = (
-    __.format[SharedRequestData] ~
-      (__ \ "child_date_of_birth").format[LocalDate]
-  )(apply, unlift(unapply))
-}

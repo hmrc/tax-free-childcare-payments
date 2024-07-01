@@ -29,7 +29,7 @@ import util.FormattedLogging.CORRELATION_ID
 import play.api.http.Status
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisationException, AuthorisedFunctions, ConfidenceLevel}
+import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions, ConfidenceLevel}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 
 @Singleton
@@ -71,10 +71,6 @@ class AuthAction @Inject() (
                 errorResponse.toResult
               }
           }
-      }
-      .recover { case err: AuthorisationException =>
-        logger.info(formattedLog(err.getMessage)(request))
-        TfcErrorResponse(UNAUTHORIZED, "Invalid authentication credentials").toResult
       }
   }
 

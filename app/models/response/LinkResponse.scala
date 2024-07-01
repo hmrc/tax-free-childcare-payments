@@ -16,10 +16,4 @@
 
 package models.response
 
-import play.api.libs.json.{Json, OFormat}
-
-final case class LinkResponse(child_full_name: String)
-
-object LinkResponse {
-  implicit lazy val format: OFormat[LinkResponse] = Json.format
-}
+final case class LinkResponse(childFullName: String)
