@@ -17,22 +17,11 @@
 package controllers
 
 import base.{BaseISpec, JsonGenerators, NsiStubs}
-import ch.qos.logback.classic.Level
-import config.CustomJsonErrorHandler
-import org.scalatest.{Assertion, LoneElement}
-import play.api.Logger
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
 
-class TaxFreeChildcarePaymentsControllerISpec
-    extends BaseISpec
-    with NsiStubs
-    with LogCapturing
-    with LoneElement
-    with JsonGenerators {
-
+class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs with JsonGenerators {
   withClient { wsClient =>
     "POST /link" should {
       s"respond with status $OK and correct JSON body" when {
@@ -46,20 +35,15 @@ class TaxFreeChildcarePaymentsControllerISpec
 
             stubNsiLinkAccounts201(expectedNsiResponseBody)
 
-            val request = wsClient
+            val request  = wsClient
               .url(s"$baseUrl/link")
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
               )
-
-            println("Request header: " + request.header(CORRELATION_ID))
-
             val response = request
               .post(randomLinkRequestJson)
               .futureValue
-
-            println("Response header: " + response.header(CORRELATION_ID))
 
             val resCorrelationId = UUID fromString response.header(CORRELATION_ID).value
 
@@ -197,32 +181,6 @@ class TaxFreeChildcarePaymentsControllerISpec
           res.status shouldBe BAD_REQUEST
           res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
-      }
-    }
-  }
-
-  private def withAuthNinoRetrievalExpectLog(
-      expectedEndpoint: String,
-      expectedCorrelationId: String
-    )(
-      doTest: => Assertion
-    ): Unit = {
-    withCaptureOfLoggingFrom(
-      Logger(classOf[CustomJsonErrorHandler])
-    ) { logs =>
-      withAuthNinoRetrieval {
-        doTest
-      }
-
-      val log = logs.loneElement
-      log.getLevel shouldBe Level.INFO
-      log.getMessage match {
-        case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
-          loggedEndpoint shouldBe expectedEndpoint
-          loggedCorrelationId shouldBe expectedCorrelationId
-          loggedMessage should startWith("Json validation error")
-
-        case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
       }
     }
   }

@@ -17,23 +17,12 @@
 package controllers
 
 import base.{BaseISpec, JsonGenerators, NsiStubs}
-import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
-import config.CustomJsonErrorHandler
-import org.scalatest.{Assertion, LoneElement}
-import play.api.Logger
 import play.api.libs.json.{JsString, Json}
-import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
 
-class ServerErrorsControllerISpec
-    extends BaseISpec
-    with NsiStubs
-    with LogCapturing
-    with LoneElement
-    with JsonGenerators {
-
+class Error500ControllerISpec extends BaseISpec with NsiStubs with JsonGenerators {
   withClient { wsClient =>
     val endpoints = Table(
       ("Name", "TFC URL", "NSI Mapping", "Valid Payload"),
@@ -51,20 +40,6 @@ class ServerErrorsControllerISpec
       (400, "E0004", "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
       (400, "E0005", "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request"),
       (400, "E0007", "INTERNAL_SERVER_ERROR", "The server encountered an error and couldn't process the request")
-    )
-
-    val tfc502scenarios = Table(
-      ("NSI Status Code", "NSI Error Code", "Expected Error Code", "Expected Error Description"),
-      (400, "E0006", "BAD_GATEWAY", "Bad Gateway"),
-      (500, "E9000", "BAD_GATEWAY", "Bad Gateway"),
-      (500, "E9999", "BAD_GATEWAY", "Bad Gateway"),
-      (400, "E0022", "BAD_GATEWAY", "Bad Gateway")
-    )
-
-    val tfc503scenarios = Table(
-      ("NSI Status Code", "NSI Error Code", "Expected Error Code", "Expected Error Description"),
-      (503, "E8000", "SERVICE_UNAVAILABLE", "The service is currently unavailable"),
-      (503, "E8001", "SERVICE_UNAVAILABLE", "The service is currently unavailable")
     )
 
     val sharedBadRequestScenarios = Table(
@@ -127,88 +102,6 @@ class ServerErrorsControllerISpec
               }
             }
         }
-
-        forAll(tfc502scenarios) {
-          (nsiStatusCode, nsiErrorCode, expectedErrorCode, expectedErrorDescription) =>
-            s"respond with status 502, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
-              s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in {
-                withAuthNinoRetrieval {
-                  val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
-                  val nsiResponse     = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
-                  stubFor(nsiMapping willReturn nsiResponse)
-
-                  val response = wsClient
-                    .url(s"$baseUrl$tfc_url")
-                    .withHttpHeaders(
-                      AUTHORIZATION  -> "Bearer qwertyuiop",
-                      CORRELATION_ID -> UUID.randomUUID().toString
-                    )
-                    .post(validPayload)
-                    .futureValue
-
-                  response.status shouldBe BAD_GATEWAY
-                  response.json shouldBe Json.obj(
-                    "errorCode"        -> expectedErrorCode,
-                    "errorDescription" -> expectedErrorDescription
-                  )
-                }
-              }
-            }
-        }
-
-        forAll(tfc503scenarios) {
-          (nsiStatusCode, nsiErrorCode, expectedErrorCode, expectedErrorDescription) =>
-            s"respond with status 503, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
-              s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in {
-                withAuthNinoRetrieval {
-                  val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
-                  val nsiResponse     = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
-                  stubFor(nsiMapping willReturn nsiResponse)
-
-                  val response = wsClient
-                    .url(s"$baseUrl$tfc_url")
-                    .withHttpHeaders(
-                      AUTHORIZATION  -> "Bearer qwertyuiop",
-                      CORRELATION_ID -> UUID.randomUUID().toString
-                    )
-                    .post(validPayload)
-                    .futureValue
-
-                  response.status shouldBe SERVICE_UNAVAILABLE
-                  response.json shouldBe Json.obj(
-                    "errorCode"        -> expectedErrorCode,
-                    "errorDescription" -> expectedErrorDescription
-                  )
-                }
-              }
-            }
-        }
-      }
-    }
-  }
-
-  private def withAuthNinoRetrievalExpectLog(
-      expectedEndpoint: String,
-      expectedCorrelationId: String
-    )(
-      doTest: => Assertion
-    ): Unit = {
-    withCaptureOfLoggingFrom(
-      Logger(classOf[CustomJsonErrorHandler])
-    ) { logs =>
-      withAuthNinoRetrieval {
-        doTest
-      }
-
-      val log = logs.loneElement
-      log.getLevel shouldBe Level.INFO
-      log.getMessage match {
-        case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
-          loggedEndpoint shouldBe expectedEndpoint
-          loggedCorrelationId shouldBe expectedCorrelationId
-          loggedMessage should startWith("Json validation error")
-
-        case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
       }
     }
   }

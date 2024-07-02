@@ -16,14 +16,19 @@
 
 package base
 
+import ch.qos.logback.classic.Level
+import config.CustomJsonErrorHandler
+import org.scalatest.LoneElement
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import play.api.Logger
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.JsValue
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
+import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 abstract class BaseISpec
     extends BaseSpec
@@ -35,8 +40,9 @@ abstract class BaseISpec
     with HeaderNames
     with Status
     with TableDrivenPropertyChecks
-    with ScalaCheckPropertyChecks {
-
+    with ScalaCheckPropertyChecks
+    with LogCapturing
+    with LoneElement {
   import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
   import org.scalatest.Assertion
   import play.api.Application
@@ -51,13 +57,39 @@ abstract class BaseISpec
       "microservice.services.nsi.port"  -> wireMockPort
     ).build()
 
-  protected lazy val baseUrl      = s"http://localhost:$port"
+  protected lazy val baseUrl = s"http://localhost:$port"
 
   protected def withAuthNinoRetrieval(check: => Assertion): Assertion = {
     stubFor(
       post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
     )
     check
+  }
+
+  protected def withAuthNinoRetrievalExpectLog(
+      expectedEndpoint: String,
+      expectedCorrelationId: String
+    )(
+      doTest: => Assertion
+    ): Unit = {
+    withCaptureOfLoggingFrom(
+      Logger(classOf[CustomJsonErrorHandler])
+    ) { logs =>
+      withAuthNinoRetrieval {
+        doTest
+      }
+
+      val log = logs.loneElement
+      log.getLevel shouldBe Level.INFO
+      log.getMessage match {
+        case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
+          loggedEndpoint shouldBe expectedEndpoint
+          loggedCorrelationId shouldBe expectedCorrelationId
+          loggedMessage should startWith("Json validation error")
+
+        case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
+      }
+    }
   }
 
   protected lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =

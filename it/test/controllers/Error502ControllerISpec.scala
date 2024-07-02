@@ -20,20 +20,13 @@ import base.{BaseISpec, JsonGenerators, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
 import config.CustomJsonErrorHandler
-import org.scalatest.{Assertion, LoneElement}
+import org.scalatest.Assertion
 import play.api.Logger
 import play.api.libs.json.{JsString, Json}
-import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 import java.util.UUID
 
-class ClientErrorsControllerISpec
-    extends BaseISpec
-    with NsiStubs
-    with LogCapturing
-    with LoneElement
-    with JsonGenerators {
-
+class Error502ControllerISpec extends BaseISpec with NsiStubs with JsonGenerators {
   withClient { wsClient =>
     val endpoints = Table(
       ("Name", "TFC URL", "NSI Mapping", "Valid Payload"),
@@ -42,15 +35,12 @@ class ClientErrorsControllerISpec
       ("payment", "/", nsiMakePaymentEndpoint, randomPaymentRequestJson)
     )
 
-
-    val tfc400scenarios = Table(
+    val tfc502scenarios = Table(
       ("NSI Status Code", "NSI Error Code", "Expected Error Code", "Expected Error Description"),
-      (400, "E0008", "BAD_REQUEST", "Request data is invalid or missing"),
-      (400, "E0009", "BAD_REQUEST", "Request data is invalid or missing"),
-      (400, "E0010", "BAD_REQUEST", "Request data is invalid or missing"),
-      (400, "E0020", "BAD_REQUEST", "Request data is invalid or missing"),
-      (400, "E0021", "BAD_REQUEST", "Request data is invalid or missing"),
-      (400, "E0024", "BAD_REQUEST", "Request data is invalid or missing")
+      (400, "E0006", "BAD_GATEWAY", "Bad Gateway"),
+      (500, "E9000", "BAD_GATEWAY", "Bad Gateway"),
+      (500, "E9999", "BAD_GATEWAY", "Bad Gateway"),
+      (400, "E0022", "BAD_GATEWAY", "Bad Gateway")
     )
 
     val sharedBadRequestScenarios = Table(
@@ -86,10 +76,9 @@ class ClientErrorsControllerISpec
           }
         }
 
-
-        forAll(tfc400scenarios) {
+        forAll(tfc502scenarios) {
           (nsiStatusCode, nsiErrorCode, expectedErrorCode, expectedErrorDescription) =>
-            s"respond with status 400, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
+            s"respond with status 502, errorCode $expectedErrorCode, and errorDescription \"$expectedErrorDescription\"" when {
               s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in {
                 withAuthNinoRetrieval {
                   val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
@@ -105,7 +94,7 @@ class ClientErrorsControllerISpec
                     .post(validPayload)
                     .futureValue
 
-                  response.status shouldBe BAD_REQUEST
+                  response.status shouldBe BAD_GATEWAY
                   response.json shouldBe Json.obj(
                     "errorCode"        -> expectedErrorCode,
                     "errorDescription" -> expectedErrorDescription
@@ -114,32 +103,6 @@ class ClientErrorsControllerISpec
               }
             }
         }
-      }
-    }
-  }
-
-  private def withAuthNinoRetrievalExpectLog(
-      expectedEndpoint: String,
-      expectedCorrelationId: String
-    )(
-      doTest: => Assertion
-    ): Unit = {
-    withCaptureOfLoggingFrom(
-      Logger(classOf[CustomJsonErrorHandler])
-    ) { logs =>
-      withAuthNinoRetrieval {
-        doTest
-      }
-
-      val log = logs.loneElement
-      log.getLevel shouldBe Level.INFO
-      log.getMessage match {
-        case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
-          loggedEndpoint shouldBe expectedEndpoint
-          loggedCorrelationId shouldBe expectedCorrelationId
-          loggedMessage should startWith("Json validation error")
-
-        case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
       }
     }
   }
