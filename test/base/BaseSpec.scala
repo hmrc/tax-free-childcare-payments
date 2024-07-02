@@ -59,7 +59,7 @@ class BaseSpec
     letters + digits + "TFC"
   }
 
-  protected def randomPayeeType: String = Seq("ccp", "epp")(Random.nextInt(2))
+  protected def randomPayeeType: String = Seq("CCP", "EPP")(Random.nextInt(2))
 
   private def randomStringOf(n: Int, chars: Seq[Char]) = {
     def randomChar = chars(Random.nextInt(chars.length))

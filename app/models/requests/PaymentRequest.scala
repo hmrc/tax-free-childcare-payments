@@ -16,39 +16,31 @@
 
 package models.requests
 
-import scala.util.Try
-
-import models.requests.PaymentRequest.PayeeType
-
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
-import play.api.libs.json._
+import models.requests.PaymentRequest.ChildCareProvider
 
 final case class PaymentRequest(
-    metadata: SharedRequestData,
-    payment_amount: BigDecimal,
-    ccp_reg_reference: String,
-    ccp_postcode: String,
-    payee_type: PayeeType.Value
+    sharedRequestData: SharedRequestData,
+    payment_amount: Int,
+    opt_ccp: Option[ChildCareProvider]
   )
 
 object PaymentRequest {
+  import play.api.libs.functional.syntax.toFunctionalBuilderOps
+  import play.api.libs.json._
+
+  final case class ChildCareProvider(urn: String, postcode: String)
+
+  object ChildCareProvider {
+
+    implicit val reads: Reads[ChildCareProvider] = (
+      (__ \ "ccp_reg_reference").read[String] ~
+        (__ \ "ccp_postcode").read[String]
+    )(apply _)
+  }
 
   object PayeeType extends Enumeration {
     val CCP, EPP = Value
+
+    implicit val format: Format[PayeeType.Value] = Json.formatEnum(this)
   }
-
-  implicit val formatPayeeType: Format[PayeeType.Value] = Format(
-    Reads.StringReads flatMapResult { str =>
-      JsResult fromTry Try(PayeeType withName str.toUpperCase)
-    },
-    payeeType => JsString(payeeType.toString)
-  )
-
-  implicit val format: OFormat[PaymentRequest] = (
-    __.format[SharedRequestData] ~
-      (__ \ "payment_amount").format[BigDecimal] ~
-      (__ \ "ccp_reg_reference").format[String] ~
-      (__ \ "ccp_postcode").format[String] ~
-      (__ \ "payee_type").format[PayeeType.Value]
-  )(apply, unlift(unapply))
 }

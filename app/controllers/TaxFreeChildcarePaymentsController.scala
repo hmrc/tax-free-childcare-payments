@@ -16,16 +16,19 @@
 
 package controllers
 
+import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
+import models.requests.PaymentRequest.{ChildCareProvider, PayeeType}
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
 
-import play.api.libs.json.{Json, Reads, Writes}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -36,6 +39,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
     nsiConnector: NsiConnector
   )(implicit ec: ExecutionContext
   ) extends BackendController(cc) {
+  import TaxFreeChildcarePaymentsController._
 
   def link(): Action[LinkRequest] = messageBrokerAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
 
@@ -50,4 +54,54 @@ class TaxFreeChildcarePaymentsController @Inject() (
         case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
       }
     }
+}
+
+object TaxFreeChildcarePaymentsController extends ConstraintReads {
+
+  private implicit val readsLinkReq: Reads[LinkRequest] = (
+    __.read[SharedRequestData] ~
+      (__ \ "child_date_of_birth").read[LocalDate]
+  )(LinkRequest.apply _)
+
+  private implicit val readsPaymentReq: Reads[PaymentRequest] = (
+    __.read[SharedRequestData] ~
+      (__ \ "payment_amount").read[Int] ~
+      (__ \ "payee_type").read[PayeeType.Value].flatMap(readsOptCCP)
+  )(PaymentRequest.apply _)
+
+  private def readsOptCCP(payeeType: PayeeType.Value) = Reads { json =>
+    payeeType match {
+      case PayeeType.CCP => json.validate[ChildCareProvider] map Some.apply
+      case PayeeType.EPP => JsSuccess(None)
+    }
+  }
+
+  lazy private implicit val readsSharedRequestData: Reads[SharedRequestData] = (
+    (__ \ "epp_unique_customer_id").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN) ~
+      (__ \ "epp_reg_reference").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN) ~
+      (__ \ "outbound_child_payment_ref").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN)
+  )(SharedRequestData.apply _)
+
+  lazy private val NON_EMPTY_ALPHA_NUM_STR_PATTERN = pattern("[a-zA-Z0-9]+".r)
+
+  private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
+    Json.obj(
+      "child_full_name" -> lr.childFullName
+    )
+
+  private implicit val writesBalanceResponse: Writes[BalanceResponse] = br =>
+    Json.obj(
+      "tfc_account_status" -> br.accountStatus,
+      "government_top_up"  -> br.topUpAvailable,
+      "top_up_allowance"   -> br.topUpRemaining,
+      "paid_in_by_you"     -> br.paidIn,
+      "total_balance"      -> br.totalBalance,
+      "cleared_funds"      -> br.clearedFunds
+    )
+
+  private implicit val writesPaymentResponse: Writes[PaymentResponse] = pr =>
+    Json.obj(
+      "payment_reference"      -> pr.payment_reference,
+      "estimated_payment_date" -> pr.estimated_payment_date
+    )
 }
