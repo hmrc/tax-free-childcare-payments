@@ -101,7 +101,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -119,7 +119,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -137,7 +137,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -155,7 +155,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -173,7 +173,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -240,11 +240,6 @@ paths:
                   description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
                   type: string
                   example: ABCD12345TFC
-                child_date_of_birth:
-                  format: date
-                  description: The date of birth (YYYY-MM-DD) of the child whose accounts are being linked. This extra identity check is used to cross-reference with the child's details held by the online payment provider.  
-                  type: string
-                  example: 2020-01-01
       responses:
           "200":
             description: The TFC account balance is returned
@@ -295,7 +290,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -313,7 +308,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -331,7 +326,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -349,7 +344,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -367,7 +362,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -436,6 +431,7 @@ paths:
                 ccp_reg_reference:
                   description: The unique reference number given to the childcare provider by the childcare regulator (e.g. Ofsted). The online payment provider needs to provide this to HMRC. 
                   type: string
+                  example: EY456798
                 ccp_postcode:
                   description: The postcode associated with the childcare provider, this enables further verification.
                   type: string
@@ -476,7 +472,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -494,7 +490,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -512,7 +508,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -530,7 +526,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
@@ -548,7 +544,7 @@ paths:
                   format: uuid
                   type: string
                   description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7"
+                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
             content:
                 application/json:
                   schema:
