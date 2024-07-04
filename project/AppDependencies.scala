@@ -12,7 +12,7 @@ object AppDependencies {
     "uk.gov.hmrc"         %% "bootstrap-test-play-30" % bootstrapVersion,
     "com.vladsch.flexmark" % "flexmark-all"           % "0.64.8",
     "org.scalatestplus"   %% "scalacheck-1-17"        % "3.2.18.0"
-  ).map(_ % "test")
+  ).map(_ % Test)
 
   val it: Seq[ModuleID] = Seq.empty
 }

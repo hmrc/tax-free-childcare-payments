@@ -22,7 +22,7 @@ import play.api.libs.json.{JsString, Json}
 
 import java.util.UUID
 
-class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs with JsonGenerators {
+class PayeeTypeEPPOffControllerISpec extends BaseISpec with NsiStubs with JsonGenerators {
   withClient { wsClient =>
     "POST /link" should {
       s"respond with status $OK and correct JSON body" when {
@@ -117,74 +117,6 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           res.status shouldBe OK
           resCorrelationId shouldBe expectedCorrelationId
           res.json shouldBe expectedTfcResponseBody
-        }
-      }
-    }
-  }
-
-  "POST /" should {
-    s"respond $OK" when {
-      s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withClient { ws =>
-        withAuthNinoRetrieval {
-          val expectedCorrelationId = UUID.randomUUID()
-          val expectedPaymentRef    = randomPaymentRef
-          val expectedPaymentDate   = randomPaymentDate
-
-          val expectedTfcResponseBody = Json.obj(
-            "payment_reference"      -> expectedPaymentRef,
-            "estimated_payment_date" -> expectedPaymentDate
-          )
-          val expectedNsiResponseBody = Json.obj(
-            "paymentReference" -> expectedPaymentRef,
-            "paymentDate"      -> expectedPaymentDate
-          )
-
-          stubNsiMakePayment201(expectedNsiResponseBody)
-
-          val res = ws
-            .url(s"$baseUrl/")
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
-            )
-            .post(randomPaymentRequestJson)
-            .futureValue
-
-          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
-
-          res.status shouldBe OK
-          resCorrelationId shouldBe expectedCorrelationId
-          res.json shouldBe expectedTfcResponseBody
-        }
-      }
-    }
-
-    s"respond with $BAD_REQUEST and generic error message" when {
-      val expectedCorrelationId = UUID.randomUUID()
-
-      s"payment amount is invalid" in withClient { ws =>
-        withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
-          val invalidPaymentRequest = Json.obj(
-            "epp_unique_customer_id"     -> randomCustomerId,
-            "epp_reg_reference"          -> randomRegistrationRef,
-            "outbound_child_payment_ref" -> randomPaymentRef,
-            "payment_amount"             -> "I am a bad payment reference",
-            "ccp_reg_reference"          -> "qwertyui",
-            "ccp_postcode"               -> "AS12 3DF",
-            "payee_type"                 -> randomPayeeType
-          )
-
-          val res = ws
-            .url(s"$baseUrl/")
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
-            )
-            .post(invalidPaymentRequest)
-            .futureValue
-
-          res.status shouldBe BAD_REQUEST
-          res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
         }
       }
     }
