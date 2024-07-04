@@ -123,8 +123,8 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
   }
 
   "POST /" should {
-    s"respond $OK" when {
-      s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withClient { ws =>
+    "respond 200" when {
+      "request is valid with payee CCP" in withClient { ws =>
         withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
           val expectedPaymentRef    = randomPaymentRef
@@ -147,7 +147,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
               AUTHORIZATION  -> "Bearer qwertyuiop",
               CORRELATION_ID -> expectedCorrelationId.toString
             )
-            .post(randomPaymentRequestJson)
+            .post(validCcpPaymentRequestJson.sample.get)
             .futureValue
 
           val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
@@ -159,10 +159,45 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       }
     }
 
-    s"respond with $BAD_REQUEST and generic error message" when {
+    """respond 400 and errorMessage "payee_type did not match 'ccp'""""" when {
+      "payee type is EPP" in withClient { ws =>
+        withAuthNinoRetrieval {
+          val expectedCorrelationId = UUID.randomUUID()
+          val expectedPaymentRef    = randomPaymentRef
+          val expectedPaymentDate   = randomPaymentDate
+
+          val expectedNsiResponseBody = Json.obj(
+            "paymentReference" -> expectedPaymentRef,
+            "paymentDate"      -> expectedPaymentDate
+          )
+
+          stubNsiMakePayment201(expectedNsiResponseBody)
+
+          val res = ws
+            .url(s"$baseUrl/")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId.toString
+            )
+            .post(validEppPaymentRequestJson.sample.get)
+            .futureValue
+
+          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
+
+          res.status shouldBe BAD_REQUEST
+          resCorrelationId shouldBe expectedCorrelationId
+          res.json shouldBe Json.obj(
+            "errorCode"        -> "E0022",
+            "errorDescription" -> "payee_type did not match 'ccp'"
+          )
+        }
+      }
+    }
+
+    "respond with 400 and generic error message" when {
       val expectedCorrelationId = UUID.randomUUID()
 
-      s"payment amount is invalid" in withClient { ws =>
+      "payment amount is invalid" in withClient { ws =>
         withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
           val invalidPaymentRequest = Json.obj(
             "epp_unique_customer_id"     -> randomCustomerId,

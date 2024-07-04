@@ -34,16 +34,25 @@ trait JsonGenerators extends Generators {
 
   protected val validCheckBalanceRequestPayloads: Gen[JsObject] = validSharedPayloads
 
-  protected val validLMakePaymentRequestPayloads: Gen[JsObject] =
+  protected val validCcpPaymentRequestJson: Gen[JsObject] =
     for {
       eppAuthPayload     <- validSharedPayloads
-      optCCP             <- Gen option childCareProviders
+      ccp                <- childCareProviders
       paymentAmountPence <- Gen.posNum[Int]
     } yield eppAuthPayload ++ Json.obj(
-      "payee_type"        -> (if (optCCP.isDefined) PayeeType.CCP else PayeeType.EPP),
-      "ccp_reg_reference" -> optCCP.map(_.urn),
-      "ccp_postcode"      -> optCCP.map(_.postcode),
+      "payee_type"        -> PayeeType.CCP,
+      "ccp_reg_reference" -> ccp.urn,
+      "ccp_postcode"      -> ccp.postcode,
       "payment_amount"    -> paymentAmountPence
+    )
+
+  protected val validEppPaymentRequestJson: Gen[JsObject] =
+    for {
+      eppAuthPayload     <- validSharedPayloads
+      paymentAmountPence <- Gen.posNum[Int]
+    } yield eppAuthPayload ++ Json.obj(
+      "payee_type"     -> PayeeType.EPP,
+      "payment_amount" -> paymentAmountPence
     )
 
   private lazy val validSharedPayloads =
@@ -53,7 +62,7 @@ trait JsonGenerators extends Generators {
       epp_account <- nonEmptyAlphaNumStrings
     } yield Json.obj(
       "outbound_child_payment_ref" -> account_ref,
-      "epp_reg_reference" -> epp_urn,
+      "epp_reg_reference"          -> epp_urn,
       "epp_unique_customer_id"     -> epp_account
     )
 }
