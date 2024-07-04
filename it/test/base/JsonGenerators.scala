@@ -16,7 +16,6 @@
 
 package base
 
-import models.requests.PaymentRequest.PayeeType
 import play.api.libs.json.{JsObject, Json}
 
 import java.time.LocalDate
@@ -37,10 +36,11 @@ trait JsonGenerators extends Generators {
   protected val validCcpPaymentRequestJson: Gen[JsObject] =
     for {
       eppAuthPayload     <- validSharedPayloads
+      payeeString        <- Gen oneOf Array("ccp", "CCP")
       ccp                <- childCareProviders
       paymentAmountPence <- Gen.posNum[Int]
     } yield eppAuthPayload ++ Json.obj(
-      "payee_type"        -> PayeeType.CCP,
+      "payee_type"        -> payeeString,
       "ccp_reg_reference" -> ccp.urn,
       "ccp_postcode"      -> ccp.postcode,
       "payment_amount"    -> paymentAmountPence
@@ -49,9 +49,10 @@ trait JsonGenerators extends Generators {
   protected val validEppPaymentRequestJson: Gen[JsObject] =
     for {
       eppAuthPayload     <- validSharedPayloads
+      payeeString        <- Gen oneOf Array("epp", "EPP")
       paymentAmountPence <- Gen.posNum[Int]
     } yield eppAuthPayload ++ Json.obj(
-      "payee_type"     -> PayeeType.EPP,
+      "payee_type"     -> payeeString,
       "payment_amount" -> paymentAmountPence
     )
 

@@ -21,7 +21,8 @@ import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
+import models.requests.Payee.{ChildCareProvider, ExternalPaymentProvider}
+import models.requests.{IdentifierRequest, LinkRequest, Payee, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse.Maybe
 import models.response.{AccountStatus, BalanceResponse, LinkResponse, PaymentResponse}
 
@@ -31,6 +32,11 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import java.net.URL
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NsiConnector @Inject() (
@@ -100,13 +106,20 @@ object NsiConnector {
 
   private implicit val writesPaymentReq: OWrites[PaymentRequest] = pr =>
     Json.toJsObject(pr.sharedRequestData) ++
+      Json.toJsObject(pr.payee) ++
       Json.obj(
-        "payeeType"              -> (if (pr.opt_ccp.isDefined) "CCP" else "EPP"),
         "amount"                 -> pr.payment_amount,
-        "childAccountPaymentRef" -> pr.sharedRequestData.outbound_child_payment_ref,
-        "ccpURN"                 -> pr.opt_ccp.map(_.urn),
-        "ccpPostcode"            -> pr.opt_ccp.map(_.postcode)
+        "childAccountPaymentRef" -> pr.sharedRequestData.outbound_child_payment_ref
       )
+
+  private implicit val writesPayee: OWrites[Payee] = {
+    case ExternalPaymentProvider          => Json.obj("payeeType" -> "EPP")
+    case ChildCareProvider(urn, postcode) => Json.obj(
+        "payeeType"   -> "CCP",
+        "ccpURN"      -> urn,
+        "ccpPostcode" -> postcode
+      )
+  }
 
   private implicit val writesSharedReqData: OWrites[SharedRequestData] = srd =>
     Json.obj(

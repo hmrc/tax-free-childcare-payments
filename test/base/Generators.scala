@@ -16,7 +16,7 @@
 
 package base
 
-import models.requests.PaymentRequest.ChildCareProvider
+import models.requests.Payee.ChildCareProvider
 import org.scalacheck.Gen
 
 trait Generators {

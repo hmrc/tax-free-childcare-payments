@@ -22,8 +22,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests.PaymentRequest.{ChildCareProvider, PayeeType}
-import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
+import models.requests.Payee.ChildCareProvider
+import models.requests._
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
 
@@ -66,15 +66,18 @@ object TaxFreeChildcarePaymentsController extends ConstraintReads {
   private implicit val readsPaymentReq: Reads[PaymentRequest] = (
     __.read[SharedRequestData] ~
       (__ \ "payment_amount").read[Int] ~
-      (__ \ "payee_type").read[PayeeType.Value].flatMap(readsOptCCP)
+      of[Payee]
   )(PaymentRequest.apply _)
 
-  private def readsOptCCP(payeeType: PayeeType.Value) = Reads { json =>
-    payeeType match {
-      case PayeeType.CCP => json.validate[ChildCareProvider] map Some.apply
-      case PayeeType.EPP => JsSuccess(None)
-    }
-  }
+  lazy private implicit val readsPayee: Reads[Payee] = (
+    (__ \ "payee_type").readNullable[String](verifying(_ equalsIgnoreCase "ccp")) ~
+      of[ChildCareProvider]
+  )((_, ccp) => ccp)
+
+  lazy private implicit val readsCcp: Reads[ChildCareProvider] = (
+    (__ \ "ccp_reg_reference").read[String] ~
+      (__ \ "ccp_postcode").read[String]
+  )(ChildCareProvider.apply _)
 
   lazy private implicit val readsSharedRequestData: Reads[SharedRequestData] = (
     (__ \ "epp_unique_customer_id").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN) ~
