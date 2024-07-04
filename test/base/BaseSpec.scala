@@ -35,14 +35,6 @@ class BaseSpec
       "child_date_of_birth" -> randomDateOfBirth
     )
 
-  protected def randomPaymentRequestJson: JsObject =
-    randomSharedJson ++ Json.obj(
-      "payment_amount"    -> randomSumOfMoney,
-      "ccp_reg_reference" -> randomRegistrationRef,
-      "ccp_postcode"      -> "AB12 3CD",
-      "payee_type"        -> randomPayeeType
-    )
-
   protected def randomSharedJson: JsObject = Json.obj(
     "epp_unique_customer_id"     -> randomCustomerId,
     "epp_reg_reference"          -> randomRegistrationRef,
@@ -66,8 +58,6 @@ class BaseSpec
     Array.fill(n)(randomChar).mkString
   }
 
-  private def randomSumOfMoney = BigDecimal(Random.nextInt(MAX_AMOUNT_OF_PENCE) / 100).setScale(2)
-
   protected def randomDateOfBirth: LocalDate = LocalDate.now() minusDays Random.nextInt(MAX_CHILD_AGE_DAYS)
   protected def randomPaymentDate: LocalDate = LocalDate.now() plusDays Random.nextInt(MAX_PAYMENT_DELAY_DAYS)
 
@@ -76,7 +66,6 @@ class BaseSpec
   private val EXPECTED_PAYMENT_REF_LETTERS     = 4
   private val EXPECTED_PAYMENT_REF_DIGITS      = 5
 
-  private val MAX_AMOUNT_OF_PENCE    = 1000000
   private val MAX_CHILD_AGE_DAYS     = 18 * 365
   private val MAX_PAYMENT_DELAY_DAYS = 30
 }

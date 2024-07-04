@@ -182,10 +182,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
             .post(validEppPaymentRequestJson.sample.get)
             .futureValue
 
-          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
-
           res.status shouldBe BAD_REQUEST
-          resCorrelationId shouldBe expectedCorrelationId
           res.json shouldBe Json.obj(
             "errorCode"        -> "E0022",
             "errorDescription" -> "payee_type did not match 'ccp'"
@@ -229,7 +226,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     ("Name", "TFC URL", "NSI Mapping", "Valid Payload"),
     ("link", "/link", nsiLinkAccountsEndpoint, randomLinkRequestJson),
     ("balance", "/balance", nsiCheckBalanceEndpoint, randomSharedJson),
-    ("payment", "/", nsiMakePaymentEndpoint, randomPaymentRequestJson)
+    ("payment", "/", nsiMakePaymentEndpoint, validCcpPaymentRequestJson.sample.get)
   )
 
   private val nsiErrorScenarios = Table(

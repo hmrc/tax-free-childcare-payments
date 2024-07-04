@@ -17,8 +17,7 @@
 package connectors.scenarios
 
 import base.Generators
-import models.requests.PaymentRequest.ChildCareProvider
-import models.requests.{IdentifierRequest, PaymentRequest, SharedRequestData}
+import models.requests.{IdentifierRequest, Payee, PaymentRequest, SharedRequestData}
 import models.response.PaymentResponse
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
@@ -34,7 +33,7 @@ final case class NsiMakePayment201Scenario(
     epp_urn: String,
     eppAccount: String,
     parentNino: String,
-    opt_ccp: Option[ChildCareProvider],
+    payee: Payee,
     amount: Int,
     expectedResponse: PaymentResponse
   ) {
@@ -49,7 +48,7 @@ final case class NsiMakePayment201Scenario(
     IdentifierRequest(
       parentNino,
       correlationId,
-      FakeRequest("", "", Headers(), PaymentRequest(sharedRequestData, amount, opt_ccp))
+      FakeRequest("", "", Headers(), PaymentRequest(sharedRequestData, amount, payee))
     )
   }
 }
@@ -63,7 +62,7 @@ object NsiMakePayment201Scenario extends Generators {
       eppURN                 <- nonEmptyAlphaNumStrings
       eppAccount             <- nonEmptyAlphaNumStrings
       parentNino             <- ninos
-      opt_ccp                <- Gen option childCareProviders
+      payee                <- payees
       amount                 <- Gen.chooseNum(0, Int.MaxValue)
       expectedResponse       <- paymentResponses
     } yield apply(
@@ -72,7 +71,7 @@ object NsiMakePayment201Scenario extends Generators {
       eppURN,
       eppAccount,
       parentNino,
-      opt_ccp,
+      payee,
       amount,
       expectedResponse
     )
