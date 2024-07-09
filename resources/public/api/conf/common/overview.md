@@ -77,7 +77,7 @@ A successful response will return a user-restricted access bearer token.
 
 #### 4. Connect to the API
 
-Note: Correlation-ID can be any randomly generate UUID.
+> `Correlation-ID` can be any randomly generate UUID.
 
 ### Test Scenarios
 
