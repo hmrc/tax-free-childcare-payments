@@ -70,7 +70,7 @@ object TaxFreeChildcarePaymentsController extends ConstraintReads {
   )(PaymentRequest.apply _)
 
   lazy private implicit val readsPayee: Reads[Payee] = (
-    (__ \ "payee_type").readNullable[String](verifying(_ equalsIgnoreCase "ccp")) ~
+    (__ \ "payee_type").read[String](CPP_ONLY) ~
       of[ChildCareProvider]
   )((_, ccp) => ccp)
 
@@ -86,6 +86,7 @@ object TaxFreeChildcarePaymentsController extends ConstraintReads {
   )(SharedRequestData.apply _)
 
   lazy private val NON_EMPTY_ALPHA_NUM_STR_PATTERN = pattern("[a-zA-Z0-9]+".r)
+  lazy private val CPP_ONLY                        = pattern("CCP".r)
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(

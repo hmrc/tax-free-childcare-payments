@@ -184,8 +184,8 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
           res.status shouldBe BAD_REQUEST
           res.json shouldBe Json.obj(
-            "errorCode"        -> "E0022",
-            "errorDescription" -> "payee_type did not match 'ccp'"
+            "errorCode"        -> "BAD_REQUEST",
+            "errorDescription" -> "Request data is invalid or missing"
           )
         }
       }
