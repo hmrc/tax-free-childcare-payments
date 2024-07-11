@@ -16,8 +16,11 @@
 
 package models.requests
 
-final case class PaymentRequest(
-    sharedRequestData: SharedRequestData,
-    payment_amount: Int,
-    payee: Payee
-  )
+import play.api.libs.json.ConstraintReads
+
+sealed abstract class Payee
+
+object Payee extends ConstraintReads {
+  case object ExternalPaymentProvider                               extends Payee
+  final case class ChildCareProvider(urn: String, postcode: String) extends Payee
+}

@@ -120,10 +120,12 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
         }
       }
     }
+  }
 
-    "POST /" should {
-      s"respond $OK" when {
-        s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
+  "POST /" should {
+    "respond 200" when {
+      "request is valid with payee CCP" in withClient { ws =>
+        withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
           val expectedPaymentRef    = randomPaymentRef
           val expectedPaymentDate   = randomPaymentDate
@@ -139,13 +141,13 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
           stubNsiMakePayment201(expectedNsiResponseBody)
 
-          val res = wsClient
+          val res = ws
             .url(s"$baseUrl/")
             .withHttpHeaders(
               AUTHORIZATION  -> "Bearer qwertyuiop",
               CORRELATION_ID -> expectedCorrelationId.toString
             )
-            .post(randomPaymentRequestJson)
+            .post(validCcpPaymentRequestJson.sample.get)
             .futureValue
 
           val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
@@ -155,11 +157,45 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           res.json shouldBe expectedTfcResponseBody
         }
       }
+    }
 
-      s"respond with $BAD_REQUEST and generic error message" when {
-        val expectedCorrelationId = UUID.randomUUID()
+    """respond 400 and errorMessage "payee_type did not match 'ccp'""""" when {
+      "payee type is EPP" in withClient { ws =>
+        withAuthNinoRetrieval {
+          val expectedCorrelationId = UUID.randomUUID()
+          val expectedPaymentRef    = randomPaymentRef
+          val expectedPaymentDate   = randomPaymentDate
 
-        s"payment amount is invalid" in withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
+          val expectedNsiResponseBody = Json.obj(
+            "paymentReference" -> expectedPaymentRef,
+            "paymentDate"      -> expectedPaymentDate
+          )
+
+          stubNsiMakePayment201(expectedNsiResponseBody)
+
+          val res = ws
+            .url(s"$baseUrl/")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId.toString
+            )
+            .post(validEppPaymentRequestJson.sample.get)
+            .futureValue
+
+          res.status shouldBe BAD_REQUEST
+          res.json shouldBe Json.obj(
+            "errorCode"        -> "BAD_REQUEST",
+            "errorDescription" -> "Request data is invalid or missing"
+          )
+        }
+      }
+    }
+
+    "respond with 400 and generic error message" when {
+      val expectedCorrelationId = UUID.randomUUID()
+
+      "payment amount is invalid" in withClient { ws =>
+        withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
           val invalidPaymentRequest = Json.obj(
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
@@ -170,7 +206,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
             "payee_type"                 -> randomPayeeType
           )
 
-          val res = wsClient
+          val res = ws
             .url(s"$baseUrl/")
             .withHttpHeaders(
               AUTHORIZATION  -> "Bearer qwertyuiop",
@@ -190,9 +226,8 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     ("Name", "TFC URL", "NSI Mapping", "Valid Payload"),
     ("link", "/link", nsiLinkAccountsEndpoint, randomLinkRequestJson),
     ("balance", "/balance", nsiCheckBalanceEndpoint, randomSharedJson),
-    ("payment", "/", nsiMakePaymentEndpoint, randomPaymentRequestJson)
+    ("payment", "/", nsiMakePaymentEndpoint, validCcpPaymentRequestJson.sample.get)
   )
-
 
   private val nsiErrorScenarios = Table(
     ("NSI Status Code", "NSI Error Code", "Expected Status Code"),
@@ -205,7 +240,6 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     (BAD_REQUEST, "E0006", INTERNAL_SERVER_ERROR),
     (BAD_REQUEST, "E0007", INTERNAL_SERVER_ERROR),
     (BAD_REQUEST, "E0008", INTERNAL_SERVER_ERROR),
-
     (BAD_REQUEST, "E0020", BAD_GATEWAY),
     (BAD_REQUEST, "E0021", INTERNAL_SERVER_ERROR),
     (BAD_REQUEST, "E0022", INTERNAL_SERVER_ERROR),
@@ -213,21 +247,17 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     (BAD_REQUEST, "E0024", BAD_REQUEST),
     (BAD_REQUEST, "E0025", BAD_REQUEST),
     (BAD_REQUEST, "E0026", BAD_REQUEST),
-
     (UNAUTHORIZED, "E0401", INTERNAL_SERVER_ERROR),
-
     (FORBIDDEN, "E0030", BAD_REQUEST),
     (FORBIDDEN, "E0031", BAD_REQUEST),
     (FORBIDDEN, "E0032", BAD_REQUEST),
     (FORBIDDEN, "E0033", BAD_REQUEST),
     (FORBIDDEN, "E0034", SERVICE_UNAVAILABLE),
     (FORBIDDEN, "E0035", BAD_REQUEST),
-
     (NOT_FOUND, "E0040", BAD_REQUEST),
     (NOT_FOUND, "E0041", BAD_REQUEST),
     (NOT_FOUND, "E0042", BAD_REQUEST),
     (NOT_FOUND, "E0043", BAD_REQUEST),
-
     (INTERNAL_SERVER_ERROR, "E9000", SERVICE_UNAVAILABLE),
     (INTERNAL_SERVER_ERROR, "E9999", SERVICE_UNAVAILABLE),
     (SERVICE_UNAVAILABLE, "E8000", SERVICE_UNAVAILABLE),
@@ -266,7 +296,6 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           }
         }
       }
-
 
       forAll(nsiErrorScenarios) {
         (nsiStatusCode, nsiErrorCode, expectedStatusCode) =>

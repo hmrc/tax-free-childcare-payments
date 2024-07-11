@@ -16,7 +16,8 @@
 
 package base
 
-import models.requests.PaymentRequest.ChildCareProvider
+import models.requests.Payee
+import models.requests.Payee.ChildCareProvider
 import org.scalacheck.Gen
 
 trait Generators {
@@ -45,6 +46,11 @@ trait Generators {
     digits <- Gen.listOfN(6, Gen.numChar)
     char8  <- Gen oneOf "ABCD"
   } yield char0 +: char1 +: digits.mkString :+ char8
+
+  protected lazy val payees: Gen[Payee] = Gen.oneOf(
+    Gen const Payee.ExternalPaymentProvider,
+    childCareProviders
+  )
 
   protected lazy val childCareProviders: Gen[ChildCareProvider] = for {
     urn      <- nonEmptyAlphaNumStrings
