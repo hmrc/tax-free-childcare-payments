@@ -437,10 +437,10 @@ paths:
                   type: string
                   example: AB12 3CD
                 payee_type:
-                  description: The initial recipient of the funds from the child's TFC account. Only `ccp` is available, meaning funds are paid directly to the childcare provider.
+                  description: The initial recipient of the funds from the child's TFC account. Only `CCP` is available, meaning funds are paid directly to the childcare provider.
                   type: string
                   enum:
-                  - ccp
+                  - CCP
       responses:
           "200":
             description: Confirmation the payment was succesful
