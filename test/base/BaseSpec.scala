@@ -38,13 +38,13 @@ class BaseSpec
   protected def randomSharedJson: JsObject = Json.obj(
     "epp_unique_customer_id"     -> randomCustomerId,
     "epp_reg_reference"          -> randomRegistrationRef,
-    "outbound_child_payment_ref" -> randomPaymentRef
+    "outbound_child_payment_ref" -> randomOutboundChildPaymentRef
   )
 
   protected def randomCustomerId: String      = randomStringOf(EXPECTED_CUSTOMER_ID_LENGTH, '0' to '9')
   protected def randomRegistrationRef: String = randomStringOf(EXPECTED_REGISTRATION_REF_LENGTH, ('a' to 'z') ++ ('A' to 'Z') ++ ('0' to '9'))
 
-  protected def randomPaymentRef: String = {
+  protected def randomOutboundChildPaymentRef: String = {
     val letters = randomStringOf(EXPECTED_PAYMENT_REF_LETTERS, 'A' to 'Z')
     val digits  = randomStringOf(EXPECTED_PAYMENT_REF_DIGITS, '0' to '9')
 

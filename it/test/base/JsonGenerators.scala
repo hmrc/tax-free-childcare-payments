@@ -68,11 +68,10 @@ trait JsonGenerators extends Generators {
 
   private lazy val validSharedPayloads =
     for {
-      account_ref <- nonEmptyAlphaNumStrings
       epp_urn     <- nonEmptyAlphaNumStrings
       epp_account <- nonEmptyAlphaNumStrings
     } yield Json.obj(
-      "outbound_child_payment_ref" -> account_ref,
+      "outbound_child_payment_ref" -> "AbCd12345TFC",
       "epp_reg_reference"          -> epp_urn,
       "epp_unique_customer_id"     -> epp_account
     )

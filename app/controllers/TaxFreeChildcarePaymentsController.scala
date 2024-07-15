@@ -82,10 +82,11 @@ object TaxFreeChildcarePaymentsController extends ConstraintReads {
   lazy private implicit val readsSharedRequestData: Reads[SharedRequestData] = (
     (__ \ "epp_unique_customer_id").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN) ~
       (__ \ "epp_reg_reference").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN) ~
-      (__ \ "outbound_child_payment_ref").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN)
+      (__ \ "outbound_child_payment_ref").read(TFC_FORMAT)
   )(SharedRequestData.apply _)
 
   lazy private val NON_EMPTY_ALPHA_NUM_STR_PATTERN = pattern("[a-zA-Z0-9]+".r)
+  lazy private val TFC_FORMAT                      = pattern("^[a-zA-Z]{4}[0-9]{5}TFC$".r)
   lazy private val CPP_ONLY                        = pattern("^CCP$".r)
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
