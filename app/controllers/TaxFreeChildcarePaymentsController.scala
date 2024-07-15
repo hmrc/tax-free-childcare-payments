@@ -50,9 +50,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
   private def messageBrokerAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[Maybe[Res]]) =
     identify.async(parse.json[Req]) { request =>
       block(request) map {
-        case Left(nsiError)    => {
-          TfcErrorResponse(nsiError.reportAs, nsiError.message).toResult
-        }
+        case Left(nsiError)    => TfcErrorResponse(nsiError.reportAs, nsiError.message).toResult
         case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
       }
     }
