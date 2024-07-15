@@ -50,7 +50,9 @@ class TaxFreeChildcarePaymentsController @Inject() (
   private def messageBrokerAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[Maybe[Res]]) =
     identify.async(parse.json[Req]) { request =>
       block(request) map {
-        case Left(nsiError)    => TfcErrorResponse(nsiError.reportAs, nsiError.message).toResult
+        case Left(nsiError)    => {
+          TfcErrorResponse(nsiError.reportAs, nsiError.message).toResult
+        }
         case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
       }
     }
@@ -86,7 +88,7 @@ object TaxFreeChildcarePaymentsController extends ConstraintReads {
   )(SharedRequestData.apply _)
 
   lazy private val NON_EMPTY_ALPHA_NUM_STR_PATTERN = pattern("[a-zA-Z0-9]+".r)
-  lazy private val CPP_ONLY                        = pattern("^(?i)CCP$".r)
+  lazy private val CPP_ONLY                        = pattern("^CCP$".r)
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(

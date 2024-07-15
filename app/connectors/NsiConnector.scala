@@ -47,12 +47,21 @@ class NsiConnector @Inject() (
       response.json.validate[A].asOpt toRight response.json.as[B]
     }
 
-  def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] =
+  def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] = {
+    val queryString = Map(
+      "eppURN"     -> req.body.sharedRequestData.epp_reg_reference,
+      "eppAccount" -> req.body.sharedRequestData.epp_unique_customer_id,
+      "parentNino" -> req.nino,
+      "childDoB"   -> req.body.child_date_of_birth
+    ).map { case (k, v) => s"$k=$v" }.mkString("?", "&", "")
+
+    val url = new URL(resource("linkAccounts", req.body.sharedRequestData.outbound_child_payment_ref) + queryString)
+
     httpClient
-      .post(new URL(resource("linkAccounts", req.body.sharedRequestData.outbound_child_payment_ref)))
+      .get(url)
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
-      .withBody(enrichedWithNino[LinkRequest])
       .execute[Maybe[LinkResponse]]
+  }
 
   def checkBalance(implicit req: IdentifierRequest[SharedRequestData]): Future[Maybe[BalanceResponse]] = {
     val queryString = Map(

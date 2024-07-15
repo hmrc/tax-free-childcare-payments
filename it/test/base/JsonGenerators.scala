@@ -33,10 +33,10 @@ trait JsonGenerators extends Generators {
 
   protected val validCheckBalanceRequestPayloads: Gen[JsObject] = validSharedPayloads
 
-  protected val validCcpPaymentRequestJson: Gen[JsObject] =
+  protected val validPaymentRequestWithPayeeTypeSetToCCP: Gen[JsObject] =
     for {
       eppAuthPayload     <- validSharedPayloads
-      payeeString        <- Gen oneOf Array("ccp", "CCP")
+      payeeString        <- Gen oneOf Array("CCP")
       ccp                <- childCareProviders
       paymentAmountPence <- Gen.posNum[Int]
     } yield eppAuthPayload ++ Json.obj(
@@ -46,10 +46,23 @@ trait JsonGenerators extends Generators {
       "payment_amount"    -> paymentAmountPence
     )
 
-  protected val validEppPaymentRequestJson: Gen[JsObject] =
+  protected val validPaymentRequestWithPayeeTypeSetToccp: Gen[JsObject] =
     for {
       eppAuthPayload     <- validSharedPayloads
-      payeeString        <- Gen oneOf Array("epp", "EPP")
+      payeeString        <- Gen oneOf Array("ccp")
+      ccp                <- childCareProviders
+      paymentAmountPence <- Gen.posNum[Int]
+    } yield eppAuthPayload ++ Json.obj(
+      "payee_type"        -> payeeString,
+      "ccp_reg_reference" -> ccp.urn,
+      "ccp_postcode"      -> ccp.postcode,
+      "payment_amount"    -> paymentAmountPence
+    )
+
+  protected val validEppPaymentRequestWithPayeeTypeSetToEPP: Gen[JsObject] =
+    for {
+      eppAuthPayload     <- validSharedPayloads
+      payeeString        <- Gen oneOf Array("EPP")
       paymentAmountPence <- Gen.posNum[Int]
     } yield eppAuthPayload ++ Json.obj(
       "payee_type"     -> payeeString,
