@@ -124,7 +124,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
   "POST /" should {
     "respond 200" when {
-      "request is valid with payee CCP" in withClient { ws =>
+      "request is valid with payee type set to CCP" in withClient { ws =>
         withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
           val expectedPaymentRef    = randomPaymentRef
@@ -147,7 +147,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
               AUTHORIZATION  -> "Bearer qwertyuiop",
               CORRELATION_ID -> expectedCorrelationId.toString
             )
-            .post(validCcpPaymentRequestJson.sample.get)
+            .post(validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
             .futureValue
 
           val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
@@ -159,8 +159,8 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       }
     }
 
-    """respond 400 and errorMessage "payee_type did not match 'ccp'""""" when {
-      "payee type is EPP" in withClient { ws =>
+    """respond 400 and errorMessage "payee_type did not match 'CCP'""""" when {
+      "payee type is set to lowercase ccp" in withClient { ws =>
         withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
           val expectedPaymentRef    = randomPaymentRef
@@ -179,7 +179,37 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
               AUTHORIZATION  -> "Bearer qwertyuiop",
               CORRELATION_ID -> expectedCorrelationId.toString
             )
-            .post(validEppPaymentRequestJson.sample.get)
+            .post(validPaymentRequestWithPayeeTypeSetToccp.sample.get)
+            .futureValue
+
+          res.status shouldBe BAD_REQUEST
+          res.json shouldBe Json.obj(
+            "errorCode"        -> "BAD_REQUEST",
+            "errorDescription" -> "Request data is invalid or missing"
+          )
+        }
+      }
+
+      "payee type is set to EPP" in withClient { ws =>
+        withAuthNinoRetrieval {
+          val expectedCorrelationId = UUID.randomUUID()
+          val expectedPaymentRef    = randomPaymentRef
+          val expectedPaymentDate   = randomPaymentDate
+
+          val expectedNsiResponseBody = Json.obj(
+            "paymentReference" -> expectedPaymentRef,
+            "paymentDate"      -> expectedPaymentDate
+          )
+
+          stubNsiMakePayment201(expectedNsiResponseBody)
+
+          val res = ws
+            .url(s"$baseUrl/")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId.toString
+            )
+            .post(validEppPaymentRequestWithPayeeTypeSetToEPP.sample.get)
             .futureValue
 
           res.status shouldBe BAD_REQUEST
@@ -226,7 +256,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     ("Name", "TFC URL", "NSI Mapping", "Valid Payload"),
     ("link", "/link", nsiLinkAccountsEndpoint, randomLinkRequestJson),
     ("balance", "/balance", nsiCheckBalanceEndpoint, randomSharedJson),
-    ("payment", "/", nsiMakePaymentEndpoint, validCcpPaymentRequestJson.sample.get)
+    ("payment", "/", nsiMakePaymentEndpoint, validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
   )
 
   private val nsiErrorScenarios = Table(

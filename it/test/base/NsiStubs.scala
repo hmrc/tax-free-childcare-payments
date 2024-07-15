@@ -32,14 +32,20 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
 
   protected def stubNsiLinkAccounts201(expectedResponseJson: JsValue): StubMapping = stubFor {
     nsiLinkAccountsEndpoint
-      .withRequestBody(nsiLinkAccountsRequestBodyPattern)
+      .withQueryParams(nsiLinkAccountsUrlQueryParams)
       .willReturn(created() withBody expectedResponseJson.toString)
   }
 
-  protected lazy val nsiLinkAccountsEndpoint: MappingBuilder = post(nsiLinkAccountsUrlPattern)
+  protected lazy val nsiLinkAccountsEndpoint: MappingBuilder = get(nsiLinkAccountsUrlPattern)
 
-  private lazy val nsiLinkAccountsUrlPattern                 = nsiUrlPattern("linkAccounts", "[a-zA-Z0-9]+")
-  private lazy val nsiLinkAccountsRequestBodyPattern         = jsonPatternFrom("eppURN,eppAccount,parentNino,childDoB")
+  private lazy val nsiLinkAccountsUrlQueryParams         = Map(
+    "eppURN"     -> matching("[a-zA-Z0-9]+"),
+    "eppAccount" -> matching("[a-zA-Z0-9]+"),
+    "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]"),
+    "childDoB" -> matching(raw"\d{4}-\d{2}-\d{2}")
+  ).asJava
+
+  private lazy val nsiLinkAccountsUrlPattern                 = nsiUrlPattern("linkAccounts", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   /** NSI Check Balance spec */
 
