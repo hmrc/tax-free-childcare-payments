@@ -63,5 +63,5 @@ trait Generators {
     num1     <- Gen.chooseNum(1, 99)
     num2     <- Gen.chooseNum(1, 9)
     letters2 <- Gen.listOfN(2, Gen.alphaUpperChar)
-  } yield s"$letters1$num1 $num2$letters2"
+  } yield s"${letters1.mkString}$num1 $num2${letters2.mkString}"
 }
