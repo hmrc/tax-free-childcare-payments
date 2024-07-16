@@ -18,7 +18,6 @@ package controllers
 
 import base.{BaseISpec, JsonGenerators, NsiStubs}
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, stubFor}
-import play.api.libs.Files.logger
 import play.api.libs.json.{JsString, Json}
 
 import java.util.UUID
@@ -142,17 +141,13 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
           stubNsiMakePayment201(expectedNsiResponseBody)
 
-          var arg = validPaymentRequestWithPayeeTypeSetToCCP.sample.get
-          logger.info("--- here")
-          logger.info(arg.toString())
-
           val res = ws
             .url(s"$baseUrl/")
             .withHttpHeaders(
               AUTHORIZATION  -> "Bearer qwertyuiop",
               CORRELATION_ID -> expectedCorrelationId.toString
             )
-            .post(arg)
+            .post(validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
             .futureValue
 
           val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
