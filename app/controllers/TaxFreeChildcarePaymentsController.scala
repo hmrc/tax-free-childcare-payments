@@ -70,7 +70,7 @@ object TaxFreeChildcarePaymentsController extends ConstraintReads {
   )(PaymentRequest.apply _)
 
   lazy private implicit val readsPayee: Reads[Payee] = (
-    (__ \ "payee_type").read[String](CPP_ONLY) ~
+    (__ \ "payee_type").read[String](CCP_ONLY) ~
       of[ChildCareProvider]
   )((_, ccp) => ccp)
 
@@ -85,10 +85,10 @@ object TaxFreeChildcarePaymentsController extends ConstraintReads {
       (__ \ "outbound_child_payment_ref").read(TFC_FORMAT)
   )(SharedRequestData.apply _)
 
-  lazy private val NON_EMPTY_ALPHA_NUM_STR_PATTERN = pattern("^[a-zA-Z0-9]{1,255}$".r)
-  lazy private val POST_CODE                       = pattern("^[a-zA-Z0-9]{2,4}\\s*[a-zA-Z0-9]{3}$".r)
-  lazy private val TFC_FORMAT                      = pattern("^[a-zA-Z]{4}[0-9]{5}TFC$".r)
-  lazy private val CPP_ONLY                        = pattern("^CCP$".r)
+  lazy private val NON_EMPTY_ALPHA_NUM_STR_PATTERN = pattern("[a-zA-Z0-9]{1,255}".r)
+  lazy private val POST_CODE                       = pattern("[a-zA-Z0-9]{2,4}\\s*[a-zA-Z0-9]{3}".r)
+  lazy private val TFC_FORMAT                      = pattern("[a-zA-Z]{4}[0-9]{5}TFC".r)
+  lazy private val CCP_ONLY                        = pattern("CCP".r)
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(
