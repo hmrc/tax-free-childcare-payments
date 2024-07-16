@@ -61,7 +61,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           val linkRequest = Json.obj(
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
-            "outbound_child_payment_ref" -> randomPaymentRef,
+            "outbound_child_payment_ref" -> randomOutboundChildPaymentRef,
             "child_date_of_birth"        -> "I am a bad date string"
           )
 
@@ -127,7 +127,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       "request is valid with payee type set to CCP" in withClient { ws =>
         withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
-          val expectedPaymentRef    = randomPaymentRef
+          val expectedPaymentRef    = randomOutboundChildPaymentRef
           val expectedPaymentDate   = randomPaymentDate
 
           val expectedTfcResponseBody = Json.obj(
@@ -163,7 +163,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       "payee type is set to lowercase ccp" in withClient { ws =>
         withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
-          val expectedPaymentRef    = randomPaymentRef
+          val expectedPaymentRef    = randomOutboundChildPaymentRef
           val expectedPaymentDate   = randomPaymentDate
 
           val expectedNsiResponseBody = Json.obj(
@@ -193,7 +193,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       "payee type is set to EPP" in withClient { ws =>
         withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
-          val expectedPaymentRef    = randomPaymentRef
+          val expectedPaymentRef    = randomOutboundChildPaymentRef
           val expectedPaymentDate   = randomPaymentDate
 
           val expectedNsiResponseBody = Json.obj(
@@ -229,7 +229,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           val invalidPaymentRequest = Json.obj(
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
-            "outbound_child_payment_ref" -> randomPaymentRef,
+            "outbound_child_payment_ref" -> randomOutboundChildPaymentRef,
             "payment_amount"             -> "I am a bad payment reference",
             "ccp_reg_reference"          -> "qwertyui",
             "ccp_postcode"               -> "AS12 3DF",
