@@ -23,8 +23,8 @@ import scala.util.Try
 
 import models.requests.IdentifierRequest
 import models.response.TfcErrorResponse
-import util.FormattedLogging
-import util.FormattedLogging.CORRELATION_ID
+import utils.FormattedLogging
+import utils.FormattedLogging.CORRELATION_ID
 
 import play.api.http.Status
 import play.api.mvc._
