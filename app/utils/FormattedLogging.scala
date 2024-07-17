@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package util
+package utils
 
 import play.api.Logging
 import play.api.mvc.RequestHeader
 
 trait FormattedLogging extends Logging {
-  import util.FormattedLogging.{endpoints, CORRELATION_ID}
+  import utils.FormattedLogging.{endpoints, CORRELATION_ID}
 
   def formattedLog(msg: String)(implicit req: RequestHeader): String = {
 

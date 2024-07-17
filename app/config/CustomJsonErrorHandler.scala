@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 import models.response.TfcErrorResponse
-import util.FormattedLogging
+import utils.FormattedLogging
 
 import play.api.Configuration
 import play.api.http.Status
