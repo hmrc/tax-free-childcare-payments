@@ -45,7 +45,7 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
     "childDoB" -> matching(raw"\d{4}-\d{2}-\d{2}")
   ).asJava
 
-  private lazy val nsiLinkAccountsUrlPattern                 = nsiUrlPattern("linkAccounts", raw"[a-zA-Z0-9]+\\?[^/]+")
+  protected lazy val nsiLinkAccountsUrlPattern                 = nsiUrlPattern("linkAccounts", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   /** NSI Check Balance spec */
 
@@ -63,7 +63,7 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
     "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]")
   ).asJava
 
-  private lazy val nsiBalanceUrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
+  protected lazy val nsiBalanceUrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   /** NSI Make Payment spec */
 
@@ -75,7 +75,7 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
 
   protected lazy val nsiMakePaymentEndpoint: MappingBuilder = post(nsiPaymentUrlPattern)
 
-  private lazy val nsiPaymentUrlPattern         = nsiUrlPattern("makePayment")
+  protected lazy val nsiPaymentUrlPattern         = nsiUrlPattern("makePayment")
   private lazy val nsiPaymentRequestBodyPattern = jsonPatternFrom("payeeType,amount,childAccountPaymentRef,eppURN,eppAccount,parentNino")
 
   /** Utils */

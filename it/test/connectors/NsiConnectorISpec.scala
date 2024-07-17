@@ -17,6 +17,8 @@
 package connectors
 
 import base.{BaseISpec, NsiStubs}
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, getRequestedFor, postRequestedFor}
 import connectors.scenarios._
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import org.scalatest.EitherValues
@@ -35,6 +37,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues {
           val actualResponse = connector.linkAccounts.futureValue.value
 
           actualResponse shouldBe scenario.expectedResponse
+          WireMock.verify(getRequestedFor(nsiLinkAccountsUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
         }
     }
   }
@@ -50,6 +53,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues {
           val actualResponse = connector.checkBalance.futureValue.value
 
           actualResponse shouldBe scenario.expectedResponse
+          WireMock.verify(getRequestedFor(nsiBalanceUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
         }
     }
   }
@@ -65,6 +69,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues {
           val actualResponse = connector.makePayment.futureValue.value
 
           actualResponse shouldBe scenario.expectedResponse
+          WireMock.verify(postRequestedFor(nsiPaymentUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
         }
     }
   }
