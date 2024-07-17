@@ -63,6 +63,7 @@ class NsiConnector @Inject() (
       .get(url)
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
+      .withProxy
       .execute[Maybe[LinkResponse]]
   }
 
@@ -79,6 +80,7 @@ class NsiConnector @Inject() (
       .get(url)
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
+      .withProxy
       .execute[Maybe[BalanceResponse]]
       .map { res =>
         logger.info(formattedLog(s">>>>> response: $res"))
@@ -92,6 +94,7 @@ class NsiConnector @Inject() (
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
       .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
       .withBody(enrichedWithNino[PaymentRequest])
+      .withProxy
       .execute[Maybe[PaymentResponse]]
 
   private def resource(endpoint: String, params: String*) = {
