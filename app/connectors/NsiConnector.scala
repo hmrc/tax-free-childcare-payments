@@ -25,6 +25,7 @@ import models.requests.Payee.{ChildCareProvider, ExternalPaymentProvider}
 import models.requests.{IdentifierRequest, LinkRequest, Payee, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse.Maybe
 import models.response.{AccountStatus, BalanceResponse, LinkResponse, PaymentResponse}
+import sttp.model.HeaderNames
 import utils.FormattedLogging
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
@@ -39,7 +40,7 @@ class NsiConnector @Inject() (
     httpClient: HttpClientV2,
     servicesConfig: ServicesConfig
   )(implicit ec: ExecutionContext
-  ) extends BackendHeaderCarrierProvider with FormattedLogging {
+  ) extends BackendHeaderCarrierProvider with FormattedLogging with HeaderNames {
   import NsiConnector._
   import uk.gov.hmrc.http.HttpReads.Implicits._
 
@@ -61,7 +62,7 @@ class NsiConnector @Inject() (
     httpClient
       .get(url)
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
-      .setHeader(AUTHORIZATION -> s"Basic $NSI_HEADER_TOKEN")
+      .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
       .execute[Maybe[LinkResponse]]
   }
 
@@ -77,7 +78,7 @@ class NsiConnector @Inject() (
     httpClient
       .get(url)
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
-      .setHeader(AUTHORIZATION -> s"Basic $NSI_HEADER_TOKEN")
+      .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
       .execute[Maybe[BalanceResponse]]
       .map { res =>
         logger.info(formattedLog(s">>>>> response: $res"))
@@ -89,7 +90,7 @@ class NsiConnector @Inject() (
     httpClient
       .post(new URL(resource("makePayment")))
       .setHeader(CORRELATION_ID -> req.correlation_id.toString)
-      .setHeader(AUTHORIZATION -> s"Basic $NSI_HEADER_TOKEN")
+      .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
       .withBody(enrichedWithNino[PaymentRequest])
       .execute[Maybe[PaymentResponse]]
 
@@ -103,8 +104,7 @@ class NsiConnector @Inject() (
   }
 
   private val CORRELATION_ID   = servicesConfig.getString(s"microservice.services.$serviceName.correlationIdHeader")
-  private val AUTHORIZATION    = "Authorization"
-  private val NSI_HEADER_TOKEN = servicesConfig.getString(s"microservice.services.nsi.token")
+  private val NSI_HEADER_TOKEN = servicesConfig.getString(s"microservice.services.$serviceName.token")
 }
 
 object NsiConnector {
