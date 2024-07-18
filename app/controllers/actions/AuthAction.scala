@@ -22,7 +22,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 import models.requests.IdentifierRequest
-import models.response.TfcErrorResponse
+import models.response.TfcErrorResponse2.{ETFC1, ETFC2}
 import utils.FormattedLogging
 import utils.FormattedLogging.CORRELATION_ID
 
@@ -52,9 +52,9 @@ class AuthAction @Inject() (
         optNino =>
           val optCorrelationIdHeader = request.headers get CORRELATION_ID
           val optIdentifierRequest   = for {
-            correlationIdHeader <- optCorrelationIdHeader toRight correlationIdError
-            correlationId       <- Try(UUID fromString correlationIdHeader).toOption toRight correlationIdError
-            nino                <- optNino toRight ninoRetrievalError
+            correlationIdHeader <- optCorrelationIdHeader toRight ETFC1
+            correlationId       <- Try(UUID fromString correlationIdHeader).toOption toRight ETFC1
+            nino                <- optNino toRight ETFC2
           } yield IdentifierRequest(nino, correlationId, request)
 
           optIdentifierRequest match {
@@ -65,15 +65,8 @@ class AuthAction @Inject() (
                 )
               }
 
-            case Left(errorResponse) => Future.successful {
-                logger.info(formattedLog(errorResponse.errorDescription))
-
-                errorResponse.toResult
-              }
+            case Left(errorResponse) => Future.successful(errorResponse.toResult)
           }
       }
   }
-
-  private val correlationIdError = TfcErrorResponse(BAD_REQUEST, "Correlation-ID header is invalid or missing")
-  private val ninoRetrievalError = TfcErrorResponse(INTERNAL_SERVER_ERROR, "Unable to retrieve NI number")
 }
