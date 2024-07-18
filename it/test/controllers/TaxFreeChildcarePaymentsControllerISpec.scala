@@ -18,15 +18,18 @@ package controllers
 
 import base.{BaseISpec, JsonGenerators, NsiStubs}
 import ch.qos.logback.classic.Level
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, stubFor}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, okJson, post, stubFor}
 import org.scalatest.Assertion
 import play.api.Logger
 import play.api.libs.json.{JsString, Json}
+import play.api.libs.ws.WSResponse
 
 import java.util.UUID
 import scala.util.matching.Regex
 
 class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs with JsonGenerators {
+  import org.scalacheck.Gen
+
   withClient { wsClient =>
     "POST /link" should {
       s"respond with status $OK and correct JSON body" when {
@@ -307,6 +310,56 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
   forAll(endpoints) { (name, tfc_url, nsiMapping, validPayload) =>
     s"POST $tfc_url" should {
+      "respond 400 with errorCode ETFC1 and expected errorDescription" when {
+        "correlation ID is missing" in withClient { ws =>
+          withAuthNinoRetrieval {
+            val response = ws
+              .url(s"$baseUrl$tfc_url")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop"
+              )
+              .post(validPayload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "ETFC1", EXPECTED_400_ERROR_DESCRIPTION)
+          }
+        }
+
+        "correlation ID is invalid" in withClient { ws =>
+          forAll(Gen.alphaNumStr) { invalid_uuid =>
+            withAuthNinoRetrieval {
+              val response = ws
+                .url(s"$baseUrl$tfc_url")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> invalid_uuid
+                )
+                .post(validPayload)
+                .futureValue
+
+              checkErrorResponse(response, BAD_REQUEST, "ETFC1", EXPECTED_400_ERROR_DESCRIPTION)
+            }
+          }
+        }
+      }
+
+      "respond 500 with errorCode ETFC2 and expected errorDescription" when {
+        "correlation ID is missing" in withClient { ws =>
+          stubFor(post("/auth/authorise") willReturn okJson("{}"))
+
+          val response = ws
+            .url(s"$baseUrl$tfc_url")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> UUID.randomUUID().toString
+            )
+            .post(validPayload)
+            .futureValue
+
+          checkErrorResponse(response, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_500_ERROR_DESCRIPTION)
+        }
+      }
+
       s"respond with $BAD_REQUEST and generic error message" when {
         forAll(sharedBadRequestScenarios) { (spec, field, badValue) =>
           val expectedCorrelationId = UUID.randomUUID().toString
@@ -355,6 +408,11 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           }
       }
     }
+  }
+
+  private def checkErrorResponse(actualResponse: WSResponse, expectedStatus: Int, expectedErrorCode: String, expectedErrorDescription: String) = {
+    actualResponse.status shouldBe expectedStatus
+    checkErrorJson(actualResponse.json, expectedErrorCode, expectedErrorDescription)
   }
 
   private def withAuthNinoRetrievalExpectLog(
