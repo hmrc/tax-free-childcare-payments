@@ -7,38 +7,8 @@ You can simulate common error responses by sending messages with our predefined 
 #### Before you start
 
 1. Obtain your [Client ID and Client secret credentials](https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/credentials).
-2. Set the Redirect URI on your test app to `urn:ietf:wg:oauth:2.0:oob`.
-3. Use the [Create Test User API](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/api-platform-test-user/1.0) or it's [frontend service](https://developer.service.hmrc.gov.uk/api-test-user) to create test users.
-
-
-#### 1. Generate Authorisation code
-
-1. Visit [https://test-www.tax.service.gov.uk/oauth/authorize?client_id=\[CLIENT-ID\]&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=tax-free-childcare-payments&response_type=code](https://test-www.tax.service.gov.uk/oauth/authorize?client_id=%5BCLIENT-ID%5D&redirect_uri=\urn:ietf:wg:oauth:2.0:oob\&scope=tax-free-childcare-payments&response_type=code).
-2. Click **Continue**.
-3. Click **Sign in to the HMRC online service**.
-4. Enter your User ID and Password, click **Sign in**.
-5. Click **Give permission**.
-
-You should now have view of the Authorisation code required to generate the bearer token.
-
-#### 2. Generate a Bearer Token:
-
-Use the below `POST` to generate the bearer token (replace the \[AUTHORIZATION-CODE\],\[CLIENT-CODE\],\[CLIENT-SECRET\] and \[REDIRECT-URI\]).
-
-````
-POST /oauth/token HTTP/1.1
-Accept: application/vnd.hmrc.1.0+json
-Cache-Control: no-cache
-Content-Type: application/x-www-form-urlencoded
-Host: test-api.service.hmrc.gov.uk
-code=\[AUTHORIZATION-CODE\]&client_id=\[CLIENT-CODE\]&client_secret=\[CLIENT-SECRET\]&grant_type=authorization_code&redirect_uri=\[REDIRECT-URI\]
-````
-
-A successful response will return a user-restricted access bearer token.
-
-#### 3. Connect to the API
-
-> `Correlation-ID` can be any randomly generated UUID.
+2. Use the [Create Test User API](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/api-platform-test-user/1.0) or its [frontend service](https://developer.service.hmrc.gov.uk/api-test-user) to create test users.
+3. Refer to the guidance on [user-restricted endpoints](https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/user-restricted-endpoints) to generate an authorisation code and bearer token.
 
 ### Test Scenarios
 
