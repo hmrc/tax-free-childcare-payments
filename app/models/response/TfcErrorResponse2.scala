@@ -16,19 +16,18 @@
 
 package models.response
 
-import utils.FormattedLogging
-
 import play.api.http.{Status => StatusCodes}
 import play.api.libs.json.Json
 import play.api.mvc.Results.Status
-import play.api.mvc.{Request, Results}
+import play.api.mvc.{Request, Result}
+import utils.FormattedLogging
 
 sealed abstract class TfcErrorResponse2(status: Int, apiMessage: String, logMessage: String) extends FormattedLogging {
 
-  def toResult[A: Request]: Results.Status = new Status(status) {
+  def toResult[A: Request]: Result = new Status(status) {
 
     Json.obj(
-      "errorCode"        -> toString,
+      "errorCode" -> toString,
       "errorDescription" -> apiMessage
     )
   }

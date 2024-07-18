@@ -21,9 +21,8 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{okJson, stubFor}
 import models.requests.IdentifierRequest
 import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.scaladsl.StreamConverters
-import play.api.libs.json.{JsDefined, JsString, Json}
-import play.api.mvc.{AnyContentAsEmpty, Result, Results}
+import play.api.libs.json.JsString
+import play.api.mvc.{AnyContentAsEmpty, Results}
 import play.api.test.FakeRequest
 
 import java.util.UUID
@@ -73,20 +72,4 @@ class AuthActionISpec extends BaseISpec with Results {
 
     def successBlock[A](req: IdentifierRequest[A]) = Future.successful(Ok(JsString("success")))
   }
-
-  private def checkErrorResult(actualResult: Result, expectedStatus: Int, expectedErrorCode: String, expectedErrorDescription: String) = {
-    actualResult.header.status shouldBe expectedStatus
-
-    val actualResultStream = actualResult.body.dataStream runWith StreamConverters.asInputStream()
-    val actualResultJson   = Json parse actualResultStream
-
-    actualResultJson \ "errorCode" shouldBe JsDefined(JsString(expectedErrorCode))
-    actualResultJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
-  }
-
-  private lazy val EXPECTED_400_ERROR_DESCRIPTION =
-    "Request data is invalid or missing. Please refer to API Documentation for further information"
-
-  private lazy val EXPECTED_500_ERROR_DESCRIPTION =
-    "The server encountered an error and couldn't process the request. Please refer to API Documentation for further information"
 }

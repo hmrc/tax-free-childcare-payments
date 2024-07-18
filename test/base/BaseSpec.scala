@@ -16,14 +16,16 @@
 
 package base
 
-import java.time.LocalDate
-import scala.util.Random
-
-import org.scalatest.OptionValues
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.scaladsl.StreamConverters
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{Assertion, OptionValues}
+import play.api.libs.json.{JsDefined, JsObject, JsString, Json}
+import play.api.mvc.Result
 
-import play.api.libs.json.{JsObject, Json}
+import java.time.LocalDate
+import scala.util.Random
 
 class BaseSpec
     extends AnyWordSpec
@@ -68,4 +70,26 @@ class BaseSpec
 
   private val MAX_CHILD_AGE_DAYS     = 18 * 365
   private val MAX_PAYMENT_DELAY_DAYS = 30
+
+  protected def checkErrorResult(
+      actualResult: Result,
+      expectedStatus: Int,
+      expectedErrorCode: String,
+      expectedErrorDescription: String
+    )(implicit as: ActorSystem
+    ): Assertion = {
+    actualResult.header.status shouldBe expectedStatus
+
+    val actualResultStream = actualResult.body.dataStream runWith StreamConverters.asInputStream()
+    val actualResultJson   = Json parse actualResultStream
+
+    actualResultJson \ "errorCode" shouldBe JsDefined(JsString(expectedErrorCode))
+    actualResultJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
+  }
+
+  protected lazy val EXPECTED_400_ERROR_DESCRIPTION =
+    "Request data is invalid or missing. Please refer to API Documentation for further information"
+
+  protected lazy val EXPECTED_500_ERROR_DESCRIPTION =
+    "The server encountered an error and couldn't process the request. Please refer to API Documentation for further information"
 }
