@@ -16,14 +16,11 @@
 
 package base
 
-import ch.qos.logback.classic.Level
-import config.CustomJsonErrorHandler
 import org.scalatest.LoneElement
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.Logger
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.JsValue
 import play.api.test.WsTestClient
@@ -49,8 +46,6 @@ abstract class BaseISpec
   import play.api.inject.guice.GuiceApplicationBuilder
   import play.api.libs.json.Json
 
-  import scala.util.matching.Regex
-
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder().configure(
       "microservice.services.auth.port" -> wireMockPort,
@@ -65,35 +60,6 @@ abstract class BaseISpec
     )
     check
   }
-
-  protected def withAuthNinoRetrievalExpectLog(
-      expectedEndpoint: String,
-      expectedCorrelationId: String
-    )(
-      doTest: => Assertion
-    ): Unit = {
-    withCaptureOfLoggingFrom(
-      Logger(classOf[CustomJsonErrorHandler])
-    ) { logs =>
-      withAuthNinoRetrieval {
-        doTest
-      }
-
-      val log = logs.loneElement
-      log.getLevel shouldBe Level.INFO
-      log.getMessage match {
-        case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
-          loggedEndpoint shouldBe expectedEndpoint
-          loggedCorrelationId shouldBe expectedCorrelationId
-          loggedMessage should startWith("Json validation error")
-
-        case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
-      }
-    }
-  }
-
-  protected lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
-    raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
 
   protected lazy val EXPECTED_JSON_ERROR_RESPONSE: JsValue = Json.obj(
     "errorCode"        -> "BAD_REQUEST",

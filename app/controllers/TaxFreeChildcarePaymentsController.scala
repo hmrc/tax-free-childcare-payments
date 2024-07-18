@@ -26,6 +26,7 @@ import models.requests.Payee.ChildCareProvider
 import models.requests._
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
+import utils.FormattedLogging
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
@@ -38,20 +39,30 @@ class TaxFreeChildcarePaymentsController @Inject() (
     identify: AuthAction,
     nsiConnector: NsiConnector
   )(implicit ec: ExecutionContext
-  ) extends BackendController(cc) {
+  ) extends BackendController(cc) with FormattedLogging {
   import TaxFreeChildcarePaymentsController._
 
-  def link(): Action[LinkRequest] = messageBrokerAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
+  def link(): Action[JsValue] = nsiAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
 
-  def balance(): Action[SharedRequestData] = messageBrokerAction[SharedRequestData, BalanceResponse](implicit req => nsiConnector.checkBalance)
+  def balance(): Action[JsValue] = nsiAction[SharedRequestData, BalanceResponse](implicit req => nsiConnector.checkBalance)
 
-  def payment(): Action[PaymentRequest] = messageBrokerAction[PaymentRequest, PaymentResponse](implicit req => nsiConnector.makePayment)
+  def payment(): Action[JsValue] = nsiAction[PaymentRequest, PaymentResponse](implicit req => nsiConnector.makePayment)
 
-  private def messageBrokerAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[Maybe[Res]]) =
-    identify.async(parse.json[Req]) { request =>
-      block(request) map {
-        case Left(nsiError)    => TfcErrorResponse(nsiError.reportAs, nsiError.message).toResult
-        case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
+  private def nsiAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[Maybe[Res]]) =
+    identify.async(parse.json) { implicit request =>
+      request.body.validate[Req] match {
+        case JsSuccess(value, _) =>
+          val requestWithValidBody = IdentifierRequest(request.nino, request.correlation_id, request.map(_ => value))
+
+          block(requestWithValidBody) map {
+            case Left(nsiError)    => TfcErrorResponse(nsiError.reportAs, nsiError.message).toResult
+            case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
+          }
+        case JsError(errors)     => Future.successful {
+            logger.info(formattedLog(errors.toString))
+
+            TfcErrorResponse(BAD_REQUEST, "Request data is invalid or missing").toResult
+          }
       }
     }
 }

@@ -17,10 +17,14 @@
 package controllers
 
 import base.{BaseISpec, JsonGenerators, NsiStubs}
+import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, stubFor}
+import org.scalatest.Assertion
+import play.api.Logger
 import play.api.libs.json.{JsString, Json}
 
 import java.util.UUID
+import scala.util.matching.Regex
 
 class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs with JsonGenerators {
   withClient { wsClient =>
@@ -352,4 +356,31 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       }
     }
   }
+
+  private def withAuthNinoRetrievalExpectLog(
+      expectedEndpoint: String,
+      expectedCorrelationId: String
+    )(
+      doTest: => Assertion
+    ): Unit = withCaptureOfLoggingFrom(EXPECTED_LOGGER) { logs =>
+    withAuthNinoRetrieval {
+      doTest
+    }
+
+    val log = logs.loneElement
+    log.getLevel shouldBe Level.INFO
+    log.getMessage match {
+      case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
+        loggedEndpoint shouldBe expectedEndpoint
+        loggedCorrelationId shouldBe expectedCorrelationId
+        loggedMessage should include("JsonValidationError")
+
+      case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
+    }
+  }
+
+  private lazy val EXPECTED_LOGGER = Logger(classOf[TaxFreeChildcarePaymentsController])
+
+  private lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
+    raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
 }
