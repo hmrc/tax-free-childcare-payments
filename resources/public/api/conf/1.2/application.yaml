@@ -54,11 +54,11 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0005</td>
-			<td>the service failed to process the Parent Data</td>
+			<td>The service failed to process the Parent Data</td>
 		</tr>
 		<tr>
 			<td>E0006</td>
-			<td>child_date_of_birthis missing</td>
+			<td>child_date_of_birth is missing</td>
 		</tr>
 		<tr>
 			<td>E0007</td>
@@ -74,7 +74,7 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0021</td>
-			<td>child_date_of_birthwas not processed correctly</td>
+			<td>child_date_of_birth was not processed correctly</td>
 		</tr>
 		<tr>
 			<td>E0022</td>
@@ -94,23 +94,23 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0026</td>
-			<td>outbound_child_payment_ref and the bearer tokendo not refer to the same record</td>
+			<td>outbound_child_payment_ref and the bearer token do not refer to the same record</td>
 		</tr>
 		<tr>
 			<td>E0401</td>
-			<td>service was denied access to required services</td>
+			<td>Service was denied access to required services</td>
 		</tr>
 		<tr>
 			<td>E0030</td>
-			<td>the epp_unique_customer_idorepp_reg_referencerefers to an inactive record</td>
+			<td>The epp_unique_customer_id or epp_reg_reference refers to an inactive record</td>
 		</tr>
 		<tr>
 			<td>E0031</td>
-			<td>the cpp_reg_reference refers to an inactive record</td>
+			<td>The cpp_reg_reference refers to an inactive record</td>
 		</tr>
 		<tr>
 			<td>E0032</td>
-			<td>the `epp_unique_customer_id`or `epp_reg_reference` is not associated with the `outbound_child_payment_ref`</td>
+			<td>the epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref</td>
 		</tr>
 		<tr>
 			<td>E0033</td>
@@ -126,15 +126,15 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0040</td>
-			<td>the `outbound_child_payment_ref` could not be found</td>
+			<td>The `outbound_child_payment_ref` could not be found</td>
 		</tr>
 		<tr>
 			<td>E0041</td>
-			<td>the epp_reg_reference could not be found</td>
+			<td>The epp_reg_reference could not be found</td>
 		</tr>
 		<tr>
 			<td>E0042</td>
-			<td>the ccp_reg_reference could not be found</td>
+			<td>The ccp_reg_reference could not be found</td>
 		</tr>
 		<tr>
 			<td>E0043</td>
@@ -253,7 +253,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/400errorResponse'
                   examples:
                     bad_request:
                       value:
@@ -271,7 +271,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/500errorResponse'
                   examples:
                     internal_server_error:
                       value:
@@ -289,7 +289,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/502errorResponse'
                   examples:
                     bad_gateway:
                       value:
@@ -307,7 +307,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/503errorResponse'
                   examples:
                     service_unavailable:
                       value:
@@ -424,7 +424,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/400errorResponse'
                   examples:
                     bad_request:
                       value:
@@ -442,7 +442,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/500errorResponse'
                   examples:
                     internal_server_error:
                       value:
@@ -460,7 +460,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/502errorResponse'
                   examples:
                     bad_gateway:
                       value:
@@ -478,7 +478,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/503errorResponse'
                   examples:
                     service_unavailable:
                       value:
@@ -588,7 +588,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/400errorResponse'
                   examples:
                     bad_request:
                       value:
@@ -606,7 +606,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/500errorResponse'
                   examples:
                     internal_server_error:
                       value:
@@ -624,7 +624,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/502errorResponse'
                   examples:
                     bad_gateway:
                       value:
@@ -642,7 +642,7 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/errorResponse'
+                    $ref: '#/components/schemas/503errorResponse'
                   examples:
                     service_unavailable:
                       value:
@@ -666,15 +666,48 @@ components:
           scopes:
             tax-free-childcare-payments: Access all aspects of Tax Free Childcare Payments API
   schemas:
-    errorResponse:
-      description: Return when an error occurs
+    400errorResponse:
+      description: Refer to the Error mapping table above for full details of the error.
       type: object
       properties:
         errorCode:
-          description: An example of a possible error code in the response
+          description: "One of the following error codes: ETFC1, E0001, E0002, E0003, E0004, E0006, E0007, E0008, E0021, E0022, E0023, E0024, E0025, E0026, E0030, E0031, E0032, E0033, E0035, E0040, E0041, E0042, E0043"
           type: string
-          example: E0000
-        errorDescription:
-          description: Description of the error
+        errorMessage:
+          description: Request data is invalid or missing. Please refer to API Documentation for further information.
           type: string
-          example: Invalid authentication credentials
+
+    500errorResponse:
+      description: Refer to the Error mapping table above for full details of the error.
+      type: object
+      properties:
+        errorCode:
+          description: "One of the following error codes: ETFC2, E0000, E0002, E0003, E0004, E0005, E0006, E0007, E0008, E0021, E0022, E0023, E0401, E0001"
+          type: string
+        errorMessage:
+          description: The server encountered an error and couldn't process the request. Please refer to API Documentation for further information.
+          type: string
+
+    502errorResponse:
+      description: Refer to the Error mapping table above for full details of the error.
+      type: object
+      properties:
+        errorCode:
+          description: "E0020"
+          type: string
+        errorMessage:
+          description: Bad Gateway. Please refer to API Documentation for further information.
+          type: string
+
+    503errorResponse:
+      description: Refer to the Error mapping table above for full details of the error.
+      type: object
+      properties:
+        errorCode:
+          description: "One of the following error codes: E0034,E9000, E9999, E8000, E8001"
+          type: string
+        errorMessage:
+          description: The service is currently unavailable. Please refer to API Documentation for further information.
+          type: string
+
+
