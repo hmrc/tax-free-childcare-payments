@@ -10,7 +10,155 @@ info:
 
 - Checking the balance on the child's TFC account.
 
-- Making a payment from the child's TFC account to the childcare provider."
+- Making a payment from the child's TFC account to the childcare provider.
+
+## Error mapping
+
+The following table gives the detailed description for each error code you receive from the API:
+
+<table>
+	<thead>
+		<tr>
+			<th>Error code</th>
+			<th>Error description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>ETFC1</td>
+			<td>Correlation-ID is Invalid or Missing</td>
+		</tr>
+		<tr>
+			<td>ETFC2</td>
+			<td>Issue with provided bearer token</td>
+		</tr>
+		<tr>
+			<td>E0000</td>
+			<td>Request data is invalid or missing.</td>
+		</tr>
+		<tr>
+			<td>E0001</td>
+			<td>outbound_child_payment_ref is missing</td>
+		</tr>
+		<tr>
+			<td>E0002</td>
+			<td>epp_reg_reference is missing</td>
+		</tr>
+		<tr>
+			<td>E0003</td>
+			<td>cpp_reg_reference is missing</td>
+		</tr>
+		<tr>
+			<td>E0004</td>
+			<td>epp_unique_customer_id is missing</td>
+		</tr>
+		<tr>
+			<td>E0005</td>
+			<td>the service failed to process the Parent Data</td>
+		</tr>
+		<tr>
+			<td>E0006</td>
+			<td>child_date_of_birthis missing</td>
+		</tr>
+		<tr>
+			<td>E0007</td>
+			<td>payee_type is missing</td>
+		</tr>
+		<tr>
+			<td>E0008</td>
+			<td>payment_amount is missing</td>
+		</tr>
+		<tr>
+			<td>E0020</td>
+			<td>Data format issue</td>
+		</tr>
+		<tr>
+			<td>E0021</td>
+			<td>child_date_of_birthwas not processed correctly</td>
+		</tr>
+		<tr>
+			<td>E0022</td>
+			<td>payee_type did not match `ccp`</td>
+		</tr>
+		<tr>
+			<td>E0023</td>
+			<td>payment_amount was not processed correctly</td>
+		</tr>
+		<tr>
+			<td>E0024</td>
+			<td>epp_reg_reference and epp_unique_customer_id do not refer to the same record</td>
+		</tr>
+		<tr>
+			<td>E0025</td>
+			<td>child_date_of_birth and outbound_child_payment_ref do not refer to the same record</td>
+		</tr>
+		<tr>
+			<td>E0026</td>
+			<td>outbound_child_payment_ref and the bearer tokendo not refer to the same record</td>
+		</tr>
+		<tr>
+			<td>E0401</td>
+			<td>service was denied access to required services</td>
+		</tr>
+		<tr>
+			<td>E0030</td>
+			<td>the epp_unique_customer_idorepp_reg_referencerefers to an inactive record</td>
+		</tr>
+		<tr>
+			<td>E0031</td>
+			<td>the cpp_reg_reference refers to an inactive record</td>
+		</tr>
+		<tr>
+			<td>E0032</td>
+			<td>the `epp_unique_customer_id`or `epp_reg_reference` is not associated with the `outbound_child_payment_ref`</td>
+		</tr>
+		<tr>
+			<td>E0033</td>
+			<td>The TFC account used to request payment contains insufficient funds</td>
+		</tr>
+		<tr>
+			<td>E0034</td>
+			<td>Downstream service is unable to process the request at this time</td>
+		</tr>
+		<tr>
+			<td>E0035</td>
+			<td>There is an issue with this TFC account, please ask the parent to contact TFC customer services</td>
+		</tr>
+		<tr>
+			<td>E0040</td>
+			<td>the `outbound_child_payment_ref` could not be found</td>
+		</tr>
+		<tr>
+			<td>E0041</td>
+			<td>the epp_reg_reference could not be found</td>
+		</tr>
+		<tr>
+			<td>E0042</td>
+			<td>the ccp_reg_reference could not be found</td>
+		</tr>
+		<tr>
+			<td>E0043</td>
+			<td>The parent associated with TFC account could not be found</td>
+		</tr>
+		<tr>
+			<td>E9000</td>
+			<td>Downstream service is unable to process the request at this time.</td>
+		</tr>
+		<tr>
+			<td>E9999</td>
+			<td>Downstream service is unable to process the request at this time.</td>
+		</tr>
+		<tr>
+			<td>E8000</td>
+			<td>Downstream service is unable to process the request at this time.</td>
+		</tr>
+		<tr>
+			<td>E8001</td>
+			<td>Downstream service is unable to process the request at this time.</td>
+		</tr>
+	</tbody>
+</table>
+"
   version: 1.2.0
 servers:
 - url: https://test-api.service.hmrc.gov.uk
@@ -109,26 +257,8 @@ paths:
                   examples:
                     bad_request:
                       value:
-                        errorCode: "BAD_REQUEST"
-                        errorDescription: "Request data is invalid or missing"
-          "401":
-            description: Unauthorised
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    unauthorised:
-                      value:
-                        errorCode: UNAUTHORISED
-                        errorDescription: "Invalid authentication credentials"
+                        errorCode: "E0030"
+                        errorDescription: "Request data is invalid or missing. Please refer to the API Documentation for further information."
           "500":
             description: Internal server error
             headers:
@@ -145,8 +275,8 @@ paths:
                   examples:
                     internal_server_error:
                       value:
-                        errorCode: INTERNAL_SERVER_ERROR
-                        errorDescription: "The server encountered an error and couldn't process the request"
+                        errorCode: E0401
+                        errorDescription: "The server encountered an error and couldn't process the request. Please refer to the  Documentation for further information."
           "502":
             description: Bad gateway
             headers:
@@ -163,8 +293,8 @@ paths:
                   examples:
                     bad_gateway:
                       value:
-                        errorCode: BAD_GATEWAY
-                        errorDescription: "Bad gateway"
+                        errorCode: E0020
+                        errorDescription: "Bad gateway. Please refer to the API Documentation for further information."
           "503":
             description: Service unavailable
             headers:
@@ -181,8 +311,8 @@ paths:
                   examples:
                     service_unavailable:
                       value:
-                        errorCode: SERVICE_UNAVAILABLE
-                        errorDescription: "The service is currently unavailable"
+                        errorCode: E9000
+                        errorDescription: "The service is currently unavailable. Please refer to the API Documentation for further information."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -298,26 +428,8 @@ paths:
                   examples:
                     bad_request:
                       value:
-                        errorCode: "BAD_REQUEST"
-                        errorDescription: "Request data is invalid or missing"
-          "401":
-            description: Unauthorised
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    unauthorised:
-                      value:
-                        errorCode: UNAUTHORISED
-                        errorDescription: "Invalid authentication credentials"
+                        errorCode: "E0030"
+                        errorDescription: "Request data is invalid or missing. Please refer to the API Documentation for further information."
           "500":
             description: Internal server error
             headers:
@@ -334,8 +446,8 @@ paths:
                   examples:
                     internal_server_error:
                       value:
-                        errorCode: INTERNAL_SERVER_ERROR
-                        errorDescription: "The server encountered an error and couldn't process the request"
+                        errorCode: E0401
+                        errorDescription: "The server encountered an error and couldn't process the request. Please refer to the  Documentation for further information."
           "502":
             description: Bad gateway
             headers:
@@ -352,8 +464,8 @@ paths:
                   examples:
                     bad_gateway:
                       value:
-                        errorCode: BAD_GATEWAY
-                        errorDescription: "Bad gateway"
+                        errorCode: E0020
+                        errorDescription: "Bad gateway. Please refer to the API Documentation for further information."
           "503":
             description: Service unavailable
             headers:
@@ -370,8 +482,8 @@ paths:
                   examples:
                     service_unavailable:
                       value:
-                        errorCode: SERVICE_UNAVAILABLE
-                        errorDescription: "The service is currently unavailable"
+                        errorCode: E9000
+                        errorDescription: "The service is currently unavailable. Please refer to the API Documentation for further information."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -480,26 +592,8 @@ paths:
                   examples:
                     bad_request:
                       value:
-                        errorCode: "BAD_REQUEST"
-                        errorDescription: "Request data is invalid or missing"
-          "401":
-            description: Unauthorised
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    unauthorised:
-                      value:
-                        errorCode: UNAUTHORISED
-                        errorDescription: "Invalid authentication credentials"
+                        errorCode: "E0030"
+                        errorDescription: "Request data is invalid or missing. Please refer to the API Documentation for further information."
           "500":
             description: Internal server error
             headers:
@@ -516,8 +610,8 @@ paths:
                   examples:
                     internal_server_error:
                       value:
-                        errorCode: INTERNAL_SERVER_ERROR
-                        errorDescription: "The server encountered an error and couldn't process the request"
+                        errorCode: E0401
+                        errorDescription: "The server encountered an error and couldn't process the request. Please refer to the  Documentation for further information."
           "502":
             description: Bad gateway
             headers:
@@ -534,8 +628,8 @@ paths:
                   examples:
                     bad_gateway:
                       value:
-                        errorCode: BAD_GATEWAY
-                        errorDescription: "Bad gateway"
+                        errorCode: E0020
+                        errorDescription: "Bad gateway. Please refer to the API Documentation for further information."
           "503":
             description: Service unavailable
             headers:
@@ -552,8 +646,8 @@ paths:
                   examples:
                     service_unavailable:
                       value:
-                        errorCode: SERVICE_UNAVAILABLE
-                        errorDescription: "The service is currently unavailable"
+                        errorCode: E9000
+                        errorDescription: "The service is currently unavailable. Please refer to the API Documentation for further information."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -577,9 +671,9 @@ components:
       type: object
       properties:
         errorCode:
-          description: The name of the HTTP status code
+          description: An example of a possible error code in the response
           type: string
-          example: UNAUTHORISED
+          example: E0000
         errorDescription:
           description: Description of the error
           type: string
