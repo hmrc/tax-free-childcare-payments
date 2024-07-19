@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.response
 
-import java.time.LocalDate
+trait ErrorDescriptions {
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{__, Reads}
+  protected val ERROR_400_DESCRIPTION =
+    "Request data is invalid or missing. Please refer to API Documentation for further information"
 
-final case class LinkRequest(
-    sharedRequestData: SharedRequestData,
-    child_date_of_birth: LocalDate
-  )
-
-object LinkRequest {
-
-  implicit val readsFromApi: Reads[LinkRequest] = (
-    __.read[SharedRequestData] ~
-      (__ \ "child_date_of_birth").read[LocalDate]
-  )(apply _)
+  protected val ERROR_500_DESCRIPTION =
+    "The server encountered an error and couldn't process the request. Please refer to API Documentation for further information"
 }

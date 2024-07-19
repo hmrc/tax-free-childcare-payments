@@ -31,16 +31,10 @@ sealed abstract class TfcErrorResponse2(status: Int, apiMessage: String, val log
   )
 }
 
-object TfcErrorResponse2 extends StatusCodes {
+object TfcErrorResponse2 extends StatusCodes with ErrorDescriptions {
   case object ETFC1 extends TfcErrorResponse2(BAD_REQUEST, ERROR_400_DESCRIPTION, "Correlation-ID header is invalid or missing")
   case object ETFC2 extends TfcErrorResponse2(INTERNAL_SERVER_ERROR, ERROR_500_DESCRIPTION, "Unable to retrieve NI number")
 
   case object E0006 extends TfcErrorResponse2(INTERNAL_SERVER_ERROR, ERROR_400_DESCRIPTION, "Missing JSON field: child_date_of_birth")
   case object E0023 extends TfcErrorResponse2(INTERNAL_SERVER_ERROR, ERROR_400_DESCRIPTION, "Invalid Json field: child_date_of_birth")
-
-  private lazy val ERROR_400_DESCRIPTION =
-    "Request data is invalid or missing. Please refer to API Documentation for further information"
-
-  private lazy val ERROR_500_DESCRIPTION =
-    "The server encountered an error and couldn't process the request. Please refer to API Documentation for further information"
 }

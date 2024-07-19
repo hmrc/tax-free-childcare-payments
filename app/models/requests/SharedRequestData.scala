@@ -19,7 +19,7 @@ package models.requests
 import controllers.TaxFreeChildcarePaymentsController.pattern
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{Reads, __}
+import play.api.libs.json.{__, Reads}
 
 final case class SharedRequestData(
     epp_unique_customer_id: String,
