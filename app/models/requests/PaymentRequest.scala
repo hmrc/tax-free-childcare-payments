@@ -20,7 +20,7 @@ import controllers.TaxFreeChildcarePaymentsController.{of, pattern}
 import models.requests.Payee.ChildCareProvider
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{__, Reads}
+import play.api.libs.json.{Reads, __}
 
 final case class PaymentRequest(
     sharedRequestData: SharedRequestData,

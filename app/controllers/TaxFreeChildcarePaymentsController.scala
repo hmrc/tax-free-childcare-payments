@@ -24,7 +24,7 @@ import controllers.actions.AuthAction
 import models.requests._
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
-import utils.FormattedLogging
+import utils.{ErrorResponseJsonFactory, FormattedLogging}
 
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
@@ -58,7 +58,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
         case JsError(errors)     => Future.successful {
             logger.info(formattedLog(errors.toString))
 
-            TfcErrorResponse(BAD_REQUEST, "Request data is invalid or missing").toResult
+            BadRequest(ErrorResponseJsonFactory getJson errors)
           }
       }
     }
