@@ -31,9 +31,9 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
   import org.scalacheck.Gen
 
   "POST /link" should {
-    s"respond with status $OK and correct JSON body" when {
+    "respond with status 200 and correct JSON body" when {
 
-      s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withClient { wsClient =>
+      "link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withClient { wsClient =>
         withAuthNinoRetrieval {
           val expectedChildName       = fullNames.sample.get
           val expectedCorrelationId   = UUID.randomUUID()
@@ -61,19 +61,14 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       }
     }
 
-    s"respond with $BAD_REQUEST and generic error message" when {
+    "respond 400 with errorCode E0006 and expected errorDescription" when {
       val expectedCorrelationId = UUID.randomUUID()
 
-      s"child DOB is invalid" in withClient { wsClient =>
+      "child_date_of_birth is missing" in withClient { wsClient =>
         withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
-          val linkRequest = Json.obj(
-            "epp_unique_customer_id"     -> randomCustomerId,
-            "epp_reg_reference"          -> randomRegistrationRef,
-            "outbound_child_payment_ref" -> randomOutboundChildPaymentRef,
-            "child_date_of_birth"        -> "I am a bad date string"
-          )
+          val linkRequest = validLinkAccountsRequestPayloads.sample.get - "child_date_of_birth"
 
-          val res = wsClient
+          val response = wsClient
             .url(s"$baseUrl/link")
             .withHttpHeaders(
               AUTHORIZATION  -> "Bearer qwertyuiop",
@@ -82,8 +77,30 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
             .post(linkRequest)
             .futureValue
 
-          res.status shouldBe BAD_REQUEST
-          res.body shouldBe EXPECTED_JSON_ERROR_RESPONSE.toString
+          checkErrorResponse(response, BAD_REQUEST, "E0006", EXPECTED_400_ERROR_DESCRIPTION)
+        }
+      }
+    }
+
+    "respond 400 with errorCode E0023 and expected errorDescription" when {
+      val expectedCorrelationId = UUID.randomUUID()
+
+      "child DOB is invalid" in withClient { wsClient =>
+        withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+          val linkRequest = validLinkAccountsRequestPayloads.sample.get ++ Json.obj(
+            "child_date_of_birth" -> "I am a bad date string"
+          )
+
+          val response = wsClient
+            .url(s"$baseUrl/link")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId.toString
+            )
+            .post(linkRequest)
+            .futureValue
+
+          checkErrorResponse(response, BAD_REQUEST, "E0023", EXPECTED_400_ERROR_DESCRIPTION)
         }
       }
     }
