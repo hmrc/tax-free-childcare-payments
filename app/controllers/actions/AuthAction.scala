@@ -65,7 +65,11 @@ class AuthAction @Inject() (
                 )
               }
 
-            case Left(errorResponse) => Future.successful(errorResponse.toResult)
+            case Left(errorResponse) => Future.successful {
+                logger.info(formattedLog(errorResponse.logMessage))
+
+                errorResponse.toResult
+              }
           }
       }
   }

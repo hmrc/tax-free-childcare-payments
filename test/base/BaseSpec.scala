@@ -16,16 +16,14 @@
 
 package base
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.scaladsl.StreamConverters
+import java.time.LocalDate
+import scala.util.Random
+
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Assertion, OptionValues}
-import play.api.libs.json.{JsDefined, JsObject, JsString, Json}
-import play.api.mvc.Result
 
-import java.time.LocalDate
-import scala.util.Random
+import play.api.libs.json._
 
 class BaseSpec
     extends AnyWordSpec
@@ -71,20 +69,13 @@ class BaseSpec
   private val MAX_CHILD_AGE_DAYS     = 18 * 365
   private val MAX_PAYMENT_DELAY_DAYS = 30
 
-  protected def checkErrorResult(
-      actualResult: Result,
-      expectedStatus: Int,
+  protected def checkErrorJson(
+      actualJson: => JsValue,
       expectedErrorCode: String,
       expectedErrorDescription: String
-    )(implicit as: ActorSystem
     ): Assertion = {
-    actualResult.header.status shouldBe expectedStatus
-
-    val actualResultStream = actualResult.body.dataStream runWith StreamConverters.asInputStream()
-    val actualResultJson   = Json parse actualResultStream
-
-    actualResultJson \ "errorCode" shouldBe JsDefined(JsString(expectedErrorCode))
-    actualResultJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
+    actualJson \ "errorCode" shouldBe JsDefined(JsString(expectedErrorCode))
+    actualJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
   }
 
   protected lazy val EXPECTED_400_ERROR_DESCRIPTION =

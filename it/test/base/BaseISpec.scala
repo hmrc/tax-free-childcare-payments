@@ -16,6 +16,7 @@
 
 package base
 
+import org.apache.pekko.actor.ActorSystem
 import org.scalatest.LoneElement
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -23,6 +24,7 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.JsValue
+import play.api.mvc.Result
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
@@ -67,4 +69,18 @@ abstract class BaseISpec
   )
 
   protected lazy val CORRELATION_ID = "Correlation-ID"
+
+  protected def checkErrorResult(
+      actualResult: => Result,
+      expectedStatus: Int,
+      expectedErrorCode: String,
+      expectedErrorDescription: String
+    )(implicit as: ActorSystem
+    ): Assertion = {
+    actualResult.header.status shouldBe expectedStatus
+
+    val actualResultStream = actualResult.body.consumeData.futureValue.toArray
+
+    checkErrorJson(Json parse actualResultStream, expectedErrorCode, expectedErrorDescription)
+  }
 }

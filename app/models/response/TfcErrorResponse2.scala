@@ -17,25 +17,23 @@
 package models.response
 
 import play.api.http.{Status => StatusCodes}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Result
 import play.api.mvc.Results.Status
-import play.api.mvc.{Request, Result}
-import utils.FormattedLogging
 
-sealed abstract class TfcErrorResponse2(status: Int, apiMessage: String, logMessage: String) extends FormattedLogging {
+sealed abstract class TfcErrorResponse2(status: Int, apiMessage: String, val logMessage: String) {
 
-  def toResult[A: Request]: Result = new Status(status) {
+  def toResult: Result = new Status(status)(toJson)
 
-    Json.obj(
-      "errorCode" -> toString,
-      "errorDescription" -> apiMessage
-    )
-  }
+  def toJson: JsObject = Json.obj(
+    "errorCode"        -> toString,
+    "errorDescription" -> apiMessage
+  )
 }
 
 object TfcErrorResponse2 extends StatusCodes {
   case object ETFC1 extends TfcErrorResponse2(BAD_REQUEST, ERROR_400_DESCRIPTION, "Correlation-ID header is invalid or missing")
-  case object ETFC2 extends TfcErrorResponse2(BAD_REQUEST, ERROR_500_DESCRIPTION, "Unable to retrieve NI number")
+  case object ETFC2 extends TfcErrorResponse2(INTERNAL_SERVER_ERROR, ERROR_500_DESCRIPTION, "Unable to retrieve NI number")
 
   private lazy val ERROR_400_DESCRIPTION =
     "Request data is invalid or missing. Please refer to API Documentation for further information"

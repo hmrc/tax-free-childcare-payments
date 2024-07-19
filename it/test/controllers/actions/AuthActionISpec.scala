@@ -22,14 +22,14 @@ import com.github.tomakehurst.wiremock.client.WireMock.{okJson, stubFor}
 import models.requests.IdentifierRequest
 import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.JsString
-import play.api.mvc.{AnyContentAsEmpty, Results}
+import play.api.mvc.Results
 import play.api.test.FakeRequest
 
 import java.util.UUID
 import scala.concurrent.Future
 
 class AuthActionISpec extends BaseISpec with Results {
-  private implicit val as: ActorSystem = app.actorSystem
+  lazy private implicit val as: ActorSystem = app.actorSystem
 
   private val authAction = app.injector.instanceOf[AuthAction]
 
@@ -38,38 +38,38 @@ class AuthActionISpec extends BaseISpec with Results {
       "correlation ID is missing" in withAuthNinoRetrieval {
         val requestSansCorrelationId = FakeRequest().withHeaders(AUTHORIZATION -> "Bearer a-totally-random-token")
 
-        val actualResult = authAction.invokeBlock(requestSansCorrelationId, successBlock[AnyContentAsEmpty.type]).futureValue
+        val actualResult = authAction.invokeBlock(requestSansCorrelationId, successBlock).futureValue
 
         checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", EXPECTED_400_ERROR_DESCRIPTION)
       }
 
       "correlation ID is invalid" in withAuthNinoRetrieval {
-        val requestSansCorrelationId = FakeRequest().withHeaders(
-          AUTHORIZATION -> "Bearer a-totally-random-token",
+        val requestWithBadCorrelationId = FakeRequest().withHeaders(
+          AUTHORIZATION  -> "Bearer a-totally-random-token",
           CORRELATION_ID -> "an-invalid-uuid"
         )
 
-        val actualResult = authAction.invokeBlock(requestSansCorrelationId, successBlock[AnyContentAsEmpty.type]).futureValue
+        val actualResult = authAction.invokeBlock(requestWithBadCorrelationId, successBlock).futureValue
 
         checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", EXPECTED_400_ERROR_DESCRIPTION)
       }
     }
 
-    "return a 500 response with errorCode ETFC1 and expected errorDescription" when {
+    "return a 500 response with errorCode ETFC2 and expected errorDescription" when {
       "Auth doesn't return a NI number" in {
         stubFor(WireMock.post("/auth/authorise") willReturn okJson("{}"))
 
-        val requestSansCorrelationId = FakeRequest().withHeaders(
-          AUTHORIZATION -> "Bearer a-totally-random-token",
+        val requestWithCorrelationId = FakeRequest().withHeaders(
+          AUTHORIZATION  -> "Bearer a-totally-random-token",
           CORRELATION_ID -> UUID.randomUUID().toString
         )
 
-        val actualResult = authAction.invokeBlock(requestSansCorrelationId, successBlock[AnyContentAsEmpty.type]).futureValue
+        val actualResult = authAction.invokeBlock(requestWithCorrelationId, successBlock).futureValue
 
         checkErrorResult(actualResult, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_500_ERROR_DESCRIPTION)
       }
     }
 
-    def successBlock[A](req: IdentifierRequest[A]) = Future.successful(Ok(JsString("success")))
+    lazy val successBlock = (_: IdentifierRequest[_]) => Future.successful(Ok(JsString("success")))
   }
 }
