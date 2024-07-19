@@ -30,41 +30,42 @@ import scala.util.matching.Regex
 class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs with JsonGenerators {
   import org.scalacheck.Gen
 
-  withClient { wsClient =>
-    "POST /link" should {
-      s"respond with status $OK and correct JSON body" when {
+  "POST /link" should {
+    s"respond with status $OK and correct JSON body" when {
 
-        s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in
-          withAuthNinoRetrieval {
-            val expectedChildName       = fullNames.sample.get
-            val expectedCorrelationId   = UUID.randomUUID()
-            val expectedTfcResponseBody = Json.obj("child_full_name" -> expectedChildName)
-            val expectedNsiResponseBody = Json.obj("childFullName" -> expectedChildName)
+      s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withClient { wsClient =>
+        withAuthNinoRetrieval {
+          val expectedChildName       = fullNames.sample.get
+          val expectedCorrelationId   = UUID.randomUUID()
+          val expectedTfcResponseBody = Json.obj("child_full_name" -> expectedChildName)
+          val expectedNsiResponseBody = Json.obj("childFullName" -> expectedChildName)
 
-            stubNsiLinkAccounts201(expectedNsiResponseBody)
+          stubNsiLinkAccounts201(expectedNsiResponseBody)
 
-            val request  = wsClient
-              .url(s"$baseUrl/link")
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
-              )
-            val response = request
-              .post(randomLinkRequestJson)
-              .futureValue
+          val request  = wsClient
+            .url(s"$baseUrl/link")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId.toString
+            )
+          val response = request
+            .post(randomLinkRequestJson)
+            .futureValue
 
-            val resCorrelationId = UUID fromString response.header(CORRELATION_ID).value
+          val resCorrelationId = UUID fromString response.header(CORRELATION_ID).value
 
-            response.status shouldBe OK
-            resCorrelationId shouldBe expectedCorrelationId
-            response.json shouldBe expectedTfcResponseBody
-          }
+          response.status shouldBe OK
+          resCorrelationId shouldBe expectedCorrelationId
+          response.json shouldBe expectedTfcResponseBody
+        }
       }
+    }
 
-      s"respond with $BAD_REQUEST and generic error message" when {
-        val expectedCorrelationId = UUID.randomUUID()
+    s"respond with $BAD_REQUEST and generic error message" when {
+      val expectedCorrelationId = UUID.randomUUID()
 
-        s"child DOB is invalid" in withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+      s"child DOB is invalid" in withClient { wsClient =>
+        withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
           val linkRequest = Json.obj(
             "epp_unique_customer_id"     -> randomCustomerId,
             "epp_reg_reference"          -> randomRegistrationRef,
@@ -86,7 +87,9 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
         }
       }
     }
+  }
 
+  withClient { wsClient =>
     "POST /balance" should {
       s"respond with status $OK and correct JSON body" when {
         s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
