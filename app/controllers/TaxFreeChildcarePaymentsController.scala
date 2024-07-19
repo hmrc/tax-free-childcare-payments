@@ -21,13 +21,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests.Payee.ChildCareProvider
 import models.requests._
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
 import utils.FormattedLogging
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -67,26 +65,6 @@ class TaxFreeChildcarePaymentsController @Inject() (
 }
 
 object TaxFreeChildcarePaymentsController extends ConstraintReads {
-
-  private implicit val readsPaymentReq: Reads[PaymentRequest] = (
-    __.read[SharedRequestData] ~
-      (__ \ "payment_amount").read[Int] ~
-      of[Payee]
-  )(PaymentRequest.apply _)
-
-  lazy private implicit val readsPayee: Reads[Payee] = (
-    (__ \ "payee_type").read[String](CCP_ONLY) ~
-      of[ChildCareProvider]
-  )((_, ccp) => ccp)
-
-  lazy private implicit val readsCcp: Reads[ChildCareProvider] = (
-    (__ \ "ccp_reg_reference").read(CCP_REG) ~
-      (__ \ "ccp_postcode").read(POST_CODE)
-  )(ChildCareProvider.apply _)
-
-  lazy private val POST_CODE = pattern("[a-zA-Z0-9]{2,4}\\s*[a-zA-Z0-9]{3}".r)
-  lazy private val CCP_ONLY  = pattern("CCP".r)
-  lazy private val CCP_REG   = pattern(".{1,20}".r)
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(
