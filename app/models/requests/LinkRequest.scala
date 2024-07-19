@@ -16,9 +16,14 @@
 
 package models.requests
 
+import play.api.libs.json.Reads
+
 import java.time.LocalDate
 
 final case class LinkRequest(
     sharedRequestData: SharedRequestData,
     child_date_of_birth: LocalDate
   )
+object LinkRequest {
+  implicit val readsFromApi: Reads[LinkRequest] = ???
+}

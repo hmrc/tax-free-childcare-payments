@@ -16,7 +16,7 @@
 
 package controllers
 
-import base.{BaseISpec, JsonGenerators, NsiStubs}
+import base.{BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, okJson, post, stubFor}
 import org.scalatest.Assertion
@@ -27,7 +27,7 @@ import play.api.libs.ws.WSResponse
 import java.util.UUID
 import scala.util.matching.Regex
 
-class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs with JsonGenerators {
+class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs with models.request.Generators {
   import org.scalacheck.Gen
 
   "POST /link" should {
