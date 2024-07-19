@@ -22,20 +22,21 @@ import play.api.libs.json._
 
 object ErrorResponseJsonFactory extends ErrorDescriptions {
 
-  def getJson(errors: collection.Seq[(JsPath, collection.Seq[JsonValidationError])]): JsValue = {
-    val (errorCode, errorDescription) = errors.head match {
+  def getJson(errors: collection.Seq[(JsPath, collection.Seq[JsonValidationError])]): JsValue =
+    errors.head match {
       case (JsPath(KeyPathNode(key) :: Nil), error :: _) =>
         (key, error.message) match {
-          case ("child_date_of_birth", "error.path.missing") => "E0006"       -> ERROR_400_DESCRIPTION
-          case ("child_date_of_birth", _)                    => "E0023"       -> ERROR_400_DESCRIPTION
-          case _                                             => "BAD_REQUEST" -> "Request data is invalid or missing"
+          case ("child_date_of_birth", "error.path.missing") => getJson("E0006", ERROR_400_DESCRIPTION)
+          case ("child_date_of_birth", _)                    => getJson("E0023", ERROR_400_DESCRIPTION)
+          case _                                             => getJson("BAD_REQUEST", "Request data is invalid or missing")
         }
-      case _                                             => "BAD_REQUEST" -> "Request data is invalid or missing"
+      case _                                             => getJson("BAD_REQUEST", "Request data is invalid or missing")
     }
 
+  @inline
+  def getJson(errorCode: String, errorDescription: String): JsValue =
     Json.obj(
       "errorCode"        -> errorCode,
       "errorDescription" -> errorDescription
     )
-  }
 }
