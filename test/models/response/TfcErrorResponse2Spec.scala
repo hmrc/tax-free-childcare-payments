@@ -17,9 +17,8 @@
 package models.response
 
 import base.BaseSpec
-import models.response.TfcErrorResponse2.{ETFC1, ETFC2}
+import models.response.TfcErrorResponse2._
 import org.scalatest.prop.TableDrivenPropertyChecks
-
 import play.api.http.Status
 
 class TfcErrorResponse2Spec extends BaseSpec with TableDrivenPropertyChecks with Status {
@@ -34,6 +33,8 @@ class TfcErrorResponse2Spec extends BaseSpec with TableDrivenPropertyChecks with
   private lazy val errorScenarios = Table(
     ("Error Response", "Expected Status", "Expected Error Code", "Expected Error Description"),
     (ETFC1, BAD_REQUEST, "ETFC1", EXPECTED_400_ERROR_DESCRIPTION),
-    (ETFC2, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_500_ERROR_DESCRIPTION)
+    (ETFC2, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_500_ERROR_DESCRIPTION),
+    (E0006, BAD_REQUEST, "E0006", EXPECTED_400_ERROR_DESCRIPTION),
+    (E0023, INTERNAL_SERVER_ERROR, "E0023", EXPECTED_400_ERROR_DESCRIPTION)
   )
 }
