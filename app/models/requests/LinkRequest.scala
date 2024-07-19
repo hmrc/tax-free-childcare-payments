@@ -16,7 +16,8 @@
 
 package models.requests
 
-import play.api.libs.json.Reads
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{__, Reads}
 
 import java.time.LocalDate
 
@@ -24,6 +25,11 @@ final case class LinkRequest(
     sharedRequestData: SharedRequestData,
     child_date_of_birth: LocalDate
   )
+
 object LinkRequest {
-  implicit val readsFromApi: Reads[LinkRequest] = ???
+
+  implicit val readsFromApi: Reads[LinkRequest] = (
+    __.read[SharedRequestData] ~
+      (__ \ "child_date_of_birth").read[LocalDate]
+  )(apply _)
 }
