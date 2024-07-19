@@ -16,10 +16,10 @@
 
 package models.requests
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{__, Reads}
-
 import java.time.LocalDate
+
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{Reads, __}
 
 final case class LinkRequest(
     sharedRequestData: SharedRequestData,

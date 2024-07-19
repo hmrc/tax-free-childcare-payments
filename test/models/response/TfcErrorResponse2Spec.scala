@@ -19,6 +19,7 @@ package models.response
 import base.BaseSpec
 import models.response.TfcErrorResponse2._
 import org.scalatest.prop.TableDrivenPropertyChecks
+
 import play.api.http.Status
 
 class TfcErrorResponse2Spec extends BaseSpec with TableDrivenPropertyChecks with Status {

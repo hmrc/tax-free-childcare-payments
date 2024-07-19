@@ -16,20 +16,21 @@
 
 package controllers
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.requests.Payee.ChildCareProvider
 import models.requests._
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
+import utils.FormattedLogging
+
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.FormattedLogging
-
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (
@@ -83,9 +84,9 @@ object TaxFreeChildcarePaymentsController extends ConstraintReads {
       (__ \ "ccp_postcode").read(POST_CODE)
   )(ChildCareProvider.apply _)
 
-  lazy private val POST_CODE                       = pattern("[a-zA-Z0-9]{2,4}\\s*[a-zA-Z0-9]{3}".r)
-  lazy private val CCP_ONLY                        = pattern("CCP".r)
-  lazy private val CCP_REG                         = pattern(".{1,20}".r)
+  lazy private val POST_CODE = pattern("[a-zA-Z0-9]{2,4}\\s*[a-zA-Z0-9]{3}".r)
+  lazy private val CCP_ONLY  = pattern("CCP".r)
+  lazy private val CCP_REG   = pattern(".{1,20}".r)
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(
