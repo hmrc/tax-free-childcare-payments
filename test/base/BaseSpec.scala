@@ -32,17 +32,6 @@ class BaseSpec
     with OptionValues
     with ScalaCheckPropertyChecks {
 
-  protected def randomLinkRequestJson: JsObject =
-    randomSharedJson ++ Json.obj(
-      "child_date_of_birth" -> randomDateOfBirth
-    )
-
-  protected def randomSharedJson: JsObject = Json.obj(
-    "epp_unique_customer_id"     -> randomCustomerId,
-    "epp_reg_reference"          -> randomRegistrationRef,
-    "outbound_child_payment_ref" -> randomOutboundChildPaymentRef
-  )
-
   protected def randomCustomerId: String      = randomStringOf(EXPECTED_CUSTOMER_ID_LENGTH, '0' to '9')
   protected def randomRegistrationRef: String = randomStringOf(EXPECTED_REGISTRATION_REF_LENGTH, ('a' to 'z') ++ ('A' to 'Z') ++ ('0' to '9'))
 
@@ -60,7 +49,6 @@ class BaseSpec
     Array.fill(n)(randomChar).mkString
   }
 
-  protected def randomDateOfBirth: LocalDate = LocalDate.now() minusDays Random.nextInt(MAX_CHILD_AGE_DAYS)
   protected def randomPaymentDate: LocalDate = LocalDate.now() plusDays Random.nextInt(MAX_PAYMENT_DELAY_DAYS)
 
   private val EXPECTED_CUSTOMER_ID_LENGTH      = 11
@@ -68,7 +56,6 @@ class BaseSpec
   private val EXPECTED_PAYMENT_REF_LETTERS     = 4
   private val EXPECTED_PAYMENT_REF_DIGITS      = 5
 
-  private val MAX_CHILD_AGE_DAYS     = 18 * 365
   private val MAX_PAYMENT_DELAY_DAYS = 30
 
   protected def checkErrorJson(
