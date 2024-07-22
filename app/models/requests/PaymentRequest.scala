@@ -19,7 +19,7 @@ package models.requests
 import models.requests.Payee.ChildCareProvider
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{ConstraintReads, Reads, __}
+import play.api.libs.json.{__, ConstraintReads, Reads}
 
 final case class PaymentRequest(
     sharedRequestData: SharedRequestData,

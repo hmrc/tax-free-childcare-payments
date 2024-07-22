@@ -48,6 +48,38 @@ class SharedRequestDataSpec extends BaseSpec {
             expectedMessage = "error.pattern"
           )
         }
+
+      "field epp_reg_reference is missing" in
+        forAll(sharedPayloadsWithMissingEppUrn) {
+          checkJsonError[SharedRequestData](
+            expectedJsonPath = "epp_reg_reference",
+            expectedMessage = "error.path.missing"
+          )
+        }
+
+      "field epp_reg_reference is invalid" in
+        forAll(sharedPayloadsWithInvalidEppUrn) {
+          checkJsonError[SharedRequestData](
+            expectedJsonPath = "epp_reg_reference",
+            expectedMessage = "error.pattern"
+          )
+        }
+
+      "field epp_unique_customer_id is missing" in
+        forAll(sharedPayloadsWithMissingEppAccountId) {
+          checkJsonError[SharedRequestData](
+            expectedJsonPath = "epp_unique_customer_id",
+            expectedMessage = "error.path.missing"
+          )
+        }
+
+      "field epp_unique_customer_id is invalid" in
+        forAll(sharedPayloadsWithInvalidEppAccountId) {
+          checkJsonError[SharedRequestData](
+            expectedJsonPath = "epp_unique_customer_id",
+            expectedMessage = "error.pattern"
+          )
+        }
     }
   }
 }

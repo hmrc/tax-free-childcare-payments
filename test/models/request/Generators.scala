@@ -132,6 +132,46 @@ trait Generators extends base.Generators {
       "epp_unique_customer_id"     -> epp_account
     )
 
+  protected lazy val sharedPayloadsWithMissingEppUrn: Gen[JsObject] =
+    for {
+      childAccountRef <- validChildAccountRefs
+      epp_account     <- nonEmptyAlphaNumStrings
+    } yield Json.obj(
+      "outbound_child_payment_ref" -> childAccountRef,
+      "epp_unique_customer_id"     -> epp_account
+    )
+
+  protected lazy val sharedPayloadsWithInvalidEppUrn: Gen[JsObject] =
+    for {
+      childAccountRef <- validChildAccountRefs
+      epp_urn         <- nonAlphaNumStrings
+      epp_account     <- nonEmptyAlphaNumStrings
+    } yield Json.obj(
+      "outbound_child_payment_ref" -> childAccountRef,
+      "epp_reg_reference"          -> epp_urn,
+      "epp_unique_customer_id"     -> epp_account
+    )
+
+  protected lazy val sharedPayloadsWithMissingEppAccountId: Gen[JsObject] =
+    for {
+      childAccountRef <- validChildAccountRefs
+      epp_urn         <- nonEmptyAlphaNumStrings
+    } yield Json.obj(
+      "outbound_child_payment_ref" -> childAccountRef,
+      "epp_reg_reference"          -> epp_urn
+    )
+
+  protected lazy val sharedPayloadsWithInvalidEppAccountId: Gen[JsObject] =
+    for {
+      childAccountRef <- validChildAccountRefs
+      epp_urn         <- nonEmptyAlphaNumStrings
+      epp_account     <- nonAlphaNumStrings
+    } yield Json.obj(
+      "outbound_child_payment_ref" -> childAccountRef,
+      "epp_reg_reference"          -> epp_urn,
+      "epp_unique_customer_id"     -> epp_account
+    )
+
   protected lazy val validSharedPayloads: Gen[JsObject] =
     for {
       epp_urn     <- nonEmptyAlphaNumStrings
@@ -143,13 +183,15 @@ trait Generators extends base.Generators {
     )
 
   private lazy val validChildAccountRefs = for {
-    letters <- Gen.containerOfN[Array, Char](CHILD_ACCOUNT_REF_LETTERS, Gen.alphaChar)
-    digits  <- Gen.containerOfN[Array, Char](CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
-  } yield s"${letters.mkString}${digits.mkString}TFC"
+    letters <- Gen.stringOfN(CHILD_ACCOUNT_REF_LETTERS, Gen.alphaChar)
+    digits  <- Gen.stringOfN(CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
+  } yield s"$letters${digits}TFC"
 
   private lazy val invalidChildAccountRefs            = Gen.asciiPrintableStr.filterNot(_ matches EXPECTED_CHILD_ACCOUNT_REF_PATTERN)
   private lazy val EXPECTED_CHILD_ACCOUNT_REF_PATTERN = s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
 
   private lazy val CHILD_ACCOUNT_REF_LETTERS = 4
   private lazy val CHILD_ACCOUNT_REF_DIGITS  = 5
+
+  private lazy val nonAlphaNumStrings = Gen.asciiPrintableStr.map(_.filterNot(_.isLetterOrDigit))
 }
