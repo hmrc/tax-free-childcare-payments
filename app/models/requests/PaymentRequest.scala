@@ -16,11 +16,10 @@
 
 package models.requests
 
-import controllers.TaxFreeChildcarePaymentsController.{of, pattern}
 import models.requests.Payee.ChildCareProvider
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{Reads, __}
+import play.api.libs.json.{__, ConstraintReads, Reads}
 
 final case class PaymentRequest(
     sharedRequestData: SharedRequestData,
@@ -28,7 +27,7 @@ final case class PaymentRequest(
     payee: Payee
   )
 
-object PaymentRequest {
+object PaymentRequest extends ConstraintReads {
 
   implicit val readsFromApi: Reads[PaymentRequest] = (
     of[SharedRequestData] ~

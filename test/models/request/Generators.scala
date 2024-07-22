@@ -16,9 +16,10 @@
 
 package models.request
 
+import java.time.LocalDate
+
 import models.requests.SharedRequestData
 
-import java.time.LocalDate
 import play.api.libs.json.{JsObject, JsString, JsValue, Json}
 
 trait Generators extends base.Generators {
@@ -90,16 +91,40 @@ trait Generators extends base.Generators {
 
   protected lazy val validSharedDataModels: Gen[SharedRequestData] =
     for {
-      childAccountRef <- validChildAccountRefs
-      epp_urn         <- nonEmptyAlphaNumStrings
       epp_account     <- nonEmptyAlphaNumStrings
-    } yield SharedRequestData(childAccountRef, epp_urn, epp_account)
+      epp_urn         <- nonEmptyAlphaNumStrings
+      childAccountRef <- validChildAccountRefs
+    } yield SharedRequestData(
+      epp_unique_customer_id = epp_account,
+      epp_reg_reference = epp_urn,
+      outbound_child_payment_ref = childAccountRef
+    )
 
   protected def getJsonFrom(model: SharedRequestData): JsObject = Json.obj(
     "outbound_child_payment_ref" -> model.outbound_child_payment_ref,
     "epp_reg_reference"          -> model.epp_reg_reference,
     "epp_unique_customer_id"     -> model.epp_unique_customer_id
   )
+
+  protected lazy val sharedDataPayloadsWithMissingTfcAccountRef: Gen[JsObject] =
+    for {
+      epp_urn     <- nonEmptyAlphaNumStrings
+      epp_account <- nonEmptyAlphaNumStrings
+    } yield Json.obj(
+      "epp_reg_reference"      -> epp_urn,
+      "epp_unique_customer_id" -> epp_account
+    )
+
+  protected lazy val sharedDataPayloadsWithInvalidTfcAccountRef: Gen[JsObject] =
+    for {
+      childAccountRef <- invalidChildAccountRefs
+      epp_urn         <- nonEmptyAlphaNumStrings
+      epp_account     <- nonEmptyAlphaNumStrings
+    } yield Json.obj(
+      "outbound_child_payment_ref" -> childAccountRef,
+      "epp_reg_reference"          -> epp_urn,
+      "epp_unique_customer_id"     -> epp_account
+    )
 
   protected lazy val validSharedPayloads: Gen[JsObject] =
     for {
@@ -116,6 +141,9 @@ trait Generators extends base.Generators {
     digits  <- Gen.containerOfN[Array, Char](CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
   } yield s"${letters.mkString}${digits.mkString}TFC"
 
-  private val CHILD_ACCOUNT_REF_LETTERS = 4
-  private val CHILD_ACCOUNT_REF_DIGITS  = 5
+  private lazy val invalidChildAccountRefs = Gen.asciiPrintableStr.filterNot(_ matches EXPECTED_CHILD_ACCOUNT_REF_PATTERN)
+  private lazy val EXPECTED_CHILD_ACCOUNT_REF_PATTERN = s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
+
+  private lazy val CHILD_ACCOUNT_REF_LETTERS = 4
+  private lazy val CHILD_ACCOUNT_REF_DIGITS  = 5
 }

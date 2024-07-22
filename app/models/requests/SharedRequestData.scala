@@ -16,10 +16,9 @@
 
 package models.requests
 
-import controllers.TaxFreeChildcarePaymentsController.pattern
-
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{Reads, __}
+import play.api.libs.json.Reads.StringReads
+import play.api.libs.json._
 
 final case class SharedRequestData(
     epp_unique_customer_id: String,
@@ -27,14 +26,14 @@ final case class SharedRequestData(
     outbound_child_payment_ref: String
   )
 
-object SharedRequestData {
+object SharedRequestData extends ConstraintReads {
 
   implicit val readsFromApi: Reads[SharedRequestData] = (
-    (__ \ "epp_unique_customer_id").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN) ~
-      (__ \ "epp_reg_reference").read(NON_EMPTY_ALPHA_NUM_STR_PATTERN) ~
-      (__ \ "outbound_child_payment_ref").read(TFC_FORMAT)
+    (__ \ "epp_unique_customer_id").read(NonEmptyAlphaNumStringReads) ~
+      (__ \ "epp_reg_reference").read(NonEmptyAlphaNumStringReads) ~
+      (__ \ "outbound_child_payment_ref").read(TfcAccountRefReads)
   )(apply _)
 
-  lazy private val NON_EMPTY_ALPHA_NUM_STR_PATTERN = pattern("[a-zA-Z0-9]{1,255}".r)
-  lazy private val TFC_FORMAT                      = pattern("[a-zA-Z]{4}[0-9]{5}TFC".r)
+  private lazy val NonEmptyAlphaNumStringReads = pattern("[a-zA-Z0-9]{1,255}".r)
+  private lazy val TfcAccountRefReads          = pattern("[a-zA-Z]{4}[0-9]{5}TFC".r)
 }

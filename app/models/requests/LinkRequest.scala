@@ -19,7 +19,7 @@ package models.requests
 import java.time.LocalDate
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{Reads, __}
+import play.api.libs.json.{__, Reads}
 
 final case class LinkRequest(
     sharedRequestData: SharedRequestData,

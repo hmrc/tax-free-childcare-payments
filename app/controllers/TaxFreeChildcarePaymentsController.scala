@@ -64,7 +64,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
     }
 }
 
-object TaxFreeChildcarePaymentsController extends ConstraintReads {
+object TaxFreeChildcarePaymentsController {
 
   private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
     Json.obj(
