@@ -30,6 +30,8 @@ object LinkRequest {
 
   implicit val readsFromApi: Reads[LinkRequest] = (
     __.read[SharedRequestData] ~
-      (__ \ "child_date_of_birth").read[LocalDate]
+      (__ \ CHILD_DOB_KEY).read[LocalDate]
   )(apply _)
+
+  lazy val CHILD_DOB_KEY = "child_date_of_birth"
 }

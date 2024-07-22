@@ -16,19 +16,27 @@
 
 package utils
 
+import models.requests.LinkRequest.CHILD_DOB_KEY
+import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
 import models.response.ErrorDescriptions
-
 import play.api.libs.json._
 
 object ErrorResponseJsonFactory extends ErrorDescriptions {
 
+  // noinspection ScalaStyle
   def getJson(errors: collection.Seq[(JsPath, collection.Seq[JsonValidationError])]): JsValue =
     errors.head match {
       case (JsPath(KeyPathNode(key) :: Nil), error :: _) =>
         (key, error.message) match {
-          case ("child_date_of_birth", "error.path.missing") => getJson("E0006", ERROR_400_DESCRIPTION)
-          case ("child_date_of_birth", _)                    => getJson("E0023", ERROR_400_DESCRIPTION)
-          case _                                             => getJson("BAD_REQUEST", "Request data is invalid or missing")
+          case (TFC_ACCOUNT_REF_KEY, "error.path.missing") => getJson("E0001", ERROR_400_DESCRIPTION)
+          case (EPP_URN_KEY, "error.path.missing")         => getJson("E0002", ERROR_400_DESCRIPTION)
+          case (EPP_ACCOUNT_ID_KEY, "error.path.missing")  => getJson("E0004", ERROR_400_DESCRIPTION)
+          case (CHILD_DOB_KEY, "error.path.missing")       => getJson("E0006", ERROR_400_DESCRIPTION)
+          case (CHILD_DOB_KEY, _)                          => getJson("E0021", ERROR_400_DESCRIPTION)
+          case (TFC_ACCOUNT_REF_KEY, _)                    => getJson("E0000", ERROR_400_DESCRIPTION)
+          case (EPP_URN_KEY, _)                            => getJson("E0000", ERROR_400_DESCRIPTION)
+          case (EPP_ACCOUNT_ID_KEY, _)                     => getJson("E0000", ERROR_400_DESCRIPTION)
+          case _                                           => getJson("BAD_REQUEST", "Request data is invalid or missing")
         }
       case _                                             => getJson("BAD_REQUEST", "Request data is invalid or missing")
     }
