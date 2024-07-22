@@ -16,13 +16,9 @@
 
 package models.request
 
-import base.BaseSpec
 import models.requests.SharedRequestData
-import org.scalatest.{EitherValues, LoneElement}
 
-import play.api.libs.json.{JsPath, KeyPathNode}
-
-class SharedRequestDataSpec extends BaseSpec with Generators with EitherValues with LoneElement {
+class SharedRequestDataSpec extends BaseSpec {
 
   "API JSON reader" should {
     "return JsSuccess" when {
@@ -38,19 +34,19 @@ class SharedRequestDataSpec extends BaseSpec with Generators with EitherValues w
 
     "return JsError" when {
       "field outbound_child_payment_ref is missing" in
-        forAll(sharedDataPayloadsWithMissingTfcAccountRef) { invalidJson =>
-          val (jsPath, jsErrors) = invalidJson.validate[SharedRequestData].asEither.left.value.loneElement
-
-          jsPath shouldBe JsPath(List(KeyPathNode("outbound_child_payment_ref")))
-          jsErrors.loneElement.message shouldBe "error.path.missing"
+        forAll(sharedPayloadsWithMissingTfcAccountRef) {
+          checkJsonError[SharedRequestData](
+            expectedJsonPath = "outbound_child_payment_ref",
+            expectedMessage = "error.path.missing"
+          )
         }
 
       "field outbound_child_payment_ref is invalid" in
-        forAll(sharedDataPayloadsWithInvalidTfcAccountRef) { invalidJson =>
-          val (jsPath, jsErrors) = invalidJson.validate[SharedRequestData].asEither.left.value.loneElement
-
-          jsPath shouldBe JsPath(List(KeyPathNode("outbound_child_payment_ref")))
-          jsErrors.loneElement.message shouldBe "error.pattern"
+        forAll(sharedPayloadsWithInvalidTfcAccountRef) {
+          checkJsonError[SharedRequestData](
+            expectedJsonPath = "outbound_child_payment_ref",
+            expectedMessage = "error.pattern"
+          )
         }
     }
   }

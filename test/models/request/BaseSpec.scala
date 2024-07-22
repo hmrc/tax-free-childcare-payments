@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.request
 
-import java.time.LocalDate
+import org.scalatest.{Assertion, EitherValues, LoneElement}
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{Reads, __}
+import play.api.libs.json.{JsValue, KeyPathNode, Reads}
 
-final case class LinkRequest(
-    sharedRequestData: SharedRequestData,
-    child_date_of_birth: LocalDate
-  )
+abstract class BaseSpec extends base.BaseSpec with Generators with EitherValues with LoneElement {
 
-object LinkRequest {
+  protected def checkJsonError[A: Reads](expectedJsonPath: String, expectedMessage: String)(invalidJson: JsValue): Assertion = {
+    val (jsPath, jsErrors) = invalidJson.validate[A].asEither.left.value.loneElement
 
-  implicit val readsFromApi: Reads[LinkRequest] = (
-    __.read[SharedRequestData] ~
-      (__ \ "child_date_of_birth").read[LocalDate]
-  )(apply _)
+    jsPath.path.loneElement shouldBe KeyPathNode(expectedJsonPath)
+    jsErrors.loneElement.message shouldBe expectedMessage
+  }
 }

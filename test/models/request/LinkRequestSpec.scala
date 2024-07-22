@@ -16,44 +16,41 @@
 
 package models.request
 
-import base.BaseSpec
 import models.requests.LinkRequest
-import org.scalatest.{EitherValues, LoneElement}
 
-class LinkRequestSpec extends BaseSpec with models.request.Generators with EitherValues with LoneElement {
+class LinkRequestSpec extends BaseSpec {
   "API JSON reader" should {
+
+    "report missing TFC account ref" in
+      forAll(linkPayloadsWithMissingTfcAccountRef) {
+        checkJsonError[LinkRequest](
+          expectedJsonPath = "outbound_child_payment_ref",
+          expectedMessage = "error.path.missing"
+        )
+      }
+
+    "report invalid TFC account ref" in
+      forAll(linkPayloadsWithInvalidTfcAccountRef) {
+        checkJsonError[LinkRequest](
+          expectedJsonPath = "outbound_child_payment_ref",
+          expectedMessage = "error.pattern"
+        )
+      }
+
     "report missing child DoB" in
-      forAll(randomLinkRequestJsonWithMissingChildDob) { json =>
-        val (jsPath, errors) =
-          json
-            .validate[LinkRequest]
-            .asEither
-            .left
-            .value
-            .loneElement
-
-        val errorKey   = jsPath.path.loneElement.toString
-        val errorValue = errors.loneElement.message
-
-        errorKey shouldBe "/child_date_of_birth"
-        errorValue shouldBe "error.path.missing"
+      forAll(linkPayloadsWithMissingChildDob) {
+        checkJsonError[LinkRequest](
+          expectedJsonPath = "child_date_of_birth",
+          expectedMessage = "error.path.missing"
+        )
       }
 
     "report invalid child DoB" in
-      forAll(randomLinkRequestJsonWithInvalidChildDob) { json =>
-        val (jsPath, errors) =
-          json
-            .validate[LinkRequest]
-            .asEither
-            .left
-            .value
-            .loneElement
-
-        val errorKey   = jsPath.path.loneElement.toString
-        val errorValue = errors.loneElement.message
-
-        errorKey shouldBe "/child_date_of_birth"
-        errorValue shouldBe "error.expected.date.isoformat"
+      forAll(linkPayloadsWithInvalidChildDob) {
+        checkJsonError[LinkRequest](
+          expectedJsonPath = "child_date_of_birth",
+          expectedMessage = "error.expected.date.isoformat"
+        )
       }
   }
 }

@@ -39,7 +39,7 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
 
   private lazy val linkRequestJsonErrorScenarios = Table(
     ("Invalid Payloads", "Expected Error Code"),
-    (randomLinkRequestJsonWithMissingChildDob, "E0006"),
-    (randomLinkRequestJsonWithInvalidChildDob, "E0023")
+    (linkPayloadsWithMissingChildDob, "E0006"),
+    (linkPayloadsWithInvalidChildDob, "E0023")
   )
 }

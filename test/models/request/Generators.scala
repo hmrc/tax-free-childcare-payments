@@ -26,20 +26,26 @@ trait Generators extends base.Generators {
   import org.scalacheck.Gen
 
   /** START Link Accounts generators */
-  protected val validLinkAccountsRequestPayloads: Gen[JsObject] =
-    for {
-      eppAuthPayload <- validSharedPayloads
-      childAgeDays   <- Gen.chooseNum(0, 18 * 365)
-    } yield eppAuthPayload ++ Json.obj(
-      "child_date_of_birth" -> (LocalDate.now() minusDays childAgeDays)
-    )
+  protected val validLinkPayloads: Gen[JsObject] = linkPayloadsWith(validSharedPayloads)
 
-  protected lazy val randomLinkRequestJsonWithMissingChildDob: Gen[JsValue] = validSharedPayloads
+  protected lazy val linkPayloadsWithMissingTfcAccountRef: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)
 
-  protected lazy val randomLinkRequestJsonWithInvalidChildDob: Gen[JsObject] = for {
+  protected lazy val linkPayloadsWithInvalidTfcAccountRef: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithInvalidTfcAccountRef)
+
+  protected lazy val linkPayloadsWithMissingChildDob: Gen[JsValue] = validSharedPayloads
+
+  protected lazy val linkPayloadsWithInvalidChildDob: Gen[JsObject] = for {
     sharedPayload     <- validSharedPayloads
     invalidDateString <- Gen.alphaNumStr
   } yield sharedPayload + ("child_date_of_birth" -> JsString(invalidDateString))
+
+  private def linkPayloadsWith(sharedPayloads: Gen[JsObject]) =
+    for {
+      sharedPayload <- sharedPayloads
+      childAgeDays  <- Gen.chooseNum(0, 18 * 365)
+    } yield sharedPayload ++ Json.obj(
+      "child_date_of_birth" -> (LocalDate.now() minusDays childAgeDays)
+    )
 
   /** END Link Accounts generators
     *
@@ -106,7 +112,7 @@ trait Generators extends base.Generators {
     "epp_unique_customer_id"     -> model.epp_unique_customer_id
   )
 
-  protected lazy val sharedDataPayloadsWithMissingTfcAccountRef: Gen[JsObject] =
+  protected lazy val sharedPayloadsWithMissingTfcAccountRef: Gen[JsObject] =
     for {
       epp_urn     <- nonEmptyAlphaNumStrings
       epp_account <- nonEmptyAlphaNumStrings
@@ -115,7 +121,7 @@ trait Generators extends base.Generators {
       "epp_unique_customer_id" -> epp_account
     )
 
-  protected lazy val sharedDataPayloadsWithInvalidTfcAccountRef: Gen[JsObject] =
+  protected lazy val sharedPayloadsWithInvalidTfcAccountRef: Gen[JsObject] =
     for {
       childAccountRef <- invalidChildAccountRefs
       epp_urn         <- nonEmptyAlphaNumStrings
@@ -141,7 +147,7 @@ trait Generators extends base.Generators {
     digits  <- Gen.containerOfN[Array, Char](CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
   } yield s"${letters.mkString}${digits.mkString}TFC"
 
-  private lazy val invalidChildAccountRefs = Gen.asciiPrintableStr.filterNot(_ matches EXPECTED_CHILD_ACCOUNT_REF_PATTERN)
+  private lazy val invalidChildAccountRefs            = Gen.asciiPrintableStr.filterNot(_ matches EXPECTED_CHILD_ACCOUNT_REF_PATTERN)
   private lazy val EXPECTED_CHILD_ACCOUNT_REF_PATTERN = s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
 
   private lazy val CHILD_ACCOUNT_REF_LETTERS = 4

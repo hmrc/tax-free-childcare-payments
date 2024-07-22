@@ -66,7 +66,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
       "child_date_of_birth is missing" in withClient { wsClient =>
         withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
-          val linkRequest = validLinkAccountsRequestPayloads.sample.get - "child_date_of_birth"
+          val linkRequest = validLinkPayloads.sample.get - "child_date_of_birth"
 
           val response = wsClient
             .url(s"$baseUrl/link")
@@ -87,7 +87,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
       "child DOB is invalid" in withClient { wsClient =>
         withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
-          val linkRequest = validLinkAccountsRequestPayloads.sample.get ++ Json.obj(
+          val linkRequest = validLinkPayloads.sample.get ++ Json.obj(
             "child_date_of_birth" -> "I am a bad date string"
           )
 
