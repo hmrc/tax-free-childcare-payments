@@ -16,11 +16,10 @@
 
 package models.request
 
-import java.time.LocalDate
-
 import models.requests.SharedRequestData
-
 import play.api.libs.json.{JsObject, JsString, JsValue, Json}
+
+import java.time.LocalDate
 
 trait Generators extends base.Generators {
   import org.scalacheck.Gen
@@ -31,6 +30,14 @@ trait Generators extends base.Generators {
   protected lazy val linkPayloadsWithMissingTfcAccountRef: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)
 
   protected lazy val linkPayloadsWithInvalidTfcAccountRef: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithInvalidTfcAccountRef)
+
+  protected lazy val linkPayloadsWithMissingEppUrn: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithMissingEppUrn)
+
+  protected lazy val linkPayloadsWithInvalidEppUrn: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithInvalidEppUrn)
+
+  protected lazy val linkPayloadsWithMissingEppAccountId: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithMissingEppAccountId)
+
+  protected lazy val linkPayloadsWithInvalidEppAccountId: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithInvalidEppAccountId)
 
   protected lazy val linkPayloadsWithMissingChildDob: Gen[JsValue] = validSharedPayloads
 
@@ -57,17 +64,19 @@ trait Generators extends base.Generators {
     *
     * BEGIN Make Payment generators
     */
-  protected val validPaymentRequestWithPayeeTypeSetToCCP: Gen[JsObject] =
-    for {
-      eppAuthPayload     <- validSharedPayloads
-      ccp                <- childCareProviders
-      paymentAmountPence <- Gen.posNum[Int]
-    } yield eppAuthPayload ++ Json.obj(
-      "payee_type"        -> "CCP",
-      "ccp_reg_reference" -> ccp.urn,
-      "ccp_postcode"      -> ccp.postcode,
-      "payment_amount"    -> paymentAmountPence
-    )
+  protected val validPaymentRequestWithPayeeTypeSetToCCP: Gen[JsObject] = paymentPayloadsWith(validSharedPayloads)
+
+  protected val paymentPayloadsWithMissingTfcAccountRef: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)
+
+  protected val paymentPayloadsWithInvalidTfcAccountRef: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithInvalidTfcAccountRef)
+
+  protected val paymentPayloadsWithMissingEppUrn: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingEppUrn)
+
+  protected val paymentPayloadsWithInvalidEppUrn: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithInvalidEppUrn)
+
+  protected val paymentPayloadsWithMissingEppAccountId: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingEppAccountId)
+
+  protected val paymentPayloadsWithInvalidEppAccountId: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithInvalidEppAccountId)
 
   protected val validPaymentRequestWithPayeeTypeSetToccp: Gen[JsObject] =
     for {
@@ -88,6 +97,18 @@ trait Generators extends base.Generators {
     } yield eppAuthPayload ++ Json.obj(
       "payee_type"     -> "EEP",
       "payment_amount" -> paymentAmountPence
+    )
+
+  private def paymentPayloadsWith(sharedPayloads: Gen[JsObject]) =
+    for {
+      sharedPayload      <- sharedPayloads
+      ccp                <- childCareProviders
+      paymentAmountPence <- Gen.posNum[Int]
+    } yield sharedPayload ++ Json.obj(
+      "payee_type"        -> "CCP",
+      "ccp_reg_reference" -> ccp.urn,
+      "ccp_postcode"      -> ccp.postcode,
+      "payment_amount"    -> paymentAmountPence
     )
 
   /** END Make Payment generators

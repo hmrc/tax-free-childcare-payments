@@ -16,73 +16,58 @@
 
 package models.request
 
-import models.requests.LinkRequest
+import models.requests.PaymentRequest
 
-class LinkRequestSpec extends BaseSpec {
+class PaymentRequestSpec extends BaseSpec {
+
   "API JSON reader" should {
 
     "return JsError" when {
-      "TFC account ref is missing" in
-        forAll(linkPayloadsWithMissingTfcAccountRef) {
-          checkJsonError[LinkRequest](
+      "field outbound_child_payment_ref is missing" in
+        forAll(paymentPayloadsWithMissingTfcAccountRef) {
+          checkJsonError[PaymentRequest](
             expectedJsonPath = "outbound_child_payment_ref",
             expectedMessage = "error.path.missing"
           )
         }
 
-      "TFC account ref is invalid" in
-        forAll(linkPayloadsWithInvalidTfcAccountRef) {
-          checkJsonError[LinkRequest](
+      "field outbound_child_payment_ref is invalid" in
+        forAll(paymentPayloadsWithInvalidTfcAccountRef) {
+          checkJsonError[PaymentRequest](
             expectedJsonPath = "outbound_child_payment_ref",
             expectedMessage = "error.pattern"
           )
         }
 
-      "EPP URN is missing" in
-        forAll(linkPayloadsWithMissingEppUrn) {
-          checkJsonError[LinkRequest](
+      "field epp_reg_reference is missing" in
+        forAll(paymentPayloadsWithMissingEppUrn) {
+          checkJsonError[PaymentRequest](
             expectedJsonPath = "epp_reg_reference",
             expectedMessage = "error.path.missing"
           )
         }
 
-      "EPP URN is invalid" in
-        forAll(linkPayloadsWithInvalidEppUrn) {
-          checkJsonError[LinkRequest](
+      "field epp_reg_reference is invalid" in
+        forAll(paymentPayloadsWithInvalidEppUrn) {
+          checkJsonError[PaymentRequest](
             expectedJsonPath = "epp_reg_reference",
             expectedMessage = "error.pattern"
           )
         }
 
-      "EPP account ID is missing" in
-        forAll(linkPayloadsWithMissingEppAccountId) {
-          checkJsonError[LinkRequest](
+      "field epp_unique_customer_id is missing" in
+        forAll(paymentPayloadsWithMissingEppAccountId) {
+          checkJsonError[PaymentRequest](
             expectedJsonPath = "epp_unique_customer_id",
             expectedMessage = "error.path.missing"
           )
         }
 
-      "EPP account ID is invalid" in
-        forAll(linkPayloadsWithInvalidEppAccountId) {
-          checkJsonError[LinkRequest](
+      "field epp_unique_customer_id is invalid" in
+        forAll(paymentPayloadsWithInvalidEppAccountId) {
+          checkJsonError[PaymentRequest](
             expectedJsonPath = "epp_unique_customer_id",
             expectedMessage = "error.pattern"
-          )
-        }
-
-      "child DoB is missing" in
-        forAll(linkPayloadsWithMissingChildDob) {
-          checkJsonError[LinkRequest](
-            expectedJsonPath = "child_date_of_birth",
-            expectedMessage = "error.path.missing"
-          )
-        }
-
-      "child DoB is invalid" in
-        forAll(linkPayloadsWithInvalidChildDob) {
-          checkJsonError[LinkRequest](
-            expectedJsonPath = "child_date_of_birth",
-            expectedMessage = "error.expected.date.isoformat"
           )
         }
     }
