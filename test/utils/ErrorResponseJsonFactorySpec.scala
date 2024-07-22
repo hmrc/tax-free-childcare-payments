@@ -17,7 +17,7 @@
 package utils
 
 import base.BaseSpec
-import models.requests.LinkRequest
+import models.requests.{LinkRequest, PaymentRequest, SharedRequestData}
 import org.scalatest.EitherValues
 
 class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generators with EitherValues {
@@ -34,12 +34,62 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
               checkErrorJson(errorResponseJson, expectedErrorCode, EXPECTED_400_ERROR_DESCRIPTION)
             }
         }
+
+      "SharedRequestData JSON is invalid" in
+        forAll(balanceRequestJsonErrorScenarios) {
+          (invalidPayloads, expectedErrorCode) =>
+            forAll(invalidPayloads) { payload =>
+              val jsErrors = payload.validate[SharedRequestData].asEither.left.value
+
+              val errorResponseJson = ErrorResponseJsonFactory getJson jsErrors
+
+              checkErrorJson(errorResponseJson, expectedErrorCode, EXPECTED_400_ERROR_DESCRIPTION)
+            }
+        }
+
+      "PaymentRequest JSON is invalid" in
+        forAll(paymentRequestJsonErrorScenarios) {
+          (invalidPayloads, expectedErrorCode) =>
+            forAll(invalidPayloads) { payload =>
+              val jsErrors = payload.validate[PaymentRequest].asEither.left.value
+
+              val errorResponseJson = ErrorResponseJsonFactory getJson jsErrors
+
+              checkErrorJson(errorResponseJson, expectedErrorCode, EXPECTED_400_ERROR_DESCRIPTION)
+            }
+        }
     }
   }
 
   private lazy val linkRequestJsonErrorScenarios = Table(
     ("Invalid Payloads", "Expected Error Code"),
+    (linkPayloadsWithInvalidTfcAccountRef, "E0000"),
+    (linkPayloadsWithInvalidEppUrn, "E0000"),
+    (linkPayloadsWithInvalidEppAccountId, "E0000"),
+    (linkPayloadsWithMissingTfcAccountRef, "E0001"),
+    (linkPayloadsWithMissingEppUrn, "E0002"),
+    (linkPayloadsWithMissingEppAccountId, "E0004"),
     (linkPayloadsWithMissingChildDob, "E0006"),
-    (linkPayloadsWithInvalidChildDob, "E0023")
+    (linkPayloadsWithInvalidChildDob, "E0021")
+  )
+
+  private lazy val balanceRequestJsonErrorScenarios = Table(
+    ("Invalid Payloads", "Expected Error Code"),
+    (sharedPayloadsWithInvalidTfcAccountRef, "E0000"),
+    (sharedPayloadsWithInvalidEppUrn, "E0000"),
+    (sharedPayloadsWithInvalidEppAccountId, "E0000"),
+    (sharedPayloadsWithMissingTfcAccountRef, "E0001"),
+    (sharedPayloadsWithMissingEppUrn, "E0002"),
+    (sharedPayloadsWithMissingEppAccountId, "E0004")
+  )
+
+  private lazy val paymentRequestJsonErrorScenarios = Table(
+    ("Invalid Payloads", "Expected Error Code"),
+    (paymentPayloadsWithInvalidTfcAccountRef, "E0000"),
+    (paymentPayloadsWithInvalidEppUrn, "E0000"),
+    (paymentPayloadsWithInvalidEppAccountId, "E0000"),
+    (paymentPayloadsWithMissingTfcAccountRef, "E0001"),
+    (paymentPayloadsWithMissingEppUrn, "E0002"),
+    (paymentPayloadsWithMissingEppAccountId, "E0004")
   )
 }
