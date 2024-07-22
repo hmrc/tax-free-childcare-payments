@@ -16,8 +16,9 @@
 
 package models.request
 
-import java.time.LocalDate
+import models.requests.SharedRequestData
 
+import java.time.LocalDate
 import play.api.libs.json.{JsObject, JsString, JsValue, Json}
 
 trait Generators extends base.Generators {
@@ -87,6 +88,19 @@ trait Generators extends base.Generators {
     * BEGIN Shared generators
     */
 
+  protected lazy val validSharedDataModels: Gen[SharedRequestData] =
+    for {
+      childAccountRef <- validChildAccountRefs
+      epp_urn         <- nonEmptyAlphaNumStrings
+      epp_account     <- nonEmptyAlphaNumStrings
+    } yield SharedRequestData(childAccountRef, epp_urn, epp_account)
+
+  protected def getJsonFrom(model: SharedRequestData): JsObject = Json.obj(
+    "outbound_child_payment_ref" -> model.outbound_child_payment_ref,
+    "epp_reg_reference"          -> model.epp_reg_reference,
+    "epp_unique_customer_id"     -> model.epp_unique_customer_id
+  )
+
   protected lazy val validSharedPayloads: Gen[JsObject] =
     for {
       epp_urn     <- nonEmptyAlphaNumStrings
@@ -96,4 +110,12 @@ trait Generators extends base.Generators {
       "epp_reg_reference"          -> epp_urn,
       "epp_unique_customer_id"     -> epp_account
     )
+
+  private lazy val validChildAccountRefs = for {
+    letters <- Gen.containerOfN[Array, Char](CHILD_ACCOUNT_REF_LETTERS, Gen.alphaChar)
+    digits  <- Gen.containerOfN[Array, Char](CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
+  } yield s"${letters.mkString}${digits.mkString}TFC"
+
+  private val CHILD_ACCOUNT_REF_LETTERS = 4
+  private val CHILD_ACCOUNT_REF_DIGITS  = 5
 }
