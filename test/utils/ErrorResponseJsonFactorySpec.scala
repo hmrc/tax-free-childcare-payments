@@ -49,7 +49,7 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
 
       "PaymentRequest JSON is invalid" in
         forAll(paymentRequestJsonErrorScenarios) {
-          (invalidPayloads, expectedErrorCode) =>
+          (_, invalidPayloads, expectedErrorCode) =>
             forAll(invalidPayloads) { payload =>
               val jsErrors = payload.validate[PaymentRequest].asEither.left.value
 
@@ -84,21 +84,21 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
   )
 
   private lazy val paymentRequestJsonErrorScenarios = Table(
-    ("Invalid Payloads", "Expected Error Code"),
-    (paymentPayloadsWithInvalidTfcAccountRef, "E0000"),
-    (paymentPayloadsWithInvalidEppUrn, "E0000"),
-    (paymentPayloadsWithInvalidEppAccountId, "E0000"),
-    (paymentPayloadsWithMissingTfcAccountRef, "E0001"),
-    (paymentPayloadsWithMissingEppUrn, "E0002"),
-    (paymentPayloadsWithMissingEppAccountId, "E0004"),
-    (paymentPayloadsWithMissingPayeeType, "E0007"),
-    (paymentPayloadsWithInvalidPayeeType, "E0022"),
-    (paymentPayloadsWithMissingCcpUrn, "E0003"),
-    (paymentPayloadsWithInvalidCcpUrn, "E0000"),
-    (paymentPayloadsWithMissingCcpPostcode, "E0000"),
-    (paymentPayloadsWithInvalidCcpPostcode, "E0000"),
-    (paymentPayloadsWithMissingPaymentAmount, "E0008"),
-    (paymentPayloadsWithFractionalPaymentAmount, "E0023"),
-    (paymentPayloadsWithStringPaymentAmount, "E0023")
+    ("Description","Invalid Payloads", "Expected Error Code"),
+    ("Invalid TFC account ref", paymentPayloadsWithInvalidTfcAccountRef, "E0000"),
+    ("Invalid EPP URN", paymentPayloadsWithInvalidEppUrn, "E0000"),
+    ("Invalid EPP account ID", paymentPayloadsWithInvalidEppAccountId, "E0000"),
+    ("Missing TFC account Ref", paymentPayloadsWithMissingTfcAccountRef, "E0001"),
+    ("Missing EPP URN", paymentPayloadsWithMissingEppUrn, "E0002"),
+    ("Missing EPP account ID", paymentPayloadsWithMissingEppAccountId, "E0004"),
+    ("Missing Payee Type", paymentPayloadsWithMissingPayeeType, "E0007"),
+    ("Invalid Payee Type", paymentPayloadsWithInvalidPayeeType, "E0022"),
+    ("Missing CCP URN", paymentPayloadsWithMissingCcpUrn, "E0003"),
+    ("Invalid CCP URN", paymentPayloadsWithInvalidCcpUrn, "E0000"),
+    ("Missing CCP postcode", paymentPayloadsWithMissingCcpPostcode, "E0000"),
+    ("Invalid CCP postcode", paymentPayloadsWithInvalidCcpPostcode, "E0000"),
+    ("Missing payment amount", paymentPayloadsWithMissingPaymentAmount, "E0008"),
+    ("Fractional payment amount", paymentPayloadsWithFractionalPaymentAmount, "E0023"),
+    ("String payment amount", paymentPayloadsWithStringPaymentAmount, "E0023")
   )
 }

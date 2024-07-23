@@ -17,6 +17,7 @@
 package utils
 
 import models.requests.LinkRequest.CHILD_DOB_KEY
+import models.requests.PaymentRequest.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY, PAYMENT_AMOUNT_KEY}
 import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
 import models.response.ErrorDescriptions
 import play.api.libs.json._
@@ -30,12 +31,19 @@ object ErrorResponseJsonFactory extends ErrorDescriptions {
         (key, error.message) match {
           case (TFC_ACCOUNT_REF_KEY, "error.path.missing") => getJson("E0001", ERROR_400_DESCRIPTION)
           case (EPP_URN_KEY, "error.path.missing")         => getJson("E0002", ERROR_400_DESCRIPTION)
+          case (CCP_URN_KEY, "error.path.missing")         => getJson("E0003", ERROR_400_DESCRIPTION)
           case (EPP_ACCOUNT_ID_KEY, "error.path.missing")  => getJson("E0004", ERROR_400_DESCRIPTION)
           case (CHILD_DOB_KEY, "error.path.missing")       => getJson("E0006", ERROR_400_DESCRIPTION)
+          case (PAYEE_TYPE_KEY, "error.path.missing")      => getJson("E0007", ERROR_400_DESCRIPTION)
+          case (PAYMENT_AMOUNT_KEY, "error.path.missing")  => getJson("E0008", ERROR_400_DESCRIPTION)
           case (CHILD_DOB_KEY, _)                          => getJson("E0021", ERROR_400_DESCRIPTION)
+          case (PAYEE_TYPE_KEY, _)                         => getJson("E0022", ERROR_400_DESCRIPTION)
+          case (PAYMENT_AMOUNT_KEY, _)                     => getJson("E0023", ERROR_400_DESCRIPTION)
           case (TFC_ACCOUNT_REF_KEY, _)                    => getJson("E0000", ERROR_400_DESCRIPTION)
           case (EPP_URN_KEY, _)                            => getJson("E0000", ERROR_400_DESCRIPTION)
           case (EPP_ACCOUNT_ID_KEY, _)                     => getJson("E0000", ERROR_400_DESCRIPTION)
+          case (CCP_URN_KEY, _)                            => getJson("E0000", ERROR_400_DESCRIPTION)
+          case (CCP_POSTCODE_KEY, _)                       => getJson("E0000", ERROR_400_DESCRIPTION)
           case _                                           => getJson("BAD_REQUEST", "Request data is invalid or missing")
         }
       case _                                             => getJson("BAD_REQUEST", "Request data is invalid or missing")
