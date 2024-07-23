@@ -117,7 +117,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           }
 
           withClient { wsClient =>
-            withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+            withAuthNinoRetrieval {
               val response = wsClient
                 .url(s"$baseUrl/link")
                 .withHttpHeaders(
@@ -141,7 +141,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           }
 
           withClient { wsClient =>
-            withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+            withAuthNinoRetrieval {
               val response = wsClient
                 .url(s"$baseUrl/link")
                 .withHttpHeaders(
@@ -165,7 +165,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           }
 
           withClient { wsClient =>
-            withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+            withAuthNinoRetrieval {
               val response = wsClient
                 .url(s"$baseUrl/link")
                 .withHttpHeaders(
