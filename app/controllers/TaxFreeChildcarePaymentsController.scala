@@ -16,19 +16,18 @@
 
 package controllers
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
 import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.requests._
-import models.response.NsiErrorResponse.Maybe
+import models.response.NsiErrorResponse.{E0024, E0025, E0026, Maybe}
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
-import utils.{ErrorResponseJsonFactory, FormattedLogging}
-
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.{ErrorResponseJsonFactory, FormattedLogging}
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (
@@ -52,7 +51,11 @@ class TaxFreeChildcarePaymentsController @Inject() (
           val requestWithValidBody = IdentifierRequest(request.nino, request.correlation_id, request.map(_ => value))
 
           block(requestWithValidBody) map {
-            case Left(nsiError)    => TfcErrorResponse(nsiError.reportAs, nsiError.message).toResult
+            case Left(nsiError)    =>
+              nsiError match {
+                case E0024 | E0025 | E0026 => ErrorResponseJsonFactory getResult nsiError
+                case _                     => TfcErrorResponse(nsiError.reportAs, nsiError.message).toResult
+              }
             case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
           }
         case JsError(errors)     => Future.successful {

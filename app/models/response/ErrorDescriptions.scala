@@ -16,11 +16,18 @@
 
 package models.response
 
-trait ErrorDescriptions {
+import play.api.http.Status
+
+trait ErrorDescriptions extends Status {
 
   protected val ERROR_400_DESCRIPTION =
     "Request data is invalid or missing. Please refer to API Documentation for further information"
 
   protected val ERROR_500_DESCRIPTION =
     "The server encountered an error and couldn't process the request. Please refer to API Documentation for further information"
+
+  val descriptions: Map[Int, String] = Map(
+    BAD_REQUEST           -> ERROR_400_DESCRIPTION,
+    INTERNAL_SERVER_ERROR -> ERROR_500_DESCRIPTION
+  )
 }

@@ -20,8 +20,9 @@ import models.requests.LinkRequest.CHILD_DOB_KEY
 import models.requests.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
-import models.response.ErrorDescriptions
+import models.response.{ErrorDescriptions, NsiErrorResponse}
 import play.api.libs.json._
+import play.api.mvc.Results.Status
 
 object ErrorResponseJsonFactory extends ErrorDescriptions {
 
@@ -56,4 +57,8 @@ object ErrorResponseJsonFactory extends ErrorDescriptions {
       "errorCode"        -> errorCode,
       "errorDescription" -> errorDescription
     )
+
+  def getResult(nsiErrorResponse: NsiErrorResponse) = new Status(nsiErrorResponse.reportAs)(
+    getJson(nsiErrorResponse.toString, descriptions(nsiErrorResponse.reportAs))
+  )
 }
