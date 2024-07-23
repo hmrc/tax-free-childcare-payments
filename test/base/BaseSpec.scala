@@ -16,33 +16,20 @@
 
 package base
 
-import java.time.LocalDate
-import scala.util.Random
-
-import org.scalatest.OptionValues
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{Assertion, OptionValues}
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import play.api.libs.json._
 
-import play.api.libs.json.{JsObject, Json}
+import java.time.LocalDate
+import scala.util.Random
 
 class BaseSpec
     extends AnyWordSpec
     with should.Matchers
-    with OptionValues {
-
-  protected def randomLinkRequestJson: JsObject =
-    randomSharedJson ++ Json.obj(
-      "child_date_of_birth" -> randomDateOfBirth
-    )
-
-  protected def randomSharedJson: JsObject = Json.obj(
-    "epp_unique_customer_id"     -> randomCustomerId,
-    "epp_reg_reference"          -> randomRegistrationRef,
-    "outbound_child_payment_ref" -> randomOutboundChildPaymentRef
-  )
-
-  protected def randomCustomerId: String      = randomStringOf(EXPECTED_CUSTOMER_ID_LENGTH, '0' to '9')
-  protected def randomRegistrationRef: String = randomStringOf(EXPECTED_REGISTRATION_REF_LENGTH, ('a' to 'z') ++ ('A' to 'Z') ++ ('0' to '9'))
+    with OptionValues
+    with ScalaCheckPropertyChecks {
 
   protected def randomOutboundChildPaymentRef: String = {
     val letters = randomStringOf(EXPECTED_PAYMENT_REF_LETTERS, 'A' to 'Z')
@@ -51,21 +38,30 @@ class BaseSpec
     letters + digits + "TFC"
   }
 
-  protected def randomPayeeType: String = Seq("CCP", "EPP")(Random.nextInt(2))
-
   private def randomStringOf(n: Int, chars: Seq[Char]) = {
     def randomChar = chars(Random.nextInt(chars.length))
     Array.fill(n)(randomChar).mkString
   }
 
-  protected def randomDateOfBirth: LocalDate = LocalDate.now() minusDays Random.nextInt(MAX_CHILD_AGE_DAYS)
   protected def randomPaymentDate: LocalDate = LocalDate.now() plusDays Random.nextInt(MAX_PAYMENT_DELAY_DAYS)
 
-  private val EXPECTED_CUSTOMER_ID_LENGTH      = 11
-  private val EXPECTED_REGISTRATION_REF_LENGTH = 16
-  private val EXPECTED_PAYMENT_REF_LETTERS     = 4
-  private val EXPECTED_PAYMENT_REF_DIGITS      = 5
+  private val EXPECTED_PAYMENT_REF_LETTERS = 4
+  private val EXPECTED_PAYMENT_REF_DIGITS  = 5
 
-  private val MAX_CHILD_AGE_DAYS     = 18 * 365
   private val MAX_PAYMENT_DELAY_DAYS = 30
+
+  protected def checkErrorJson(
+      actualJson: => JsValue,
+      expectedErrorCode: String,
+      expectedErrorDescription: String
+    ): Assertion = {
+    actualJson \ "errorCode" shouldBe JsDefined(JsString(expectedErrorCode))
+    actualJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
+  }
+
+  protected lazy val EXPECTED_400_ERROR_DESCRIPTION =
+    "Request data is invalid or missing. Please refer to API Documentation for further information"
+
+  protected lazy val EXPECTED_500_ERROR_DESCRIPTION =
+    "The server encountered an error and couldn't process the request. Please refer to API Documentation for further information"
 }

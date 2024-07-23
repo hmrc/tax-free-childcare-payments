@@ -16,8 +16,28 @@
 
 package models.requests
 
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.Reads.StringReads
+import play.api.libs.json._
+
 final case class SharedRequestData(
     epp_unique_customer_id: String,
     epp_reg_reference: String,
     outbound_child_payment_ref: String
   )
+
+object SharedRequestData extends ConstraintReads {
+
+  implicit val readsFromApi: Reads[SharedRequestData] = (
+    (__ \ EPP_ACCOUNT_ID_KEY).read(NonEmptyAlphaNumStringReads) ~
+      (__ \ EPP_URN_KEY).read(NonEmptyAlphaNumStringReads) ~
+      (__ \ TFC_ACCOUNT_REF_KEY).read(TfcAccountRefReads)
+  )(apply _)
+
+  lazy val TFC_ACCOUNT_REF_KEY = "outbound_child_payment_ref"
+  lazy val EPP_URN_KEY = "epp_reg_reference"
+  lazy val EPP_ACCOUNT_ID_KEY = "epp_unique_customer_id"
+
+  private lazy val NonEmptyAlphaNumStringReads = pattern("[a-zA-Z0-9]{1,255}".r)
+  private lazy val TfcAccountRefReads          = pattern("[a-zA-Z]{4}[0-9]{5}TFC".r)
+}

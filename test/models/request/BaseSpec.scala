@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
-package models.response
+package models.request
 
-import play.api.libs.json.Json
-import play.api.mvc.Results.Status
+import org.scalatest.{Assertion, EitherValues, LoneElement}
 
-final case class TfcErrorResponse(statusCode: Int, errorDescription: String) {
+import play.api.libs.json.{JsValue, KeyPathNode, Reads}
 
-  def toResult = new Status(statusCode)(Json.obj(
-    "errorCode"        -> errorCodes(statusCode),
-    "errorDescription" -> errorDescription
-  ))
+abstract class BaseSpec extends base.BaseSpec with Generators with EitherValues with LoneElement {
 
-  private val errorCodes = Map(
-    400 -> "BAD_REQUEST",
-    401 -> "UNAUTHORISED",
-    500 -> "INTERNAL_SERVER_ERROR",
-    502 -> "BAD_GATEWAY",
-    503 -> "SERVICE_UNAVAILABLE"
-  )
+  protected def checkJsonError[A: Reads](expectedJsonPath: String, expectedMessage: String)(invalidJson: JsValue): Assertion = {
+    val (jsPath, jsErrors) = invalidJson.validate[A].asEither.left.value.loneElement
+
+    jsPath.path.loneElement shouldBe KeyPathNode(expectedJsonPath)
+    jsErrors.loneElement.message shouldBe expectedMessage
+  }
 }

@@ -23,9 +23,7 @@ lazy val microservice = Project("tax-free-childcare-payments", file("."))
     ),
     resolvers += Resolver.jcenterRepo,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
-    playDefaultPort := 10500,
-    scalafmtOnCompile := true,
-    scalafixOnCompile := true
+    playDefaultPort := 10500
   )
 
 lazy val it = project

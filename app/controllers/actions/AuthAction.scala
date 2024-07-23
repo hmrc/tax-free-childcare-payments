@@ -22,11 +22,10 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 import models.requests.IdentifierRequest
-import models.response.TfcErrorResponse
-import utils.FormattedLogging
+import models.response.ErrorDescriptions
 import utils.FormattedLogging.CORRELATION_ID
+import utils.{ErrorResponseJsonFactory, FormattedLogging}
 
-import play.api.http.Status
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions, ConfidenceLevel}
@@ -42,7 +41,7 @@ class AuthAction @Inject() (
     with AuthorisedFunctions
     with FormattedLogging
     with Results
-    with Status {
+    with ErrorDescriptions {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
     implicit val req: Request[A] = request
@@ -52,9 +51,9 @@ class AuthAction @Inject() (
         optNino =>
           val optCorrelationIdHeader = request.headers get CORRELATION_ID
           val optIdentifierRequest   = for {
-            correlationIdHeader <- optCorrelationIdHeader toRight correlationIdError
-            correlationId       <- Try(UUID fromString correlationIdHeader).toOption toRight correlationIdError
-            nino                <- optNino toRight ninoRetrievalError
+            correlationIdHeader <- optCorrelationIdHeader toRight ETFC1                            -> "Correlation-ID header is missing"
+            correlationId       <- Try(UUID fromString correlationIdHeader).toOption toRight ETFC1 -> "Correlation-ID header is invalid"
+            nino                <- optNino toRight ETFC2                                           -> "Unable to retrieve NI number"
           } yield IdentifierRequest(nino, correlationId, request)
 
           optIdentifierRequest match {
@@ -65,15 +64,15 @@ class AuthAction @Inject() (
                 )
               }
 
-            case Left(errorResponse) => Future.successful {
-                logger.info(formattedLog(errorResponse.errorDescription))
+            case Left((errorResponse, logMessage)) => Future.successful {
+                logger.info(formattedLog(logMessage))
 
-                errorResponse.toResult
+                errorResponse
               }
           }
       }
   }
 
-  private val correlationIdError = TfcErrorResponse(BAD_REQUEST, "Correlation-ID header is invalid or missing")
-  private val ninoRetrievalError = TfcErrorResponse(INTERNAL_SERVER_ERROR, "Unable to retrieve NI number")
+  private lazy val ETFC1 = BadRequest(ErrorResponseJsonFactory.getJson("ETFC1", ERROR_400_DESCRIPTION))
+  private lazy val ETFC2 = InternalServerError(ErrorResponseJsonFactory.getJson("ETFC2", ERROR_500_DESCRIPTION))
 }

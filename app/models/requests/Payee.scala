@@ -16,11 +16,34 @@
 
 package models.requests
 
-import play.api.libs.json.ConstraintReads
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{__, ConstraintReads, Reads}
 
 sealed abstract class Payee
 
 object Payee extends ConstraintReads {
   case object ExternalPaymentProvider                               extends Payee
   final case class ChildCareProvider(urn: String, postcode: String) extends Payee
+
+  object ChildCareProvider {
+
+    val reads: Reads[Payee] = (
+      (__ \ CCP_URN_KEY).read(CCP_REG) ~
+        (__ \ CCP_POSTCODE_KEY).read(POST_CODE)
+    )(apply _)
+  }
+
+  implicit val reads: Reads[Payee] =
+    (__ \ PAYEE_TYPE_KEY)
+      .read(CCP_ONLY)
+      .flatMap(_ => ChildCareProvider.reads)
+
+  lazy private val POST_CODE = pattern("[a-zA-Z0-9]{2,4}\\s*[a-zA-Z0-9]{3}".r)
+  lazy private val CCP_ONLY  = pattern("CCP".r)
+  lazy private val CCP_REG   = pattern(s".{1,$CCP_REG_MAX_LEN}".r)
+  lazy val CCP_REG_MAX_LEN   = 20
+
+  lazy val PAYEE_TYPE_KEY   = "payee_type"
+  lazy val CCP_URN_KEY      = "ccp_reg_reference"
+  lazy val CCP_POSTCODE_KEY = "ccp_postcode"
 }

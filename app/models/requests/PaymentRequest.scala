@@ -16,8 +16,22 @@
 
 package models.requests
 
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{ConstraintReads, Reads, __}
+
 final case class PaymentRequest(
     sharedRequestData: SharedRequestData,
     payment_amount: Int,
     payee: Payee
   )
+
+object PaymentRequest extends ConstraintReads {
+
+  implicit val readsFromApi: Reads[PaymentRequest] = (
+    of[SharedRequestData] ~
+      (__ \ PAYMENT_AMOUNT_KEY).read[Int] ~
+      of[Payee]
+  )(apply _)
+
+  lazy val PAYMENT_AMOUNT_KEY = "payment_amount"
+}

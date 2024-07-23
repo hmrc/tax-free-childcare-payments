@@ -117,10 +117,6 @@ object NsiConnector {
   private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]) =
     Json.toJsObject(req.body) + ("parentNino" -> JsString(req.nino))
 
-  private implicit val writesLinkReq: OWrites[LinkRequest] = lr =>
-    Json.toJsObject(lr.sharedRequestData) ++
-      Json.obj("childDoB" -> lr.child_date_of_birth)
-
   private implicit val writesPaymentReq: OWrites[PaymentRequest] = pr =>
     Json.toJsObject(pr.sharedRequestData) ++
       Json.toJsObject(pr.payee) ++

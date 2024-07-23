@@ -18,10 +18,11 @@ package base
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.matching.UrlPattern
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Configuration
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsObject, JsValue, Json}
 
 import scala.jdk.CollectionConverters.MapHasAsJava
 
@@ -38,14 +39,14 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
 
   protected lazy val nsiLinkAccountsEndpoint: MappingBuilder = get(nsiLinkAccountsUrlPattern)
 
-  private lazy val nsiLinkAccountsUrlQueryParams         = Map(
+  private lazy val nsiLinkAccountsUrlQueryParams = Map(
     "eppURN"     -> matching("[a-zA-Z0-9]+"),
     "eppAccount" -> matching("[a-zA-Z0-9]+"),
     "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]"),
-    "childDoB" -> matching(raw"\d{4}-\d{2}-\d{2}")
+    "childDoB"   -> matching(raw"\d{4}-\d{2}-\d{2}")
   ).asJava
 
-  protected lazy val nsiLinkAccountsUrlPattern                 = nsiUrlPattern("linkAccounts", raw"[a-zA-Z0-9]+\\?[^/]+")
+  protected lazy val nsiLinkAccountsUrlPattern: UrlPattern = nsiUrlPattern("linkAccounts", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   /** NSI Check Balance spec */
 
@@ -63,7 +64,7 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
     "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]")
   ).asJava
 
-  protected lazy val nsiBalanceUrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
+  protected lazy val nsiBalanceUrlPattern: UrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   /** NSI Make Payment spec */
 
@@ -75,22 +76,25 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
 
   protected lazy val nsiMakePaymentEndpoint: MappingBuilder = post(nsiPaymentUrlPattern)
 
-  protected lazy val nsiPaymentUrlPattern         = nsiUrlPattern("makePayment")
-  private lazy val nsiPaymentRequestBodyPattern = jsonPatternFrom("payeeType,amount,childAccountPaymentRef,eppURN,eppAccount,parentNino")
+  protected lazy val nsiPaymentUrlPattern: UrlPattern = nsiUrlPattern("makePayment")
+
+  private lazy val nsiPaymentRequestBodyPattern = "payeeType,amount,childAccountPaymentRef,eppURN,eppAccount,parentNino"
+    .split(",")
+    .map(prop => matchingJsonPath(s"$$.$prop"))
+    .reduce(_ and _)
 
   /** Utils */
+
+  protected def nsiJsonBody(errorCode: String, errorDescription: String): String = Json.obj(
+    "errorCode"        -> errorCode,
+    "errorDescription" -> errorDescription
+  ).toString
 
   private def nsiUrlPattern(endpointName: String, pathPatterns: String*) = {
     val initPath   = nsiRootPath + nsiConfig.get[String](endpointName)
     val urlPattern = pathPatterns.foldLeft(initPath)(_ + "/" + _)
     urlMatching(urlPattern)
   }
-
-  private def jsonPatternFrom(expectedProps: String) =
-    expectedProps
-      .split(",")
-      .map(prop => matchingJsonPath(s"$$.$prop"))
-      .reduce(_ and _)
 
   private lazy val nsiConfig   = app.configuration.get[Configuration]("microservice.services.nsi")
   private lazy val nsiRootPath = nsiConfig.get[String]("rootPath")
