@@ -16,8 +16,9 @@
 
 package models.request
 
+import models.requests.PaymentRequest.{CCP_POSTCODE_KEY, CCP_REG_MAX_LEN, CCP_URN_KEY, PAYEE_TYPE_KEY, PAYMENT_AMOUNT_KEY}
 import models.requests.SharedRequestData
-import play.api.libs.json.{JsObject, JsString, JsValue, Json}
+import play.api.libs.json._
 
 import java.time.LocalDate
 
@@ -78,6 +79,47 @@ trait Generators extends base.Generators {
 
   protected val paymentPayloadsWithInvalidEppAccountId: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithInvalidEppAccountId)
 
+  protected val paymentPayloadsWithMissingPayeeType: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - PAYEE_TYPE_KEY)
+
+  protected val paymentPayloadsWithInvalidPayeeType: Gen[JsObject] = for {
+    paymentPayload   <- validPaymentRequestWithPayeeTypeSetToCCP
+    invalidPayeeType <- Gen.oneOf(
+                          nonAlphaNumStrings,
+                          Gen const "ccp",
+                          Gen const "epp",
+                          Gen const "EPP"
+                        )
+  } yield paymentPayload + ("payee_type" -> JsString(invalidPayeeType))
+
+  protected val paymentPayloadsWithMissingCcpUrn: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - CCP_URN_KEY)
+
+  protected val paymentPayloadsWithInvalidCcpUrn: Gen[JsObject] = for {
+    paymentPayload <- validPaymentRequestWithPayeeTypeSetToCCP
+    invalidCcpUrn  <- Gen.oneOf(
+                        Gen const "",
+                        oversizedCcpUrns
+                      )
+  } yield paymentPayload + (CCP_URN_KEY -> JsString(invalidCcpUrn))
+
+  protected val paymentPayloadsWithMissingCcpPostcode: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - CCP_POSTCODE_KEY)
+
+  protected val paymentPayloadsWithInvalidCcpPostcode: Gen[JsObject] = for {
+    paymentPayload     <- validPaymentRequestWithPayeeTypeSetToCCP
+    invalidCcpPostcode <- nonAlphaNumStrings
+  } yield paymentPayload + (CCP_POSTCODE_KEY -> JsString(invalidCcpPostcode))
+
+  protected val paymentPayloadsWithMissingPaymentAmount: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - PAYMENT_AMOUNT_KEY)
+
+  protected val paymentPayloadsWithFractionalPaymentAmount: Gen[JsObject] = for {
+    paymentPayload          <- validPaymentRequestWithPayeeTypeSetToCCP
+    fractionalPaymentAmount <- Gen.double if !fractionalPaymentAmount.isValidInt
+  } yield paymentPayload + (PAYMENT_AMOUNT_KEY -> JsNumber(fractionalPaymentAmount))
+
+  protected val paymentPayloadsWithStringPaymentAmount: Gen[JsObject] = for {
+    paymentPayload          <- validPaymentRequestWithPayeeTypeSetToCCP
+    fractionalPaymentAmount <- Gen.asciiPrintableStr
+  } yield paymentPayload + (PAYMENT_AMOUNT_KEY -> JsString(fractionalPaymentAmount))
+
   protected val validPaymentRequestWithPayeeTypeSetToccp: Gen[JsObject] =
     for {
       eppAuthPayload     <- validSharedPayloads
@@ -111,11 +153,13 @@ trait Generators extends base.Generators {
       "payment_amount"    -> paymentAmountPence
     )
 
+  private lazy val oversizedCcpUrns      = Gen.chooseNum(CCP_REG_MAX_LEN + 1, RANDOM_STRING_MAX_LEN).flatMap(Gen.stringOfN(_, Gen.asciiPrintableChar))
+  private lazy val RANDOM_STRING_MAX_LEN = 255
+
   /** END Make Payment generators
     *
     * BEGIN Shared generators
     */
-
   protected lazy val validSharedDataModels: Gen[SharedRequestData] =
     for {
       epp_account     <- nonEmptyAlphaNumStrings

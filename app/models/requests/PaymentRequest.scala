@@ -31,21 +31,28 @@ object PaymentRequest extends ConstraintReads {
 
   implicit val readsFromApi: Reads[PaymentRequest] = (
     of[SharedRequestData] ~
-      (__ \ "payment_amount").read[Int] ~
+      (__ \ PAYMENT_AMOUNT_KEY).read[Int] ~
       of[Payee]
   )(PaymentRequest.apply _)
 
   lazy private implicit val readsPayee: Reads[Payee] = (
-    (__ \ "payee_type").read[String](CCP_ONLY) ~
+    (__ \ PAYEE_TYPE_KEY).read[String](CCP_ONLY) ~
       of[ChildCareProvider]
   )((_, ccp) => ccp)
 
   lazy private implicit val readsCcp: Reads[ChildCareProvider] = (
-    (__ \ "ccp_reg_reference").read(CCP_REG) ~
-      (__ \ "ccp_postcode").read(POST_CODE)
+    (__ \ CCP_URN_KEY).read(CCP_REG) ~
+      (__ \ CCP_POSTCODE_KEY).read(POST_CODE)
   )(ChildCareProvider.apply _)
 
   lazy private val POST_CODE = pattern("[a-zA-Z0-9]{2,4}\\s*[a-zA-Z0-9]{3}".r)
   lazy private val CCP_ONLY  = pattern("CCP".r)
-  lazy private val CCP_REG   = pattern(".{1,20}".r)
+  lazy private val CCP_REG   = pattern(s".{1,$CCP_REG_MAX_LEN}".r)
+  lazy val CCP_REG_MAX_LEN = 20
+
+  lazy val PAYEE_TYPE_KEY = "payee_type"
+  lazy val CCP_URN_KEY = "ccp_reg_reference"
+  lazy val CCP_POSTCODE_KEY = "ccp_postcode"
+
+  lazy val PAYMENT_AMOUNT_KEY = "payment_amount"
 }
