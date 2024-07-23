@@ -90,6 +90,15 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
     (paymentPayloadsWithInvalidEppAccountId, "E0000"),
     (paymentPayloadsWithMissingTfcAccountRef, "E0001"),
     (paymentPayloadsWithMissingEppUrn, "E0002"),
-    (paymentPayloadsWithMissingEppAccountId, "E0004")
+    (paymentPayloadsWithMissingEppAccountId, "E0004"),
+    (paymentPayloadsWithMissingPayeeType, "E0007"),
+    (paymentPayloadsWithInvalidPayeeType, "E0022"),
+    (paymentPayloadsWithMissingCcpUrn, "E0003"),
+    (paymentPayloadsWithInvalidCcpUrn, "E0000"),
+    (paymentPayloadsWithMissingCcpPostcode, "E0000"),
+    (paymentPayloadsWithInvalidCcpPostcode, "E0000"),
+    (paymentPayloadsWithMissingPaymentAmount, "E0008"),
+    (paymentPayloadsWithFractionalPaymentAmount, "E0023"),
+    (paymentPayloadsWithStringPaymentAmount, "E0023")
   )
 }
