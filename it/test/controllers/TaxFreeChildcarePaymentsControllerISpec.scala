@@ -18,7 +18,7 @@ package controllers
 
 import base.{BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, okJson, post, stubFor}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.Assertion
 import play.api.Logger
 import play.api.libs.json.{JsString, Json}
@@ -107,6 +107,78 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           checkErrorResponse(response, BAD_REQUEST, "E0021", EXPECTED_400_ERROR_DESCRIPTION)
         }
       }
+    }
+
+    "respond 400 with errorCode E0024 and expected errorDescription" when {
+      "NSI responds 400 with errorCode E0024" in
+        forAll(Gen.uuid, validLinkPayloads) { (expectedCorrelationId, payload) =>
+          stubFor {
+            nsiLinkAccountsEndpoint willReturn badRequest().withBody(nsiJsonBody("E0024", Gen.asciiPrintableStr.sample.get))
+          }
+
+          withClient { wsClient =>
+            withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+              val response = wsClient
+                .url(s"$baseUrl/link")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
+
+              checkErrorResponse(response, BAD_REQUEST, "E0024", EXPECTED_400_ERROR_DESCRIPTION)
+            }
+          }
+        }
+    }
+
+    "respond 400 with errorCode E0025 and expected errorDescription" when {
+      "NSI responds 400 with errorCode E0025" in
+        forAll(Gen.uuid, validLinkPayloads) { (expectedCorrelationId, payload) =>
+          stubFor {
+            nsiLinkAccountsEndpoint willReturn badRequest().withBody(nsiJsonBody("E0025", Gen.asciiPrintableStr.sample.get))
+          }
+
+          withClient { wsClient =>
+            withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+              val response = wsClient
+                .url(s"$baseUrl/link")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
+
+              checkErrorResponse(response, BAD_REQUEST, "E0025", EXPECTED_400_ERROR_DESCRIPTION)
+            }
+          }
+        }
+    }
+
+    "respond 400 with errorCode E0026 and expected errorDescription" when {
+      "NSI responds 400 with errorCode E0026" in
+        forAll(Gen.uuid, validLinkPayloads) { (expectedCorrelationId, payload) =>
+          stubFor {
+            nsiLinkAccountsEndpoint willReturn badRequest().withBody(nsiJsonBody("E0026", Gen.asciiPrintableStr.sample.get))
+          }
+
+          withClient { wsClient =>
+            withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+              val response = wsClient
+                .url(s"$baseUrl/link")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
+
+              checkErrorResponse(response, BAD_REQUEST, "E0026", EXPECTED_400_ERROR_DESCRIPTION)
+            }
+          }
+        }
     }
   }
 
