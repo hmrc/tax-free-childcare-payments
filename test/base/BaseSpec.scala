@@ -16,24 +16,20 @@
 
 package base
 
-import java.time.LocalDate
-import scala.util.Random
-
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Assertion, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-
 import play.api.libs.json._
+
+import java.time.LocalDate
+import scala.util.Random
 
 class BaseSpec
     extends AnyWordSpec
     with should.Matchers
     with OptionValues
     with ScalaCheckPropertyChecks {
-
-  protected def randomCustomerId: String      = randomStringOf(EXPECTED_CUSTOMER_ID_LENGTH, '0' to '9')
-  protected def randomRegistrationRef: String = randomStringOf(EXPECTED_REGISTRATION_REF_LENGTH, ('a' to 'z') ++ ('A' to 'Z') ++ ('0' to '9'))
 
   protected def randomOutboundChildPaymentRef: String = {
     val letters = randomStringOf(EXPECTED_PAYMENT_REF_LETTERS, 'A' to 'Z')
@@ -42,8 +38,6 @@ class BaseSpec
     letters + digits + "TFC"
   }
 
-  protected def randomPayeeType: String = Seq("CCP", "EPP")(Random.nextInt(2))
-
   private def randomStringOf(n: Int, chars: Seq[Char]) = {
     def randomChar = chars(Random.nextInt(chars.length))
     Array.fill(n)(randomChar).mkString
@@ -51,10 +45,8 @@ class BaseSpec
 
   protected def randomPaymentDate: LocalDate = LocalDate.now() plusDays Random.nextInt(MAX_PAYMENT_DELAY_DAYS)
 
-  private val EXPECTED_CUSTOMER_ID_LENGTH      = 11
-  private val EXPECTED_REGISTRATION_REF_LENGTH = 16
-  private val EXPECTED_PAYMENT_REF_LETTERS     = 4
-  private val EXPECTED_PAYMENT_REF_DIGITS      = 5
+  private val EXPECTED_PAYMENT_REF_LETTERS = 4
+  private val EXPECTED_PAYMENT_REF_DIGITS  = 5
 
   private val MAX_PAYMENT_DELAY_DAYS = 30
 

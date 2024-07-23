@@ -17,7 +17,8 @@
 package utils
 
 import models.requests.LinkRequest.CHILD_DOB_KEY
-import models.requests.PaymentRequest.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY, PAYMENT_AMOUNT_KEY}
+import models.requests.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
+import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
 import models.response.ErrorDescriptions
 import play.api.libs.json._

@@ -204,7 +204,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
           stubNsiMakePayment201(expectedNsiResponseBody)
 
-          val res = ws
+          val response = ws
             .url(s"$baseUrl/")
             .withHttpHeaders(
               AUTHORIZATION  -> "Bearer qwertyuiop",
@@ -213,11 +213,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
             .post(validPaymentRequestWithPayeeTypeSetToccp.sample.get)
             .futureValue
 
-          res.status shouldBe BAD_REQUEST
-          res.json shouldBe Json.obj(
-            "errorCode"        -> "BAD_REQUEST",
-            "errorDescription" -> "Request data is invalid or missing"
-          )
+          checkErrorResponse(response, BAD_REQUEST, "E0022", EXPECTED_400_ERROR_DESCRIPTION)
         }
       }
 
@@ -234,7 +230,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
           stubNsiMakePayment201(expectedNsiResponseBody)
 
-          val res = ws
+          val response = ws
             .url(s"$baseUrl/")
             .withHttpHeaders(
               AUTHORIZATION  -> "Bearer qwertyuiop",
@@ -243,43 +239,31 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
             .post(validEppPaymentRequestWithPayeeTypeSetToEPP.sample.get)
             .futureValue
 
-          res.status shouldBe BAD_REQUEST
-          res.json shouldBe Json.obj(
-            "errorCode"        -> "BAD_REQUEST",
-            "errorDescription" -> "Request data is invalid or missing"
-          )
+          checkErrorResponse(response, BAD_REQUEST, "E0022", EXPECTED_400_ERROR_DESCRIPTION)
         }
       }
     }
 
-    "respond with 400 and generic error message" when {
+    "respond 400 with E" when {
       val expectedCorrelationId = UUID.randomUUID()
 
-      "payment amount is invalid" in withClient { ws =>
-        withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
-          val invalidPaymentRequest = Json.obj(
-            "epp_unique_customer_id"     -> randomCustomerId,
-            "epp_reg_reference"          -> randomRegistrationRef,
-            "outbound_child_payment_ref" -> randomOutboundChildPaymentRef,
-            "payment_amount"             -> "I am a bad payment reference",
-            "ccp_reg_reference"          -> "qwertyui",
-            "ccp_postcode"               -> "AS12 3DF",
-            "payee_type"                 -> randomPayeeType
-          )
+      "payment amount is invalid" in
+        forAll(paymentPayloadsWithStringPaymentAmount) { payload =>
+          withClient { ws =>
+            withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
+              val res = ws
+                .url(s"$baseUrl/")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
 
-          val res = ws
-            .url(s"$baseUrl/")
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
-            )
-            .post(invalidPaymentRequest)
-            .futureValue
-
-          res.status shouldBe BAD_REQUEST
-          res.json shouldBe EXPECTED_JSON_ERROR_RESPONSE
+              checkErrorResponse(res, BAD_REQUEST, "E0023", EXPECTED_400_ERROR_DESCRIPTION)
+            }
+          }
         }
-      }
     }
   }
 

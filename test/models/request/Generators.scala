@@ -16,7 +16,8 @@
 
 package models.request
 
-import models.requests.PaymentRequest.{CCP_POSTCODE_KEY, CCP_REG_MAX_LEN, CCP_URN_KEY, PAYEE_TYPE_KEY, PAYMENT_AMOUNT_KEY}
+import models.requests.Payee.{CCP_POSTCODE_KEY, CCP_REG_MAX_LEN, CCP_URN_KEY, PAYEE_TYPE_KEY}
+import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.requests.SharedRequestData
 import play.api.libs.json._
 
