@@ -19,8 +19,8 @@ package controllers
 import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.requests._
-import models.response.NsiErrorResponse.{E0024, E0025, E0026, Maybe}
-import models.response.{BalanceResponse, LinkResponse, PaymentResponse, TfcErrorResponse}
+import models.response.NsiErrorResponse.Maybe
+import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -51,11 +51,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
           val requestWithValidBody = IdentifierRequest(request.nino, request.correlation_id, request.map(_ => value))
 
           block(requestWithValidBody) map {
-            case Left(nsiError)    =>
-              nsiError match {
-                case E0024 | E0025 | E0026 => ErrorResponseJsonFactory getResult nsiError
-                case _                     => TfcErrorResponse(nsiError.reportAs, nsiError.message).toResult
-              }
+            case Left(nsiError)    => ErrorResponseJsonFactory getResult nsiError
             case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
           }
         case JsError(errors)     => Future.successful {

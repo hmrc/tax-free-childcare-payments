@@ -26,8 +26,16 @@ trait ErrorDescriptions extends Status {
   protected val ERROR_500_DESCRIPTION =
     "The server encountered an error and couldn't process the request. Please refer to API Documentation for further information"
 
+  private val ERROR_502_DESCRIPTION =
+    "Bad Gateway. Please refer to API Documentation for further information"
+
+  private val ERROR_503_DESCRIPTION =
+    "The service is currently unavailable. Please refer to API Documentation for further information"
+
   val descriptions: Map[Int, String] = Map(
     BAD_REQUEST           -> ERROR_400_DESCRIPTION,
-    INTERNAL_SERVER_ERROR -> ERROR_500_DESCRIPTION
+    INTERNAL_SERVER_ERROR -> ERROR_500_DESCRIPTION,
+    BAD_GATEWAY           -> ERROR_502_DESCRIPTION,
+    SERVICE_UNAVAILABLE   -> ERROR_503_DESCRIPTION
   )
 }
