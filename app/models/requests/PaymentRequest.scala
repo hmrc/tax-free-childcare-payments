@@ -29,7 +29,7 @@ object PaymentRequest extends ConstraintReads {
 
   implicit val readsFromApi: Reads[PaymentRequest] = (
     of[SharedRequestData] ~
-      (__ \ PAYMENT_AMOUNT_KEY).read[Int] ~
+      (__ \ PAYMENT_AMOUNT_KEY).read(min(1)) ~
       of[Payee]
   )(apply _)
 
