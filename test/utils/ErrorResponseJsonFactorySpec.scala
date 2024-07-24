@@ -70,7 +70,7 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
     (linkPayloadsWithMissingEppUrn, "E0002"),
     (linkPayloadsWithMissingEppAccountId, "E0004"),
     (linkPayloadsWithMissingChildDob, "E0006"),
-    (linkPayloadsWithInvalidChildDob, "E0021")
+    (linkPayloadsWithNonIso8061ChildDob, "E0021")
   )
 
   private lazy val balanceRequestJsonErrorScenarios = Table(

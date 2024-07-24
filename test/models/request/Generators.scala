@@ -43,10 +43,13 @@ trait Generators extends base.Generators {
 
   protected lazy val linkPayloadsWithMissingChildDob: Gen[JsValue] = validSharedPayloads
 
-  protected lazy val linkPayloadsWithInvalidChildDob: Gen[JsObject] = for {
-    sharedPayload     <- validSharedPayloads
-    invalidDateString <- Gen.alphaNumStr
-  } yield sharedPayload + ("child_date_of_birth" -> JsString(invalidDateString))
+  protected lazy val linkPayloadsWithNonIso8061ChildDob: Gen[JsObject] = for {
+    sharedPayload   <- validSharedPayloads
+    nonIso8061Value <- Gen.oneOf(
+                         Gen.alphaNumStr map JsString.apply,
+                         Gen.long map { num => JsNumber(num) }
+                       )
+  } yield sharedPayload + ("child_date_of_birth" -> nonIso8061Value)
 
   private def linkPayloadsWith(sharedPayloads: Gen[JsObject]) =
     for {

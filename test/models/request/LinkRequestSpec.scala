@@ -17,6 +17,8 @@
 package models.request
 
 import models.requests.LinkRequest
+import models.requests.LinkRequest.CHILD_DOB_KEY
+import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
 
 class LinkRequestSpec extends BaseSpec {
   "API JSON reader" should {
@@ -25,7 +27,7 @@ class LinkRequestSpec extends BaseSpec {
       "TFC account ref is missing" in
         forAll(linkPayloadsWithMissingTfcAccountRef) {
           checkJsonError[LinkRequest](
-            expectedJsonPath = "outbound_child_payment_ref",
+            expectedJsonPath = TFC_ACCOUNT_REF_KEY,
             expectedMessage = "error.path.missing"
           )
         }
@@ -33,7 +35,7 @@ class LinkRequestSpec extends BaseSpec {
       "TFC account ref is invalid" in
         forAll(linkPayloadsWithInvalidTfcAccountRef) {
           checkJsonError[LinkRequest](
-            expectedJsonPath = "outbound_child_payment_ref",
+            expectedJsonPath = TFC_ACCOUNT_REF_KEY,
             expectedMessage = "error.pattern"
           )
         }
@@ -41,7 +43,7 @@ class LinkRequestSpec extends BaseSpec {
       "EPP URN is missing" in
         forAll(linkPayloadsWithMissingEppUrn) {
           checkJsonError[LinkRequest](
-            expectedJsonPath = "epp_reg_reference",
+            expectedJsonPath = EPP_URN_KEY,
             expectedMessage = "error.path.missing"
           )
         }
@@ -49,7 +51,7 @@ class LinkRequestSpec extends BaseSpec {
       "EPP URN is invalid" in
         forAll(linkPayloadsWithInvalidEppUrn) {
           checkJsonError[LinkRequest](
-            expectedJsonPath = "epp_reg_reference",
+            expectedJsonPath = EPP_URN_KEY,
             expectedMessage = "error.pattern"
           )
         }
@@ -57,7 +59,7 @@ class LinkRequestSpec extends BaseSpec {
       "EPP account ID is missing" in
         forAll(linkPayloadsWithMissingEppAccountId) {
           checkJsonError[LinkRequest](
-            expectedJsonPath = "epp_unique_customer_id",
+            expectedJsonPath = EPP_ACCOUNT_ID_KEY,
             expectedMessage = "error.path.missing"
           )
         }
@@ -65,7 +67,7 @@ class LinkRequestSpec extends BaseSpec {
       "EPP account ID is invalid" in
         forAll(linkPayloadsWithInvalidEppAccountId) {
           checkJsonError[LinkRequest](
-            expectedJsonPath = "epp_unique_customer_id",
+            expectedJsonPath = EPP_ACCOUNT_ID_KEY,
             expectedMessage = "error.pattern"
           )
         }
@@ -73,15 +75,15 @@ class LinkRequestSpec extends BaseSpec {
       "child DoB is missing" in
         forAll(linkPayloadsWithMissingChildDob) {
           checkJsonError[LinkRequest](
-            expectedJsonPath = "child_date_of_birth",
+            expectedJsonPath = CHILD_DOB_KEY,
             expectedMessage = "error.path.missing"
           )
         }
 
       "child DoB is invalid" in
-        forAll(linkPayloadsWithInvalidChildDob) {
+        forAll(linkPayloadsWithNonIso8061ChildDob) {
           checkJsonError[LinkRequest](
-            expectedJsonPath = "child_date_of_birth",
+            expectedJsonPath = CHILD_DOB_KEY,
             expectedMessage = "error.expected.date.isoformat"
           )
         }

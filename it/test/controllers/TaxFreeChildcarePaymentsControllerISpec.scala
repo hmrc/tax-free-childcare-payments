@@ -89,19 +89,15 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     "respond 400 with errorCode E0021 and expected errorDescription" when {
       val expectedCorrelationId = UUID.randomUUID()
 
-      "child DOB is invalid" in withClient { wsClient =>
-        withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
-          val linkRequest = validLinkPayloads.sample.get ++ Json.obj(
-            "child_date_of_birth" -> "I am a bad date string"
-          )
-
+      "child DOB is invalid" in forAll(linkPayloadsWithNonIso8061ChildDob) { payload =>
+        withClient { wsClient =>
           val response = wsClient
             .url(s"$baseUrl/link")
             .withHttpHeaders(
               AUTHORIZATION  -> "Bearer qwertyuiop",
               CORRELATION_ID -> expectedCorrelationId.toString
             )
-            .post(linkRequest)
+            .post(payload)
             .futureValue
 
           checkErrorResponse(response, BAD_REQUEST, "E0021", EXPECTED_400_ERROR_DESCRIPTION)
