@@ -121,6 +121,11 @@ trait Generators extends base.Generators {
     fractionalPaymentAmount <- Gen.asciiPrintableStr
   } yield paymentPayload + (PAYMENT_AMOUNT_KEY -> JsString(fractionalPaymentAmount))
 
+  protected val paymentPayloadsWithNonPositivePaymentAmount: Gen[JsObject] = for {
+    paymentPayload     <- validPaymentRequestWithPayeeTypeSetToCCP
+    nonPositivePayment <- Gen.oneOf(Gen const 0, Gen.negNum[Int])
+  } yield paymentPayload + (PAYMENT_AMOUNT_KEY -> JsNumber(nonPositivePayment))
+
   protected val validPaymentRequestWithPayeeTypeSetToccp: Gen[JsObject] =
     for {
       eppAuthPayload     <- validSharedPayloads

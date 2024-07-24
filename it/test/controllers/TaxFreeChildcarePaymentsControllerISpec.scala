@@ -316,11 +316,47 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       }
     }
 
-    "respond 400 with E" when {
+    "respond 400 with E0023" when {
       val expectedCorrelationId = UUID.randomUUID()
 
-      "payment amount is invalid" in
+      "payment amount is fractional" in
+        forAll(paymentPayloadsWithFractionalPaymentAmount) { payload =>
+          withClient { ws =>
+            withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
+              val res = ws
+                .url(s"$baseUrl/")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
+
+              checkErrorResponse(res, BAD_REQUEST, "E0023", EXPECTED_400_ERROR_DESCRIPTION)
+            }
+          }
+        }
+
+      "payment amount is a string" in
         forAll(paymentPayloadsWithStringPaymentAmount) { payload =>
+          withClient { ws =>
+            withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
+              val res = ws
+                .url(s"$baseUrl/")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
+
+              checkErrorResponse(res, BAD_REQUEST, "E0023", EXPECTED_400_ERROR_DESCRIPTION)
+            }
+          }
+        }
+
+      "payment amount is non-positive" in
+        forAll(paymentPayloadsWithNonPositivePaymentAmount) { payload =>
           withClient { ws =>
             withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
               val res = ws

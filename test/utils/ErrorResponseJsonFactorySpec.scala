@@ -99,6 +99,7 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
     ("Invalid CCP postcode", paymentPayloadsWithInvalidCcpPostcode, "E0000"),
     ("Missing payment amount", paymentPayloadsWithMissingPaymentAmount, "E0008"),
     ("Fractional payment amount", paymentPayloadsWithFractionalPaymentAmount, "E0023"),
-    ("String payment amount", paymentPayloadsWithStringPaymentAmount, "E0023")
+    ("String payment amount", paymentPayloadsWithStringPaymentAmount, "E0023"),
+    ("Non-positive payment amount", paymentPayloadsWithNonPositivePaymentAmount, "E0023")
   )
 }
