@@ -17,15 +17,19 @@
 package models.request
 
 import org.scalatest.{Assertion, EitherValues, LoneElement}
-
-import play.api.libs.json.{JsValue, KeyPathNode, Reads}
+import play.api.libs.json._
 
 abstract class BaseSpec extends base.BaseSpec with Generators with EitherValues with LoneElement {
 
-  protected def checkJsonError[A: Reads](expectedJsonPath: String, expectedMessage: String)(invalidJson: JsValue): Assertion = {
-    val (jsPath, jsErrors) = invalidJson.validate[A].asEither.left.value.loneElement
+  protected def checkJsonError[A: Reads](expectedJsonPath: String, expectedMessage: String)(json: JsValue): Assertion =
+    checkJsonError { (jsPath, jsError) =>
+      jsPath.path.loneElement shouldBe KeyPathNode(expectedJsonPath)
+      jsError.message shouldBe expectedMessage
+    }(json)
 
-    jsPath.path.loneElement shouldBe KeyPathNode(expectedJsonPath)
-    jsErrors.loneElement.message shouldBe expectedMessage
+  protected def checkJsonError[A: Reads](check: (JsPath, JsonValidationError) => Assertion)(json: JsValue): Assertion = {
+    val (jsPath, jsErrors) = json.validate[A].asEither.left.value.loneElement
+
+    check(jsPath, jsErrors.loneElement)
   }
 }

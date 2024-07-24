@@ -89,18 +89,37 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     "respond 400 with errorCode E0021 and expected errorDescription" when {
       val expectedCorrelationId = UUID.randomUUID()
 
-      "child DOB is invalid" in forAll(linkPayloadsWithNonIso8061ChildDob) { payload =>
-        withClient { wsClient =>
-          val response = wsClient
-            .url(s"$baseUrl/link")
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
-            )
-            .post(payload)
-            .futureValue
+      "child DOB is not a string" in forAll(linkPayloadsWithNonStringChildDob) { payload =>
+        withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/link")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
 
-          checkErrorResponse(response, BAD_REQUEST, "E0021", EXPECTED_400_ERROR_DESCRIPTION)
+            checkErrorResponse(response, BAD_REQUEST, "E0021", EXPECTED_400_ERROR_DESCRIPTION)
+          }
+        }
+      }
+
+      "child DOB is a string not conforming to ISO 8061" in forAll(linkPayloadsWithNonIso8061ChildDob) { payload =>
+        withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/link")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0021", EXPECTED_400_ERROR_DESCRIPTION)
+          }
         }
       }
     }

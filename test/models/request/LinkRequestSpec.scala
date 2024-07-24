@@ -19,6 +19,7 @@ package models.request
 import models.requests.LinkRequest
 import models.requests.LinkRequest.CHILD_DOB_KEY
 import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
+import play.api.libs.json.{JsPath, JsonValidationError, KeyPathNode}
 
 class LinkRequestSpec extends BaseSpec {
   "API JSON reader" should {
@@ -80,12 +81,19 @@ class LinkRequestSpec extends BaseSpec {
           )
         }
 
-      "child DoB is invalid" in
-        forAll(linkPayloadsWithNonIso8061ChildDob) {
+      "child DoB is not a string" in
+        forAll(linkPayloadsWithNonStringChildDob) {
           checkJsonError[LinkRequest](
             expectedJsonPath = CHILD_DOB_KEY,
-            expectedMessage = "error.expected.date.isoformat"
+            expectedMessage = "error.expected.jsstring"
           )
+        }
+
+      "child DoB is a string not conforming to ISO 8061" in
+        forAll(linkPayloadsWithNonIso8061ChildDob) {
+          checkJsonError[LinkRequest] { (jsonPath: JsPath, _: JsonValidationError) =>
+            jsonPath.path.loneElement shouldBe KeyPathNode(CHILD_DOB_KEY)
+          }
         }
     }
   }
