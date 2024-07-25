@@ -89,22 +89,37 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     "respond 400 with errorCode E0021 and expected errorDescription" when {
       val expectedCorrelationId = UUID.randomUUID()
 
-      "child DOB is invalid" in withClient { wsClient =>
+      "child DOB is not a string" in forAll(linkPayloadsWithNonStringChildDob) { payload =>
         withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
-          val linkRequest = validLinkPayloads.sample.get ++ Json.obj(
-            "child_date_of_birth" -> "I am a bad date string"
-          )
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/link")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
 
-          val response = wsClient
-            .url(s"$baseUrl/link")
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
-            )
-            .post(linkRequest)
-            .futureValue
+            checkErrorResponse(response, BAD_REQUEST, "E0021", EXPECTED_400_ERROR_DESCRIPTION)
+          }
+        }
+      }
 
-          checkErrorResponse(response, BAD_REQUEST, "E0021", EXPECTED_400_ERROR_DESCRIPTION)
+      "child DOB is a string not conforming to ISO 8061" in forAll(linkPayloadsWithNonIso8061ChildDob) { payload =>
+        withAuthNinoRetrievalExpectLog("link", expectedCorrelationId.toString) {
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/link")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0021", EXPECTED_400_ERROR_DESCRIPTION)
+          }
         }
       }
     }
@@ -316,11 +331,47 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       }
     }
 
-    "respond 400 with E" when {
+    "respond 400 with E0023" when {
       val expectedCorrelationId = UUID.randomUUID()
 
-      "payment amount is invalid" in
+      "payment amount is fractional" in
+        forAll(paymentPayloadsWithFractionalPaymentAmount) { payload =>
+          withClient { ws =>
+            withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
+              val res = ws
+                .url(s"$baseUrl/")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
+
+              checkErrorResponse(res, BAD_REQUEST, "E0023", EXPECTED_400_ERROR_DESCRIPTION)
+            }
+          }
+        }
+
+      "payment amount is a string" in
         forAll(paymentPayloadsWithStringPaymentAmount) { payload =>
+          withClient { ws =>
+            withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
+              val res = ws
+                .url(s"$baseUrl/")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
+
+              checkErrorResponse(res, BAD_REQUEST, "E0023", EXPECTED_400_ERROR_DESCRIPTION)
+            }
+          }
+        }
+
+      "payment amount is non-positive" in
+        forAll(paymentPayloadsWithNonPositivePaymentAmount) { payload =>
           withClient { ws =>
             withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
               val res = ws

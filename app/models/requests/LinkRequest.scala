@@ -16,10 +16,11 @@
 
 package models.requests
 
-import java.time.LocalDate
-
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{__, Reads}
+import play.api.libs.json.{JsResult, Reads, __}
+
+import java.time.LocalDate
+import scala.util.Try
 
 final case class LinkRequest(
     sharedRequestData: SharedRequestData,
@@ -30,7 +31,9 @@ object LinkRequest {
 
   implicit val readsFromApi: Reads[LinkRequest] = (
     __.read[SharedRequestData] ~
-      (__ \ CHILD_DOB_KEY).read[LocalDate]
+      (__ \ CHILD_DOB_KEY)
+        .read[String]
+        .flatMapResult(str => JsResult fromTry Try(LocalDate parse str))
   )(apply _)
 
   lazy val CHILD_DOB_KEY = "child_date_of_birth"

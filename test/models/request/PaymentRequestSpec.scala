@@ -145,6 +145,14 @@ class PaymentRequestSpec extends BaseSpec {
             expectedMessage = "error.expected.jsnumber"
           )
         }
+
+      "payment amount is not positive" in
+        forAll(paymentPayloadsWithNonPositivePaymentAmount) {
+          checkJsonError[PaymentRequest](
+            expectedJsonPath = PAYMENT_AMOUNT_KEY,
+            expectedMessage = "error.min"
+          )
+        }
     }
   }
 }

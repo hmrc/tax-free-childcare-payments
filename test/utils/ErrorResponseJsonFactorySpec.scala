@@ -25,7 +25,7 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
     "return expected errorCode and errorDescription" when {
       "LinkRequest JSON is invalid" in
         forAll(linkRequestJsonErrorScenarios) {
-          (invalidPayloads, expectedErrorCode) =>
+          (_, invalidPayloads, expectedErrorCode) =>
             forAll(invalidPayloads) { payload =>
               val jsErrors = payload.validate[LinkRequest].asEither.left.value
 
@@ -62,15 +62,16 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
   }
 
   private lazy val linkRequestJsonErrorScenarios = Table(
-    ("Invalid Payloads", "Expected Error Code"),
-    (linkPayloadsWithInvalidTfcAccountRef, "E0000"),
-    (linkPayloadsWithInvalidEppUrn, "E0000"),
-    (linkPayloadsWithInvalidEppAccountId, "E0000"),
-    (linkPayloadsWithMissingTfcAccountRef, "E0001"),
-    (linkPayloadsWithMissingEppUrn, "E0002"),
-    (linkPayloadsWithMissingEppAccountId, "E0004"),
-    (linkPayloadsWithMissingChildDob, "E0006"),
-    (linkPayloadsWithInvalidChildDob, "E0021")
+    ("Description", "Invalid Payloads", "Expected Error Code"),
+    ("Invalid TFC account ref", linkPayloadsWithInvalidTfcAccountRef, "E0000"),
+    ("Invalid EPP URN", linkPayloadsWithInvalidEppUrn, "E0000"),
+    ("Invalid EPP Account ID", linkPayloadsWithInvalidEppAccountId, "E0000"),
+    ("Missing TFC account ref", linkPayloadsWithMissingTfcAccountRef, "E0001"),
+    ("Missing EPP URN", linkPayloadsWithMissingEppUrn, "E0002"),
+    ("Missing EPP account ID", linkPayloadsWithMissingEppAccountId, "E0004"),
+    ("Missing child DOB", linkPayloadsWithMissingChildDob, "E0006"),
+    ("Non-string child DOB", linkPayloadsWithNonStringChildDob, "E0021"),
+    ("Non-ISO-8061 child DOB", linkPayloadsWithNonIso8061ChildDob, "E0021")
   )
 
   private lazy val balanceRequestJsonErrorScenarios = Table(
@@ -84,7 +85,7 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
   )
 
   private lazy val paymentRequestJsonErrorScenarios = Table(
-    ("Description","Invalid Payloads", "Expected Error Code"),
+    ("Description", "Invalid Payloads", "Expected Error Code"),
     ("Invalid TFC account ref", paymentPayloadsWithInvalidTfcAccountRef, "E0000"),
     ("Invalid EPP URN", paymentPayloadsWithInvalidEppUrn, "E0000"),
     ("Invalid EPP account ID", paymentPayloadsWithInvalidEppAccountId, "E0000"),
@@ -99,6 +100,7 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
     ("Invalid CCP postcode", paymentPayloadsWithInvalidCcpPostcode, "E0000"),
     ("Missing payment amount", paymentPayloadsWithMissingPaymentAmount, "E0008"),
     ("Fractional payment amount", paymentPayloadsWithFractionalPaymentAmount, "E0023"),
-    ("String payment amount", paymentPayloadsWithStringPaymentAmount, "E0023")
+    ("String payment amount", paymentPayloadsWithStringPaymentAmount, "E0023"),
+    ("Non-positive payment amount", paymentPayloadsWithNonPositivePaymentAmount, "E0023")
   )
 }

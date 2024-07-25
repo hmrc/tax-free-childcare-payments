@@ -43,10 +43,15 @@ trait Generators extends base.Generators {
 
   protected lazy val linkPayloadsWithMissingChildDob: Gen[JsValue] = validSharedPayloads
 
-  protected lazy val linkPayloadsWithInvalidChildDob: Gen[JsObject] = for {
-    sharedPayload     <- validSharedPayloads
-    invalidDateString <- Gen.alphaNumStr
-  } yield sharedPayload + ("child_date_of_birth" -> JsString(invalidDateString))
+  protected lazy val linkPayloadsWithNonStringChildDob: Gen[JsObject] = for {
+    sharedPayload  <- validSharedPayloads
+    nonStringValue <- Gen.long map { num => JsNumber(num) }
+  } yield sharedPayload + ("child_date_of_birth" -> nonStringValue)
+
+  protected lazy val linkPayloadsWithNonIso8061ChildDob: Gen[JsObject] = for {
+    sharedPayload   <- validSharedPayloads
+    nonIso8061Value <- Gen.alphaNumStr map JsString.apply
+  } yield sharedPayload + ("child_date_of_birth" -> nonIso8061Value)
 
   private def linkPayloadsWith(sharedPayloads: Gen[JsObject]) =
     for {
@@ -120,6 +125,11 @@ trait Generators extends base.Generators {
     paymentPayload          <- validPaymentRequestWithPayeeTypeSetToCCP
     fractionalPaymentAmount <- Gen.asciiPrintableStr
   } yield paymentPayload + (PAYMENT_AMOUNT_KEY -> JsString(fractionalPaymentAmount))
+
+  protected val paymentPayloadsWithNonPositivePaymentAmount: Gen[JsObject] = for {
+    paymentPayload     <- validPaymentRequestWithPayeeTypeSetToCCP
+    nonPositivePayment <- Gen.oneOf(Gen const 0, Gen.negNum[Int])
+  } yield paymentPayload + (PAYMENT_AMOUNT_KEY -> JsNumber(nonPositivePayment))
 
   protected val validPaymentRequestWithPayeeTypeSetToccp: Gen[JsObject] =
     for {
