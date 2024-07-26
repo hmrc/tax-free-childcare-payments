@@ -22,10 +22,10 @@ import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
 import models.response.{ErrorDescriptions, NsiErrorResponse}
 import play.api.libs.json._
-import play.api.mvc.RequestHeader
+import play.api.mvc.{RequestHeader, Result}
 import play.api.mvc.Results.Status
 
-object ErrorResponseFactory extends ErrorDescriptions {
+object ErrorResponseFactory extends ErrorDescriptions with FormattedLogging {
 
   // noinspection ScalaStyle
   def getJson(errors: collection.Seq[(JsPath, collection.Seq[JsonValidationError])]): JsValue = {
@@ -55,10 +55,21 @@ object ErrorResponseFactory extends ErrorDescriptions {
     getJson(errorCode, ERROR_400_DESCRIPTION)
   }
 
-  def getResult(nsiErrorResponse: NsiErrorResponse)(implicit req: RequestHeader) =
+  def getResult(nsiErrorResponse: NsiErrorResponse)(implicit req: RequestHeader): Result = {
+    val errorCode = nsiErrorResponse.toString
+    val errorDesc = nsiErrorResponse.message
+    val logMsg = formattedLog(s"$errorCode - $errorDesc")
+
+    if(nsiErrorResponse.reportAs < 500) {
+      logger.info(logMsg)
+    } else {
+      logger.warn(logMsg)
+    }
+
     new Status(nsiErrorResponse.reportAs)(
-      getJson(nsiErrorResponse.toString, descriptions(nsiErrorResponse.reportAs))
+      getJson(errorCode, descriptions(nsiErrorResponse.reportAs))
     )
+  }
 
   @inline
   def getJson(errorCode: String, errorDescription: String): JsValue =
