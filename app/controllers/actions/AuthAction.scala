@@ -24,7 +24,7 @@ import scala.util.Try
 import models.requests.IdentifierRequest
 import models.response.ErrorDescriptions
 import utils.FormattedLogging.CORRELATION_ID
-import utils.{ErrorResponseJsonFactory, FormattedLogging}
+import utils.{ErrorResponseFactory, FormattedLogging}
 
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
@@ -73,6 +73,6 @@ class AuthAction @Inject() (
       }
   }
 
-  private lazy val ETFC1 = BadRequest(ErrorResponseJsonFactory.getJson("ETFC1", ERROR_400_DESCRIPTION))
-  private lazy val ETFC2 = InternalServerError(ErrorResponseJsonFactory.getJson("ETFC2", ERROR_500_DESCRIPTION))
+  private lazy val ETFC1 = BadRequest(ErrorResponseFactory.getJson("ETFC1", ERROR_400_DESCRIPTION))
+  private lazy val ETFC2 = InternalServerError(ErrorResponseFactory.getJson("ETFC2", ERROR_500_DESCRIPTION))
 }
