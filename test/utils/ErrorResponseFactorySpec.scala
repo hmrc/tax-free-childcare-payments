@@ -19,8 +19,12 @@ package utils
 import base.BaseSpec
 import models.requests.{LinkRequest, PaymentRequest, SharedRequestData}
 import org.scalatest.EitherValues
+import play.api.mvc.RequestHeader
+import play.api.test.FakeRequest
 
-class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generators with EitherValues {
+class ErrorResponseFactorySpec extends BaseSpec with models.request.Generators with EitherValues {
+  implicit val rh: RequestHeader = FakeRequest()
+
   "method getJson" should {
     "return expected errorCode and errorDescription" when {
       "LinkRequest JSON is invalid" in
@@ -29,7 +33,7 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
             forAll(invalidPayloads) { payload =>
               val jsErrors = payload.validate[LinkRequest].asEither.left.value
 
-              val errorResponseJson = ErrorResponseJsonFactory getJson jsErrors
+              val errorResponseJson = ErrorResponseFactory getJson jsErrors
 
               checkErrorJson(errorResponseJson, expectedErrorCode, EXPECTED_400_ERROR_DESCRIPTION)
             }
@@ -41,7 +45,7 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
             forAll(invalidPayloads) { payload =>
               val jsErrors = payload.validate[SharedRequestData].asEither.left.value
 
-              val errorResponseJson = ErrorResponseJsonFactory getJson jsErrors
+              val errorResponseJson = ErrorResponseFactory getJson jsErrors
 
               checkErrorJson(errorResponseJson, expectedErrorCode, EXPECTED_400_ERROR_DESCRIPTION)
             }
@@ -53,7 +57,7 @@ class ErrorResponseJsonFactorySpec extends BaseSpec with models.request.Generato
             forAll(invalidPayloads) { payload =>
               val jsErrors = payload.validate[PaymentRequest].asEither.left.value
 
-              val errorResponseJson = ErrorResponseJsonFactory getJson jsErrors
+              val errorResponseJson = ErrorResponseFactory getJson jsErrors
 
               checkErrorJson(errorResponseJson, expectedErrorCode, EXPECTED_400_ERROR_DESCRIPTION)
             }
