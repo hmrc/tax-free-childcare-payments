@@ -53,7 +53,18 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
       <br>AACC00000TFC <br>
       <br>AADD00000TFC
     </td>
-    <td>Returns random cash amounts in pennies</td>
+    <td>Returns the following: <br>
+      <br><pre class="code--block">
+        {
+          "tfc_account_status": "ACTIVE",
+          "government_top_up": 14159,
+          "top_up_allowance": 26535,
+          "paid_in_by_you": 89793,
+          "total_balance": 23846
+          "cleared_funds": 26433
+        }
+        </pre>
+      </td>
   </tr>
 </table>
 
@@ -71,7 +82,14 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
       <br>AACC00000TFC <br>
       <br>AADD00000TFC
     </td>
-    <td>Returns a random payment reference and a random date</td>
+    <td>Return the following: <br>
+      <br><pre class="code--block">
+        {
+          "payment_reference": "8427950288419716",
+          "estimated_payment_date": "2024-10-01",
+        }
+        </pre>
+    </td>
   </tr>
   <tr></tr>
 </table>
