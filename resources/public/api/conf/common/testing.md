@@ -93,3 +93,101 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
   </tr>
   <tr></tr>
 </table>
+
+#### Error scenarios
+
+The following scenarios relate to all endpoints:
+
+<table>
+    <tr>
+        <td>outbound_child_payment_ref</td>
+        <td>Scenario</td>
+        <td>Example response</td>
+    </tr>
+    <tr>
+        <td>EETT00000TFC</td>
+        <td>Online payment provider's registration is not Active</td>
+        <td>400<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0030",
+               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information",
+              }
+           </pre></td>
+    </tr>
+    <tr>
+        <td>EEXX00000TFC</td>
+        <td>Error returned from banking services</td>
+        <td>503<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0034",
+               "errorDescription": "The service is unavailable. Please refer to API Documentation for further information.",
+              }
+           </pre></td>
+    </tr>
+</table>
+
+##### Linking endpoint errors
+
+<table>
+    <tr>
+        <td>outbound_child_payment_ref</td>
+        <td>Scenario</td>
+        <td>Example response</td>
+    </tr>
+    <tr>
+        <td>EEQQ00000TFC</td>
+        <td>The given child_dob does not correlate with the provided outbound_child_payment_ref</td>
+        <td>400<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0025",
+               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information",
+              }
+           </pre></td>
+    </tr>
+</table>
+
+##### Payment endpoint errors
+
+<table>
+    <tr>
+        <td>outbound_child_payment_ref</td>
+        <td>Scenario</td>
+        <td>Example response</td>
+    </tr>
+    <tr>
+        <td>EEUU00000TFC</td>
+        <td>The childcare provider's registration is not Active</td>
+        <td>400<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0031",
+               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information",
+              }
+           </pre></td>
+    </tr>
+    <tr>
+        <td>EEWW00000TFC</td>
+        <td>Insufficient funds</td>
+        <td>400<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0033",
+               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information.",
+              }
+           </pre></td>
+    </tr>
+    <tr>
+        <td>EEYY00000TFC</td>
+        <td>Payments from this TFC account are blocked</td>
+        <td>400<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0035",
+               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information.",
+              }
+           </pre></td>
+    </tr>
+</table>
