@@ -62,6 +62,7 @@ object NsiErrorResponse extends Status {
   case object E8001 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Service not available due to lack of connection to provider")
 
   case object ETFC3 extends NsiErrorResponse(BAD_GATEWAY, "Unexpected NSI response")
+  case object ETFC4 extends NsiErrorResponse(BAD_GATEWAY, "Unexpected NSI error code")
 
   private val values = Set(
     E0000,
@@ -95,7 +96,8 @@ object NsiErrorResponse extends Status {
     E9999,
     E8000,
     E8001,
-    ETFC3
+    ETFC3,
+    ETFC4
   )
 
   implicit val reads: Reads[NsiErrorResponse] =

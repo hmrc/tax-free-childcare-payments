@@ -18,15 +18,34 @@ package models.request
 
 import models.requests.Payee.{CCP_POSTCODE_KEY, CCP_REG_MAX_LEN, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
-import models.requests.SharedRequestData
+import models.requests.{IdentifierRequest, LinkRequest, SharedRequestData}
 import play.api.libs.json._
+import play.api.mvc.Headers
+import play.api.test.FakeRequest
 
-import java.time.LocalDate
+import java.time.{LocalDate, ZoneId}
 
 trait Generators extends base.Generators {
-  import org.scalacheck.Gen
+  import org.scalacheck.{Arbitrary, Gen}
+  import Arbitrary.arbitrary
+
+  protected implicit def arbIdentifierRequest[A: Arbitrary]: Arbitrary[IdentifierRequest[A]] = Arbitrary(
+    for {
+      nino          <- randomNinos
+      correlationId <- Gen.uuid
+      body          <- arbitrary[A]
+    } yield IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), body))
+  )
 
   /** START Link Accounts generators */
+
+  protected implicit val arbLinkRequest: Arbitrary[LinkRequest] = Arbitrary(
+    for {
+      sharedRequestData <- validSharedDataModels
+      calendar          <- Gen.calendar
+    } yield LinkRequest(sharedRequestData, calendar.toInstant.atZone(ZoneId.systemDefault()).toLocalDate)
+  )
+
   protected val validLinkPayloads: Gen[JsObject] = linkPayloadsWith(validSharedPayloads)
 
   protected lazy val linkPayloadsWithMissingTfcAccountRef: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)

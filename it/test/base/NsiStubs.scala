@@ -38,6 +38,10 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
       .willReturn(created() withBody expectedResponseJson.toString)
   }
 
+  protected def stubNsiLinkAccountsError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
+    nsiLinkAccountsEndpoint willReturn nsiErrorResponse(status, errorCode, errorDesc)
+  }
+
   protected lazy val nsiLinkAccountsEndpoint: MappingBuilder = get(nsiLinkAccountsUrlPattern)
 
   private lazy val nsiLinkAccountsUrlQueryParams = Map(
@@ -86,10 +90,10 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
 
   /** Utils */
 
-  protected def nsiJsonBody(errorCode: String, errorDescription: String): String = Json.obj(
-    "errorCode"        -> errorCode,
-    "errorDescription" -> errorDescription
-  ).toString
+  private def nsiErrorResponse(status: Int, errorCode: String, errorDesc: String) =
+    aResponse()
+      .withStatus(status)
+      .withBody(Json.obj("errorCode" -> errorCode, "errorDescription" -> errorDesc).toString)
 
   private def nsiUrlPattern(endpointName: String, pathPatterns: String*) = {
     val initPath   = nsiRootPath + nsiConfig.get[String](endpointName)

@@ -127,10 +127,8 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
     "respond 400 with errorCode E0024 and expected errorDescription" when {
       "NSI responds 400 with errorCode E0024" in
-        forAll(Gen.uuid, validLinkPayloads) { (expectedCorrelationId, payload) =>
-          stubFor {
-            nsiLinkAccountsEndpoint willReturn badRequest().withBody(nsiJsonBody("E0024", Gen.asciiPrintableStr.sample.get))
-          }
+        forAll(Gen.uuid, validLinkPayloads, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
+          stubNsiLinkAccountsError(BAD_REQUEST, "E0024", errorDesc)
 
           withClient { wsClient =>
             withAuthNinoRetrieval {
@@ -151,10 +149,8 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
     "respond 400 with errorCode E0025 and expected errorDescription" when {
       "NSI responds 400 with errorCode E0025" in
-        forAll(Gen.uuid, validLinkPayloads) { (expectedCorrelationId, payload) =>
-          stubFor {
-            nsiLinkAccountsEndpoint willReturn badRequest().withBody(nsiJsonBody("E0025", Gen.asciiPrintableStr.sample.get))
-          }
+        forAll(Gen.uuid, validLinkPayloads, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, nsiErrorDesc) =>
+          stubNsiLinkAccountsError(BAD_REQUEST, "E0025", nsiErrorDesc)
 
           withClient { wsClient =>
             withAuthNinoRetrieval {
@@ -175,10 +171,8 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
     "respond 400 with errorCode E0026 and expected errorDescription" when {
       "NSI responds 400 with errorCode E0026" in
-        forAll(Gen.uuid, validLinkPayloads) { (expectedCorrelationId, payload) =>
-          stubFor {
-            nsiLinkAccountsEndpoint willReturn badRequest().withBody(nsiJsonBody("E0026", Gen.asciiPrintableStr.sample.get))
-          }
+        forAll(Gen.uuid, validLinkPayloads, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, nsiErrorDesc) =>
+          stubNsiLinkAccountsError(BAD_REQUEST, "E0026", nsiErrorDesc)
 
           withClient { wsClient =>
             withAuthNinoRetrieval {

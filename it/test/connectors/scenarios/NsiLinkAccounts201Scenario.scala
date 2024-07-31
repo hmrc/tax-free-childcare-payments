@@ -58,7 +58,7 @@ object NsiLinkAccounts201Scenario extends Generators {
       childAccountPaymentRef <- nonEmptyAlphaNumStrings
       eppURN                 <- nonEmptyAlphaNumStrings
       eppAccount             <- nonEmptyAlphaNumStrings
-      parentNino             <- ninos
+      parentNino             <- randomNinos
       childAgeDays           <- Gen.chooseNum(1, 18 * 365)
       expectedLinkResponse   <- linkResponses
     } yield apply(

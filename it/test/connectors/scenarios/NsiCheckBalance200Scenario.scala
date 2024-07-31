@@ -63,7 +63,7 @@ object NsiCheckBalance200Scenario extends Generators {
       childAccountPaymentRef <- nonEmptyAlphaNumStrings
       eppURN                 <- nonEmptyAlphaNumStrings
       eppAccount             <- nonEmptyAlphaNumStrings
-      parentNino             <- ninos
+      parentNino             <- randomNinos
       expectedResponse       <- balanceResponses
     } yield apply(
       correlationId,

@@ -21,7 +21,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.scenarios._
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
-import models.response.NsiErrorResponse.ETFC3
+import models.response.NsiErrorResponse.{ETFC3, ETFC4}
 import org.scalacheck.{Gen, Shrink}
 import org.scalatest.EitherValues
 import play.api.libs.json.Json
@@ -45,6 +45,17 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
           WireMock.verify(getRequestedFor(nsiLinkAccountsUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
         }
     }
+
+    "return Left ETFC4" when {
+      "NSI responds with unknown errorCode" in
+        forAll { implicit linkAccountsRequest: IdentifierRequest[LinkRequest] =>
+          stubNsiLinkAccountsError(BAD_REQUEST, "UNKNOWN", "An error occurred")
+
+          val actualNsiErrorResponse = connector.linkAccounts.futureValue.left.value
+
+          actualNsiErrorResponse shouldBe ETFC4
+        }
+    }
   }
 
   "method checkBalance" should {
@@ -65,7 +76,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
       implicit val shr: Shrink[String] = Shrink.shrinkAny
 
       "NSI responds with an invalid account status" in
-        forAll(ninos, Gen.uuid, validSharedDataModels) { (nino, correlationId, sharedRequestData) =>
+        forAll(randomNinos, Gen.uuid, validSharedDataModels) { (nino, correlationId, sharedRequestData) =>
           implicit val req: IdentifierRequest[SharedRequestData] =
             IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), sharedRequestData))
 
