@@ -48,7 +48,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
 
     "return Left ETFC4" when {
       "NSI responds with unknown errorCode" in
-        forAll { implicit linkAccountsRequest: IdentifierRequest[LinkRequest] =>
+        forAll { implicit req: IdentifierRequest[LinkRequest] =>
           stubNsiLinkAccountsError(BAD_REQUEST, "UNKNOWN", "An error occurred")
 
           val actualNsiErrorResponse = connector.linkAccounts.futureValue.left.value
@@ -72,6 +72,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
           WireMock.verify(getRequestedFor(nsiBalanceUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
         }
     }
+
     "return Left ETFC3" when {
       implicit val shr: Shrink[String] = Shrink.shrinkAny
 
@@ -100,6 +101,17 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
           actualNsiErrorResponse shouldBe ETFC3
         }
     }
+
+    "return Left ETFC4" when {
+      "NSI responds with unknown errorCode" in
+        forAll { implicit req: IdentifierRequest[SharedRequestData] =>
+          stubNsiCheckBalanceError(BAD_REQUEST, "UNKNOWN", "An error occurred")
+
+          val actualNsiErrorResponse = connector.checkBalance.futureValue.left.value
+
+          actualNsiErrorResponse shouldBe ETFC4
+        }
+    }
   }
 
   "method makePayment" should {
@@ -114,6 +126,17 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
 
           actualResponse shouldBe scenario.expectedResponse
           WireMock.verify(postRequestedFor(nsiPaymentUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
+        }
+    }
+
+    "return Left ETFC4" when {
+      "NSI responds with unknown errorCode" in
+        forAll { implicit req: IdentifierRequest[PaymentRequest] =>
+          stubNsiMakePaymentError(BAD_REQUEST, "UNKNOWN", "An error occurred")
+
+          val actualNsiErrorResponse = connector.makePayment.futureValue.left.value
+
+          actualNsiErrorResponse shouldBe ETFC4
         }
     }
   }

@@ -61,6 +61,10 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
       .willReturn(created() withBody expectedResponseJson.toString)
   }
 
+  protected def stubNsiCheckBalanceError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
+    nsiCheckBalanceEndpoint willReturn nsiErrorResponse(status, errorCode, errorDesc)
+  }
+
   protected lazy val nsiCheckBalanceEndpoint: MappingBuilder = get(nsiBalanceUrlPattern)
 
   protected lazy val nsiBalanceUrlQueryParams: util.Map[String, StringValuePattern] = Map(
@@ -77,6 +81,10 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
     nsiMakePaymentEndpoint
       .withRequestBody(nsiPaymentRequestBodyPattern)
       .willReturn(created() withBody expectedResponseJson.toString)
+  }
+
+  protected def stubNsiMakePaymentError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
+    nsiMakePaymentEndpoint willReturn nsiErrorResponse(status, errorCode, errorDesc)
   }
 
   protected lazy val nsiMakePaymentEndpoint: MappingBuilder = post(nsiPaymentUrlPattern)

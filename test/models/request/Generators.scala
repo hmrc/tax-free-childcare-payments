@@ -18,7 +18,7 @@ package models.request
 
 import models.requests.Payee.{CCP_POSTCODE_KEY, CCP_REG_MAX_LEN, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
-import models.requests.{IdentifierRequest, LinkRequest, SharedRequestData}
+import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import play.api.libs.json._
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
@@ -89,12 +89,22 @@ trait Generators extends base.Generators {
     *
     * BEGIN Check Balance generators
     */
+  protected implicit val arbSharedRequestData: Arbitrary[SharedRequestData] = Arbitrary(validSharedDataModels)
+
   protected val validCheckBalanceRequestPayloads: Gen[JsObject] = validSharedPayloads
 
   /** END Check Balance generators
     *
     * BEGIN Make Payment generators
     */
+  protected implicit val arbPaymentRequest: Arbitrary[PaymentRequest] = Arbitrary(
+    for {
+      sharedRequestData  <- arbitrary[SharedRequestData]
+      payee              <- payees
+      paymentAmountPence <- Gen.posNum[Int]
+    } yield PaymentRequest(sharedRequestData, paymentAmountPence, payee)
+  )
+
   protected val validPaymentRequestWithPayeeTypeSetToCCP: Gen[JsObject] = paymentPayloadsWith(validSharedPayloads)
 
   protected val paymentPayloadsWithMissingTfcAccountRef: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)
