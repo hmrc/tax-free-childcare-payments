@@ -43,7 +43,12 @@ trait Generators extends base.Generators {
     for {
       sharedRequestData <- validSharedDataModels
       calendar          <- Gen.calendar
-    } yield LinkRequest(sharedRequestData, calendar.toInstant.atZone(ZoneId.systemDefault()).toLocalDate)
+      childDateOfBirth   = calendar.toInstant.atZone(ZoneId.systemDefault()).toLocalDate
+      childYearOfBirth  <- Gen.chooseNum(2000, 3000)
+    } yield LinkRequest(
+      sharedRequestData,
+      childDateOfBirth withYear childYearOfBirth
+    )
   )
 
   protected val validLinkPayloads: Gen[JsObject] = linkPayloadsWith(validSharedPayloads)
