@@ -61,6 +61,8 @@ object NsiErrorResponse extends Status {
   case object E8000 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Service not available")
   case object E8001 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Service not available due to lack of connection to provider")
 
+  case object ETFC3 extends NsiErrorResponse(BAD_GATEWAY, "Unexpected NSI response")
+
   private val values = Set(
     E0000,
     E0001,

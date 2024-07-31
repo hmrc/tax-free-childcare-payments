@@ -18,12 +18,13 @@ package base
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.matching.UrlPattern
+import com.github.tomakehurst.wiremock.matching.{StringValuePattern, UrlPattern}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Configuration
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 
+import java.util
 import scala.jdk.CollectionConverters.MapHasAsJava
 
 /** The specs below should follow the NSI documentation at <https://drive.google.com/drive/folders/1ES36CjJpVumXXCM8VC5VQQa7J3xIIqoW>. */
@@ -58,7 +59,7 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
 
   protected lazy val nsiCheckBalanceEndpoint: MappingBuilder = get(nsiBalanceUrlPattern)
 
-  private lazy val nsiBalanceUrlQueryParams = Map(
+  protected lazy val nsiBalanceUrlQueryParams: util.Map[String, StringValuePattern] = Map(
     "eppURN"     -> matching("[a-zA-Z0-9]+"),
     "eppAccount" -> matching("[a-zA-Z0-9]+"),
     "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]")
