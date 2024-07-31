@@ -268,6 +268,33 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           }
         }
     }
+
+    "respond with status 502, errorCode ETFC4" when {
+      s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds with unknown errorCode" in
+        withClient { wsClient =>
+          withCaptureOfLoggingFrom(ERROR_RESPONSE_FACTORY_LOGGER) { logs =>
+            withAuthNinoRetrieval {
+              stubNsiCheckBalanceError(INTERNAL_SERVER_ERROR, "Unknown", "A server error occurred")
+
+              val expectedCorrelationId   = UUID.randomUUID()
+
+              val response = wsClient
+                .url(s"$baseUrl/balance")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(validCheckBalanceRequestPayloads.sample.get)
+                .futureValue
+
+              val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: ETFC4 - Unexpected NSI error code]"
+              checkLog(Level.WARN, expectedLogMessage)(logs)
+
+              checkErrorResponse(response, BAD_GATEWAY, "ETFC4", "Bad Gateway. Please refer to API Documentation for further information")
+            }
+          }
+        }
+    }
   }
 
   "POST /" should {
