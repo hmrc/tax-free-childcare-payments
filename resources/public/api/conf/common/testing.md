@@ -164,7 +164,7 @@ The following scenarios relate to all endpoints:
            <pre class="code--block">
               {
                "errorCode": "E0031",
-               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information",
+               "errorDescription": "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds.",
               }
            </pre></td>
     </tr>
@@ -175,7 +175,7 @@ The following scenarios relate to all endpoints:
            <pre class="code--block">
               {
                "errorCode": "E0033",
-               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information.",
+               "errorDescription": "The TFC account used to request payment contains insufficient funds.",
               }
            </pre></td>
     </tr>
@@ -186,7 +186,7 @@ The following scenarios relate to all endpoints:
            <pre class="code--block">
               {
                "errorCode": "E0035",
-               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information.",
+               "errorDescription": "There is an issue with this TFC account, please advise parent / carer to contact TFC customer services.",
               }
            </pre></td>
     </tr>
