@@ -189,6 +189,7 @@ class ErrorResponseFactorySpec extends BaseSpec
     (E9000, SERVICE_UNAVAILABLE, "E9000", Level.WARN, "Internal server error"),
     (E9999, SERVICE_UNAVAILABLE, "E9999", Level.WARN, "Error during execution"),
     (E8000, SERVICE_UNAVAILABLE, "E8000", Level.WARN, "Service not available"),
-    (E8001, SERVICE_UNAVAILABLE, "E8001", Level.WARN, "Service not available due to lack of connection to provider")
+    (E8001, SERVICE_UNAVAILABLE, "E8001", Level.WARN, "Service not available due to lack of connection to provider"),
+    (ETFC3, BAD_GATEWAY, "ETFC3", Level.WARN, "Unexpected NSI response")
   )
 }

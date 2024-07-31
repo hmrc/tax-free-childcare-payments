@@ -61,10 +61,10 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
           WireMock.verify(getRequestedFor(nsiBalanceUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
         }
     }
-    "return Left(ETFC3)" when {
+    "return Left ETFC3" when {
       implicit val shr: Shrink[String] = Shrink.shrinkAny
 
-      "NSI response with an invalid account status" in
+      "NSI responds with an invalid account status" in
         forAll(ninos, Gen.uuid, validSharedDataModels) { (nino, correlationId, sharedRequestData) =>
           implicit val req: IdentifierRequest[SharedRequestData] =
             IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), sharedRequestData))
