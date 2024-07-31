@@ -17,7 +17,7 @@
 package models.response
 
 import play.api.http.Status
-import play.api.libs.json.{JsError, JsSuccess, Reads, __}
+import play.api.libs.json.{Reads, __}
 
 sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String)
 
@@ -103,10 +103,10 @@ object NsiErrorResponse extends Status {
   implicit val reads: Reads[NsiErrorResponse] =
     (__ \ "errorCode")
       .readWithDefault(ETFC3.toString)
-      .flatMapResult { str =>
+      .map { str =>
         values.find(_.toString equalsIgnoreCase str) match {
-          case None        => JsError(s"Invalid error string: $str")
-          case Some(value) => JsSuccess(value)
+          case None        => ETFC4
+          case Some(value) => value
         }
       }
 }
