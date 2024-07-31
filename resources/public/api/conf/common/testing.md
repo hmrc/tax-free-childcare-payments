@@ -53,7 +53,18 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
       <br>AACC00000TFC <br>
       <br>AADD00000TFC
     </td>
-    <td>Returns random cash amounts in pennies</td>
+    <td>Returns the following: <br>
+      <br><pre class="code--block">
+        {
+          "tfc_account_status": "ACTIVE",
+          "government_top_up": 14159,
+          "top_up_allowance": 26535,
+          "paid_in_by_you": 89793,
+          "total_balance": 23846
+          "cleared_funds": 26433
+        }
+        </pre>
+      </td>
   </tr>
 </table>
 
@@ -71,7 +82,112 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
       <br>AACC00000TFC <br>
       <br>AADD00000TFC
     </td>
-    <td>Returns a random payment reference and a random date</td>
+    <td>Return the following: <br>
+      <br><pre class="code--block">
+        {
+          "payment_reference": "8427950288419716",
+          "estimated_payment_date": "2024-10-01",
+        }
+        </pre>
+    </td>
   </tr>
   <tr></tr>
+</table>
+
+#### Error scenarios
+
+The following scenarios relate to all endpoints:
+
+<table>
+    <tr>
+        <td>outbound_child_payment_ref</td>
+        <td>Scenario</td>
+        <td>Example response</td>
+    </tr>
+    <tr>
+        <td>EETT00000TFC</td>
+        <td>Online payment provider's registration is not Active</td>
+        <td>400<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0030",
+               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information",
+              }
+           </pre></td>
+    </tr>
+    <tr>
+        <td>EEXX00000TFC</td>
+        <td>Error returned from banking services</td>
+        <td>503<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0034",
+               "errorDescription": "The service is unavailable. Please refer to API Documentation for further information.",
+              }
+           </pre></td>
+    </tr>
+</table>
+
+##### Linking endpoint errors
+
+<table>
+    <tr>
+        <td>outbound_child_payment_ref</td>
+        <td>Scenario</td>
+        <td>Example response</td>
+    </tr>
+    <tr>
+        <td>EEQQ00000TFC</td>
+        <td>The given child_dob does not correlate with the provided outbound_child_payment_ref</td>
+        <td>400<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0025",
+               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information",
+              }
+           </pre></td>
+    </tr>
+</table>
+
+##### Payment endpoint errors
+
+<table>
+    <tr>
+        <td>outbound_child_payment_ref</td>
+        <td>Scenario</td>
+        <td>Example response</td>
+    </tr>
+    <tr>
+        <td>EEUU00000TFC</td>
+        <td>The childcare provider's registration is not Active</td>
+        <td>400<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0031",
+               "errorDescription": "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds.",
+              }
+           </pre></td>
+    </tr>
+    <tr>
+        <td>EEWW00000TFC</td>
+        <td>Insufficient funds</td>
+        <td>400<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0033",
+               "errorDescription": "The TFC account used to request payment contains insufficient funds.",
+              }
+           </pre></td>
+    </tr>
+    <tr>
+        <td>EEYY00000TFC</td>
+        <td>Payments from this TFC account are blocked</td>
+        <td>400<br>
+           <pre class="code--block">
+              {
+               "errorCode": "E0035",
+               "errorDescription": "There is an issue with this TFC account, please advise parent / carer to contact TFC customer services.",
+              }
+           </pre></td>
+    </tr>
 </table>

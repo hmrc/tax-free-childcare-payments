@@ -390,7 +390,7 @@ paths:
                       description: The status of the child's TFC account. Indicates whether the account is active or not.
                       enum:
                        - Active
-                       - Blocked
+                       - Inactive
                       example: Active
                     paid_in_by_you:
                       type: integer
