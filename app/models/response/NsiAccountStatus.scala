@@ -31,7 +31,7 @@ object NsiAccountStatus {
         case Some(accountStatus) => JsSuccess(accountStatus)
         case None                => JsError("error.invalid.account_status")
       }
-    case _               => JsError("error.expected.string")
+    case _               => JsError("error.expected.account_status.string")
   }
 
   implicit val writesToApi: Writes[NsiAccountStatus] = status => JsString(status.toApiString)
