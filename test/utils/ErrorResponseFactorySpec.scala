@@ -18,7 +18,6 @@ package utils
 
 import base.BaseSpec
 import ch.qos.logback.classic.Level
-import ch.qos.logback.classic.spi.ILoggingEvent
 import models.requests.{LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse._
 import org.apache.pekko.actor.ActorSystem
@@ -35,14 +34,12 @@ class ErrorResponseFactorySpec extends BaseSpec
     with models.request.Generators
     with EitherValues
     with LogCapturing
-    with LoneElement
     with Status
     with ScalaFutures {
   private implicit val as: ActorSystem   = ActorSystem(getClass.getSimpleName)
   private implicit val rh: RequestHeader = FakeRequest()
 
   private val expectedLogger            = Logger(classOf[ErrorResponseFactory.type])
-  private val expectedLogMessagePattern = "^\\[Error] - \\[[^]]+] - \\[[^:]+: (.+)]$".r
 
   "method getJson" should {
     "return expected errorCode and errorDescription" when {
@@ -101,17 +98,6 @@ class ErrorResponseFactorySpec extends BaseSpec
           )(logs)
         }
       }
-  }
-
-  private def checkLog(expectedLevel: Level, expectedMessage: String)(logs: List[ILoggingEvent]): Unit = {
-    val log = logs.loneElement
-
-    log.getLevel shouldBe expectedLevel
-
-    log.getMessage match {
-      case expectedLogMessagePattern(msg) => msg shouldBe expectedMessage
-      case other                          => fail(s"Log message did not match expected pattern: $other")
-    }
   }
 
   private lazy val linkRequestJsonErrorScenarios = Table(

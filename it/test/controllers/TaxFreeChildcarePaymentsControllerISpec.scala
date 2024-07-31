@@ -23,6 +23,7 @@ import org.scalatest.Assertion
 import play.api.Logger
 import play.api.libs.json.{JsString, Json}
 import play.api.libs.ws.WSResponse
+import utils.ErrorResponseFactory
 
 import java.util.UUID
 import scala.util.matching.Regex
@@ -197,10 +198,10 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     }
   }
 
-  withClient { wsClient =>
-    "POST /balance" should {
-      s"respond with status $OK and correct JSON body" when {
-        s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withAuthNinoRetrieval {
+  "POST /balance" should {
+    s"respond with status $OK and correct JSON body" when {
+      s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withClient { wsClient =>
+        withAuthNinoRetrieval {
           val expectedCorrelationId   = UUID.randomUUID()
           val expectedTfcResponseBody = Json.obj(
             "tfc_account_status" -> "ACTIVE",
@@ -237,6 +238,41 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           res.json shouldBe expectedTfcResponseBody
         }
       }
+    }
+
+    "respond with status 502, errorCode ETFC3" when {
+      s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK with unknown account status" in
+        withClient { wsClient =>
+          withCaptureOfLoggingFrom(ERROR_RESPONSE_FACTORY_LOGGER) { logs =>
+            withAuthNinoRetrieval {
+              val expectedCorrelationId   = UUID.randomUUID()
+              val expectedNsiResponseBody = Json.obj(
+                "accountStatus"  -> "UNKNOWN",
+                "topUpAvailable" -> 0,
+                "topUpRemaining" -> 0,
+                "paidIn"         -> 0,
+                "totalBalance"   -> 0,
+                "clearedFunds"   -> 0
+              )
+
+              stubNsiCheckBalance200(expectedNsiResponseBody)
+
+              val response = wsClient
+                .url(s"$baseUrl/balance")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(validCheckBalanceRequestPayloads.sample.get)
+                .futureValue
+
+              val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: ETFC3 - Unexpected NSI response]"
+              checkLog(Level.WARN, expectedLogMessage)(logs)
+
+              checkErrorResponse(response, BAD_GATEWAY, "ETFC3", "Bad Gateway. Please refer to API Documentation for further information")
+            }
+          }
+        }
     }
   }
 
@@ -552,7 +588,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       expectedCorrelationId: String
     )(
       doTest: => Assertion
-    ): Unit = withCaptureOfLoggingFrom(EXPECTED_LOGGER) { logs =>
+    ): Unit = withCaptureOfLoggingFrom(CONTROLLER_LOGGER) { logs =>
     withAuthNinoRetrieval {
       doTest
     }
@@ -569,7 +605,9 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     }
   }
 
-  private lazy val EXPECTED_LOGGER = Logger(classOf[TaxFreeChildcarePaymentsController])
+  private lazy val CONTROLLER_LOGGER = Logger(classOf[TaxFreeChildcarePaymentsController])
+
+  private lazy val ERROR_RESPONSE_FACTORY_LOGGER = Logger(classOf[ErrorResponseFactory.type])
 
   private lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
     raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
