@@ -16,24 +16,23 @@
 
 package connectors
 
-import java.net.URL
-import java.time.LocalDate
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
 import models.requests.Payee.{ChildCareProvider, ExternalPaymentProvider}
-import models.requests.{IdentifierRequest, LinkRequest, Payee, PaymentRequest, SharedRequestData}
+import models.requests._
 import models.response.NsiErrorResponse.Maybe
-import models.response.{AccountStatus, BalanceResponse, LinkResponse, PaymentResponse}
-import sttp.model.HeaderNames
-import utils.FormattedLogging
-
+import models.response.{BalanceResponse, LinkResponse, NsiAccountStatus, PaymentResponse}
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
+import sttp.model.HeaderNames
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import utils.FormattedLogging
+
+import java.net.URL
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NsiConnector @Inject() (
@@ -144,7 +143,7 @@ object NsiConnector {
     (__ \ "childFullName").read[String] map LinkResponse.apply
 
   private implicit val readsBalanceResponse: Reads[BalanceResponse] = (
-    (__ \ "accountStatus").read[AccountStatus.Value] ~
+    (__ \ "accountStatus").read[NsiAccountStatus] ~
       (__ \ "topUpAvailable").read[Int] ~
       (__ \ "topUpRemaining").read[Int] ~
       (__ \ "paidIn").read[Int] ~
