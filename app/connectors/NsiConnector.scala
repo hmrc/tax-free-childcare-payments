@@ -16,23 +16,24 @@
 
 package connectors
 
-import models.requests.Payee.{ChildCareProvider, ExternalPaymentProvider}
-import models.requests._
-import models.response.NsiErrorResponse.Maybe
-import models.response.{BalanceResponse, LinkResponse, NsiAccountStatus, PaymentResponse}
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
-import sttp.model.HeaderNames
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import utils.FormattedLogging
-
 import java.net.URL
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+
+import models.requests.Payee.{ChildCareProvider, ExternalPaymentProvider}
+import models.requests._
+import models.response.NsiErrorResponse.Maybe
+import models.response.{BalanceResponse, LinkResponse, NsiAccountStatus, PaymentResponse}
+import sttp.model.HeaderNames
+import utils.FormattedLogging
+
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json._
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HttpReads, HttpResponse}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
 class NsiConnector @Inject() (

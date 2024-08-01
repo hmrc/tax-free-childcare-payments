@@ -16,16 +16,17 @@
 
 package base
 
+import java.time.LocalDate
+import scala.util.Random
+
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Assertion, LoneElement, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.libs.json._
 
-import java.time.LocalDate
-import scala.util.Random
+import play.api.libs.json._
 
 class BaseSpec
     extends AnyWordSpec

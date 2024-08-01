@@ -17,6 +17,7 @@
 package models.request
 
 import org.scalatest.{Assertion, EitherValues, LoneElement}
+
 import play.api.libs.json._
 
 abstract class BaseSpec extends base.BaseSpec with Generators with EitherValues with LoneElement {

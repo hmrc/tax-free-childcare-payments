@@ -16,11 +16,11 @@
 
 package models.requests
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{JsResult, Reads, __}
-
 import java.time.LocalDate
 import scala.util.Try
+
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{JsResult, Reads, __}
 
 final case class LinkRequest(
     sharedRequestData: SharedRequestData,
