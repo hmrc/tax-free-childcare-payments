@@ -109,10 +109,10 @@ The following scenarios relate to all endpoints:
         <td>Online payment provider's registration is not Active</td>
         <td>400<br>
            <pre class="code--block">
-              {
-               "errorCode": "E0030",
-               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information",
-              }
+           {
+            "errorCode": "E0030",
+            "errorDescription": "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information",
+           }
            </pre></td>
     </tr>
     <tr>
@@ -120,10 +120,10 @@ The following scenarios relate to all endpoints:
         <td>Error returned from banking services</td>
         <td>503<br>
            <pre class="code--block">
-              {
-               "errorCode": "E0034",
-               "errorDescription": "The service is unavailable. Please refer to API Documentation for further information.",
-              }
+           {
+            "errorCode": "E0033",
+            "errorDescription": "The TFC account used to request payment contains insufficient funds.",
+           }
            </pre></td>
     </tr>
 </table>
@@ -132,19 +132,19 @@ The following scenarios relate to all endpoints:
 
 <table>
     <tr>
-        <td>outbound_child_payment_ref</td>
-        <td>Scenario</td>
-        <td>Example response</td>
+        <td style="width:33%">outbound_child_payment_ref</td>
+        <td style="width:33%">Scenario</td>
+        <td style="width:33%">Example response</td>
     </tr>
     <tr>
         <td>EEQQ00000TFC</td>
         <td>The given child_dob does not correlate with the provided outbound_child_payment_ref</td>
         <td>400<br>
            <pre class="code--block">
-              {
-               "errorCode": "E0025",
-               "errorDescription": "Request data is invalid or missing. Please refer to API Documentation for further information",
-              }
+            {
+             "errorCode": "E0025",
+             "errorDescription": "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct",
+            }
            </pre></td>
     </tr>
 </table>
@@ -153,19 +153,19 @@ The following scenarios relate to all endpoints:
 
 <table>
     <tr>
-        <td>outbound_child_payment_ref</td>
-        <td>Scenario</td>
-        <td>Example response</td>
+        <td style="width:33%">outbound_child_payment_ref</td>
+        <td style="width:33%">Scenario</td>
+        <td style="width:33%">Example response</td>
     </tr>
     <tr>
         <td>EEUU00000TFC</td>
-        <td>The childcare provider's registration is not Active</td>
+        <td>The childcare provider's registration is not active</td>
         <td>400<br>
            <pre class="code--block">
-              {
-               "errorCode": "E0031",
-               "errorDescription": "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds.",
-              }
+            {
+             "errorCode": "E0031",
+             "errorDescription": "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds.",
+            }
            </pre></td>
     </tr>
     <tr>
@@ -173,10 +173,10 @@ The following scenarios relate to all endpoints:
         <td>Insufficient funds</td>
         <td>400<br>
            <pre class="code--block">
-              {
-               "errorCode": "E0033",
-               "errorDescription": "The TFC account used to request payment contains insufficient funds.",
-              }
+            {
+             "errorCode": "E0033",
+             "errorDescription": "The TFC account used to request payment contains insufficient funds.",
+            }
            </pre></td>
     </tr>
     <tr>
@@ -184,10 +184,10 @@ The following scenarios relate to all endpoints:
         <td>Payments from this TFC account are blocked</td>
         <td>400<br>
            <pre class="code--block">
-              {
-               "errorCode": "E0035",
-               "errorDescription": "There is an issue with this TFC account, please advise parent / carer to contact TFC customer services.",
-              }
+            {
+             "errorCode": "E0035",
+             "errorDescription": "There is an issue with this TFC account, please advise parent / carer to contact TFC customer services.",
+            }
            </pre></td>
     </tr>
 </table>
