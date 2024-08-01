@@ -92,7 +92,7 @@ class ErrorResponseFactorySpec extends BaseSpec
           response.header.status shouldBe expectedStatus
           responseJson \ "errorCode" shouldBe JsDefined(JsString(expectedCode))
 
-          val expectedLogMessage = s"[Error] - [payment] - [null: $expectedLogContent"
+          val expectedLogMessage = s"[Error] - [payment] - [null: $expectedLogContent]"
           checkLog(expectedLogLvl, expectedLogMessage)(logs)
         }
       }
@@ -100,45 +100,45 @@ class ErrorResponseFactorySpec extends BaseSpec
 
   private lazy val linkRequestJsonErrorScenarios = Table(
     ("Invalid Payloads",                   "Expected Error Code", "Expected Error Description"),
-    (linkPayloadsWithInvalidTfcAccountRef, "E0001", "outbound_child_payment_reference is in invalid format or missing"),
-    (linkPayloadsWithMissingTfcAccountRef, "E0001", "outbound_child_payment_reference is in invalid format or missing"),
-    (linkPayloadsWithMissingEppUrn,        "E0002", "epp_reg_reference is in invalid format or missing"),
-    (linkPayloadsWithInvalidEppUrn,        "E0002", "epp_reg_reference is in invalid format or missing"),
-    (linkPayloadsWithMissingEppAccountId,  "E0004", "epp_unique_customer_id is in invalid format or missing is in invalid format or missing"),
-    (linkPayloadsWithInvalidEppAccountId,  "E0004", "epp_unique_customer_id is in invalid format or missing is in invalid format or missing"),
-    (linkPayloadsWithMissingChildDob,      "E0006", "child_date_of_birth is in invalid format or missing"),
-    (linkPayloadsWithNonStringChildDob,    "E0006", "child_date_of_birth is in invalid format or missing"),
-    (linkPayloadsWithNonIso8061ChildDob,   "E0006", "child_date_of_birth is in invalid format or missing")
+    (linkPayloadsWithInvalidTfcAccountRef, "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
+    (linkPayloadsWithMissingTfcAccountRef, "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
+    (linkPayloadsWithMissingEppUrn,        "E0002",               "epp_reg_reference is in invalid format or missing"),
+    (linkPayloadsWithInvalidEppUrn,        "E0002",               "epp_reg_reference is in invalid format or missing"),
+    (linkPayloadsWithMissingEppAccountId,  "E0004",               "epp_unique_customer_id is in invalid format or missing"),
+    (linkPayloadsWithInvalidEppAccountId,  "E0004",               "epp_unique_customer_id is in invalid format or missing"),
+    (linkPayloadsWithMissingChildDob,      "E0006",               "child_date_of_birth is in invalid format or missing"),
+    (linkPayloadsWithNonStringChildDob,    "E0006",               "child_date_of_birth is in invalid format or missing"),
+    (linkPayloadsWithNonIso8061ChildDob,   "E0006",               "child_date_of_birth is in invalid format or missing")
   )
 
   private lazy val balanceRequestJsonErrorScenarios = Table(
-    ("Invalid Payloads",                   "Expected Error Code", "Expected Error Description"),
-    (linkPayloadsWithInvalidTfcAccountRef, "E0001", "outbound_child_payment_reference is in invalid format or missing"),
-    (linkPayloadsWithMissingTfcAccountRef, "E0001", "outbound_child_payment_reference is in invalid format or missing"),
-    (linkPayloadsWithMissingEppUrn,        "E0002", "epp_reg_reference is in invalid format or missing"),
-    (linkPayloadsWithInvalidEppUrn,        "E0002", "epp_reg_reference is in invalid format or missing"),
-    (linkPayloadsWithMissingEppAccountId,  "E0004", "epp_unique_customer_id is in invalid format or missing is in invalid format or missing"),
-    (linkPayloadsWithInvalidEppAccountId,  "E0004", "epp_unique_customer_id is in invalid format or missing is in invalid format or missing")
+    ("Invalid Payloads",                     "Expected Error Code", "Expected Error Description"),
+    (sharedPayloadsWithInvalidTfcAccountRef, "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
+    (sharedPayloadsWithMissingTfcAccountRef, "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
+    (sharedPayloadsWithMissingEppUrn,        "E0002",               "epp_reg_reference is in invalid format or missing"),
+    (sharedPayloadsWithInvalidEppUrn,        "E0002",               "epp_reg_reference is in invalid format or missing"),
+    (sharedPayloadsWithMissingEppAccountId,  "E0004",               "epp_unique_customer_id is in invalid format or missing"),
+    (sharedPayloadsWithInvalidEppAccountId,  "E0004",               "epp_unique_customer_id is in invalid format or missing")
   )
 
   private lazy val paymentRequestJsonErrorScenarios = Table(
     ("Invalid Payloads",                          "Expected Error Code", "Expected Error Description"),
-    (linkPayloadsWithInvalidTfcAccountRef,        "E0001", "outbound_child_payment_reference is in invalid format or missing"),
-    (linkPayloadsWithMissingTfcAccountRef,        "E0001", "outbound_child_payment_reference is in invalid format or missing"),
-    (linkPayloadsWithMissingEppUrn,               "E0002", "epp_reg_reference is in invalid format or missing"),
-    (linkPayloadsWithInvalidEppUrn,               "E0002", "epp_reg_reference is in invalid format or missing"),
-    (linkPayloadsWithMissingEppAccountId,         "E0004", "epp_unique_customer_id is in invalid format or missing is in invalid format or missing"),
-    (linkPayloadsWithInvalidEppAccountId,         "E0004", "epp_unique_customer_id is in invalid format or missing is in invalid format or missing"),
-    (paymentPayloadsWithMissingPayeeType,         "E0007", "payee_type is in invalid format or missing"),
-    (paymentPayloadsWithInvalidPayeeType,         "E0007", "payee_type is in invalid format or missing"),
-    (paymentPayloadsWithMissingCcpUrn,            "E0003", "ccp_reg_reference is in invalid format or missing"),
-    (paymentPayloadsWithInvalidCcpUrn,            "E0003", "ccp_reg_reference is in invalid format or missing"),
-    (paymentPayloadsWithMissingCcpPostcode,       "E0009", "ccp_postcode is in invalid format or missing"),
-    (paymentPayloadsWithInvalidCcpPostcode,       "E0009", "ccp_postcode is in invalid format or missing"),
-    (paymentPayloadsWithMissingPaymentAmount,     "E0008", "payment_amount is in invalid format or missing"),
-    (paymentPayloadsWithFractionalPaymentAmount,  "E0008", "payment_amount is in invalid format or missing"),
-    (paymentPayloadsWithStringPaymentAmount,      "E0008", "payment_amount is in invalid format or missing"),
-    (paymentPayloadsWithNonPositivePaymentAmount, "E0008", "payment_amount is in invalid format or missing")
+    (paymentPayloadsWithInvalidTfcAccountRef,     "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
+    (paymentPayloadsWithMissingTfcAccountRef,     "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
+    (paymentPayloadsWithMissingEppUrn,            "E0002",               "epp_reg_reference is in invalid format or missing"),
+    (paymentPayloadsWithInvalidEppUrn,            "E0002",               "epp_reg_reference is in invalid format or missing"),
+    (paymentPayloadsWithMissingEppAccountId,      "E0004",               "epp_unique_customer_id is in invalid format or missing"),
+    (paymentPayloadsWithInvalidEppAccountId,      "E0004",               "epp_unique_customer_id is in invalid format or missing"),
+    (paymentPayloadsWithMissingPayeeType,         "E0007",               "payee_type is in invalid format or missing"),
+    (paymentPayloadsWithInvalidPayeeType,         "E0007",               "payee_type is in invalid format or missing"),
+    (paymentPayloadsWithMissingCcpUrn,            "E0003",               "ccp_reg_reference is in invalid format or missing"),
+    (paymentPayloadsWithInvalidCcpUrn,            "E0003",               "ccp_reg_reference is in invalid format or missing"),
+    (paymentPayloadsWithMissingCcpPostcode,       "E0009",               "ccp_postcode is in invalid format or missing"),
+    (paymentPayloadsWithInvalidCcpPostcode,       "E0009",               "ccp_postcode is in invalid format or missing"),
+    (paymentPayloadsWithMissingPaymentAmount,     "E0008",               "payment_amount is in invalid format or missing"),
+    (paymentPayloadsWithFractionalPaymentAmount,  "E0008",               "payment_amount is in invalid format or missing"),
+    (paymentPayloadsWithStringPaymentAmount,      "E0008",               "payment_amount is in invalid format or missing"),
+    (paymentPayloadsWithNonPositivePaymentAmount, "E0008",               "payment_amount is in invalid format or missing")
   )
 
   private lazy val nsiErrorScenarios = Table(
