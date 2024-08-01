@@ -23,7 +23,6 @@ import models.response.NsiErrorResponse._
 import org.apache.pekko.actor.ActorSystem
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
-
 import play.api.Logger
 import play.api.http.Status
 import play.api.libs.json.{JsDefined, JsString, Json}
@@ -93,10 +92,7 @@ class ErrorResponseFactorySpec extends BaseSpec
           response.header.status shouldBe expectedStatus
           responseJson \ "errorCode" shouldBe JsDefined(JsString(expectedCode))
 
-          checkLog(
-            expectedLogLvl,
-            expectedMessage = expectedLogMsg
-          )(logs)
+          checkLog(expectedLogLvl, expectedLogMsg)(logs)
         }
       }
   }

@@ -9,6 +9,7 @@ ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" 
 
 lazy val microservice = Project("tax-free-childcare-payments", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
+  .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(CodeCoverageSettings.settings *)
   .settings(
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
