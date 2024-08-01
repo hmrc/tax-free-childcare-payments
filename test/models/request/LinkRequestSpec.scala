@@ -19,6 +19,7 @@ package models.request
 import models.requests.LinkRequest
 import models.requests.LinkRequest.CHILD_DOB_KEY
 import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
+
 import play.api.libs.json.{JsPath, JsonValidationError, KeyPathNode}
 
 class LinkRequestSpec extends BaseSpec {

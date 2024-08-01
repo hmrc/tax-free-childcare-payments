@@ -61,7 +61,7 @@ object NsiMakePayment201Scenario extends Generators {
       childAccountPaymentRef <- nonEmptyAlphaNumStrings
       eppURN                 <- nonEmptyAlphaNumStrings
       eppAccount             <- nonEmptyAlphaNumStrings
-      parentNino             <- ninos
+      parentNino             <- randomNinos
       payee                <- payees
       amount                 <- Gen.chooseNum(0, Int.MaxValue)
       expectedResponse       <- paymentResponses

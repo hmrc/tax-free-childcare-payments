@@ -40,7 +40,7 @@ trait Generators {
 
   private lazy val MAX_PARAM_LEN = 16
 
-  protected lazy val ninos: Gen[String] = for {
+  protected lazy val randomNinos: Gen[String] = for {
     char0  <- Gen.alphaUpperChar
     char1  <- Gen.alphaUpperChar
     digits <- Gen.listOfN(6, Gen.numChar)

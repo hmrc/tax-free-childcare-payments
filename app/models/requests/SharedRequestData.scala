@@ -35,8 +35,8 @@ object SharedRequestData extends ConstraintReads {
   )(apply _)
 
   lazy val TFC_ACCOUNT_REF_KEY = "outbound_child_payment_ref"
-  lazy val EPP_URN_KEY = "epp_reg_reference"
-  lazy val EPP_ACCOUNT_ID_KEY = "epp_unique_customer_id"
+  lazy val EPP_URN_KEY         = "epp_reg_reference"
+  lazy val EPP_ACCOUNT_ID_KEY  = "epp_unique_customer_id"
 
   private lazy val NonEmptyAlphaNumStringReads = pattern("[a-zA-Z0-9]{1,255}".r)
   private lazy val TfcAccountRefReads          = pattern("[a-zA-Z]{4}[0-9]{5}TFC".r)
