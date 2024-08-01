@@ -49,7 +49,6 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
   </tr>
   <tr>
     <td>AAAA00000TFC <br>
-      <br>AABB00000TFC <br>
       <br>AACC00000TFC <br>
       <br>AADD00000TFC
     </td>
@@ -57,6 +56,22 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
       <br><pre class="code--block">
         {
           "tfc_account_status": "ACTIVE",
+          "government_top_up": 14159,
+          "top_up_allowance": 26535,
+          "paid_in_by_you": 89793,
+          "total_balance": 23846
+          "cleared_funds": 26433
+        }
+        </pre>
+      </td>
+  </tr>
+  <tr>
+    <td>AABB00000TFC
+    </td>
+    <td>Returns the following: <br>
+      <br><pre class="code--block">
+        {
+          "tfc_account_status": "INACTIVE",
           "government_top_up": 14159,
           "top_up_allowance": 26535,
           "paid_in_by_you": 89793,
@@ -116,13 +131,13 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <td>EEXX00000TFC</td>
-        <td>Error returned from banking services</td>
+        <td>EEBE00000TFC</td>
+        <td>Internal server error</td>
         <td>503<br>
            <pre class="code--block">
            {
-            "errorCode": "E0033",
-            "errorDescription": "The TFC account used to request payment contains insufficient funds.",
+            "errorCode": "E9000",
+            "errorDescription": "The service is currently unavailable.",
            }
            </pre></td>
     </tr>
