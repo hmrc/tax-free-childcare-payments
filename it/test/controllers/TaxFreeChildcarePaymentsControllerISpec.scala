@@ -16,22 +16,27 @@
 
 package controllers
 
-import base.{BaseISpec, NsiStubs}
+import base.{AuthStubs, BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.requests.LinkRequest.CHILD_DOB_KEY
 import models.requests.Payee.PAYEE_TYPE_KEY
 import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
+import models.requests.SharedRequestData.TFC_ACCOUNT_REF_KEY
 import org.scalatest.Assertion
 import play.api.Logger
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.Json
 import play.api.libs.ws.WSResponse
 import utils.ErrorResponseFactory
 
 import java.util.UUID
 import scala.util.matching.Regex
 
-class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs with models.request.Generators {
+class TaxFreeChildcarePaymentsControllerISpec
+  extends BaseISpec
+    with AuthStubs
+    with NsiStubs
+    with models.request.Generators {
   import org.scalacheck.Gen
 
   "POST /link" should {
@@ -64,6 +69,46 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
               resCorrelationId shouldBe expectedCorrelationId
               response.json shouldBe expectedTfcResponseBody
             }
+          }
+        }
+    }
+
+    "respond 400 with errorCode E0001 and expected errorDescription" when {
+      val expectedErrorDesc = s"$TFC_ACCOUNT_REF_KEY is in invalid format or missing"
+
+      "TFC account ref is missing" in
+        forAll(Gen.uuid, randomNinos, linkPayloadsWithMissingTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
+          withClient { wsClient =>
+            stubAuthRetrievalOf(nino)
+
+            val response = wsClient
+              .url(s"$baseUrl/link")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
+          }
+        }
+
+      "TFC account ref is invalid" in
+        forAll(Gen.uuid, randomNinos, linkPayloadsWithInvalidTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
+          withClient { wsClient =>
+            stubAuthRetrievalOf(nino)
+
+            val response = wsClient
+              .url(s"$baseUrl/link")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
           }
         }
     }
@@ -235,6 +280,46 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       }
     }
 
+    "respond 400 with errorCode E0001 and expected errorDescription" when {
+      val expectedErrorDesc = s"$TFC_ACCOUNT_REF_KEY is in invalid format or missing"
+
+      "TFC account ref is missing" in
+        forAll(Gen.uuid, randomNinos, sharedPayloadsWithMissingTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
+          withClient { wsClient =>
+            stubAuthRetrievalOf(nino)
+
+            val response = wsClient
+              .url(s"$baseUrl/balance")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
+          }
+        }
+
+      "TFC account ref is invalid" in
+        forAll(Gen.uuid, randomNinos, sharedPayloadsWithInvalidTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
+          withClient { wsClient =>
+            stubAuthRetrievalOf(nino)
+
+            val response = wsClient
+              .url(s"$baseUrl/balance")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
+          }
+        }
+    }
+
     "respond with status 502, errorCode ETFC3" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK with unknown account status" in
         withClient { wsClient =>
@@ -333,6 +418,46 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
           res.json shouldBe expectedTfcResponseBody
         }
       }
+    }
+
+    "respond 400 with errorCode E0001 and expected errorDescription" when {
+      val expectedErrorDesc = s"$TFC_ACCOUNT_REF_KEY is in invalid format or missing"
+
+      "TFC account ref is missing" in
+        forAll(Gen.uuid, randomNinos, paymentPayloadsWithMissingTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
+          withClient { wsClient =>
+            stubAuthRetrievalOf(nino)
+
+            val response = wsClient
+              .url(s"$baseUrl/")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
+          }
+        }
+
+      "TFC account ref is invalid" in
+        forAll(Gen.uuid, randomNinos, paymentPayloadsWithInvalidTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
+          withClient { wsClient =>
+            stubAuthRetrievalOf(nino)
+
+            val response = wsClient
+              .url(s"$baseUrl/")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
+          }
+        }
     }
 
     "respond 400 with errorCode E0007 and expected errorDescription" when {
@@ -475,14 +600,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
     (SERVICE_UNAVAILABLE,   "E8001",          SERVICE_UNAVAILABLE)
   )
 
-  private val sharedBadRequestScenarios = Table(
-    ("Field",                      "Bad Value"),
-    ("epp_unique_customer_id",     "I am a bad customer ID."),
-    ("epp_reg_reference",          "I am a bad registration reference"),
-    ("outbound_child_payment_ref", "I am a bad payment reference.")
-  )
-
-  forAll(endpoints) { (name, tfc_url, nsiMapping, validPayload) =>
+  forAll(endpoints) { (_, tfc_url, nsiMapping, validPayload) =>
     s"POST $tfc_url" should {
       "respond 400 with errorCode ETFC1 and expected errorDescription" when {
         "correlation ID is missing" in withClient { ws =>
@@ -532,31 +650,6 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
 
           checkErrorResponse(response, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_500_ERROR_DESCRIPTION)
         }
-      }
-
-      "respond 400 with errorCode E0000 and errorDescription" when {
-        "one of the shared JSON fields is invalid" in
-          forAll(sharedBadRequestScenarios) { (field, badValue) =>
-            val expectedCorrelationId = UUID.randomUUID().toString
-
-            withClient { ws =>
-              val invalidPayload = validPayload + (field -> JsString(badValue))
-
-              withAuthNinoRetrievalExpectLog(name, expectedCorrelationId) {
-                val response = ws
-                  .url(s"$baseUrl$tfc_url")
-                  .withHttpHeaders(
-                    AUTHORIZATION  -> "Bearer qwertyuiop",
-                    CORRELATION_ID -> expectedCorrelationId
-                  )
-                  .post(invalidPayload)
-                  .futureValue
-
-                response.status shouldBe BAD_REQUEST
-                checkErrorJson(response.json, "E0000", EXPECTED_400_ERROR_DESCRIPTION)
-              }
-            }
-          }
       }
 
       forAll(nsiErrorScenarios) {
