@@ -20,6 +20,7 @@ import base.{BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.requests.LinkRequest.CHILD_DOB_KEY
+import models.requests.Payee.PAYEE_TYPE_KEY
 import org.scalatest.Assertion
 import play.api.Logger
 import play.api.libs.json.{JsString, Json}
@@ -333,58 +334,43 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
       }
     }
 
-    """respond 400 and errorMessage "payee_type did not match 'CCP'""""" when {
-      "payee type is set to lowercase ccp" in withClient { ws =>
-        withAuthNinoRetrieval {
-          val expectedCorrelationId = UUID.randomUUID()
-          val expectedPaymentRef = randomOutboundChildPaymentRef
-          val expectedPaymentDate = randomPaymentDate
+    "respond 400 with errorCode E0007 and expected errorDescription" when {
+      val expectedErrorDesc = s"$PAYEE_TYPE_KEY is in invalid format or missing"
 
-          val expectedNsiResponseBody = Json.obj(
-            "paymentReference" -> expectedPaymentRef,
-            "paymentDate"      -> expectedPaymentDate
-          )
+      "payee type is missing" in
+        forAll(Gen.uuid, paymentPayloadsWithMissingPayeeType) { (expectedCorrelationId, payload) =>
+          withClient { ws =>
+            withAuthNinoRetrieval {
+              val response = ws
+                .url(s"$baseUrl/")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
 
-          stubNsiMakePayment201(expectedNsiResponseBody)
-
-          val response = ws
-            .url(s"$baseUrl/")
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
-            )
-            .post(validPaymentRequestWithPayeeTypeSetToccp.sample.get)
-            .futureValue
-
-          checkErrorResponse(response, BAD_REQUEST, "E0022", EXPECTED_400_ERROR_DESCRIPTION)
+              checkErrorResponse(response, BAD_REQUEST, "E0007", expectedErrorDesc)
+            }
+          }
         }
-      }
+      "payee type is invalid" in
+        forAll(Gen.uuid, paymentPayloadsWithInvalidPayeeType) { (expectedCorrelationId, payload) =>
+          withClient { ws =>
+            withAuthNinoRetrieval {
+              val response = ws
+                .url(s"$baseUrl/")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
 
-      "payee type is set to EPP" in withClient { ws =>
-        withAuthNinoRetrieval {
-          val expectedCorrelationId = UUID.randomUUID()
-          val expectedPaymentRef = randomOutboundChildPaymentRef
-          val expectedPaymentDate = randomPaymentDate
-
-          val expectedNsiResponseBody = Json.obj(
-            "paymentReference" -> expectedPaymentRef,
-            "paymentDate"      -> expectedPaymentDate
-          )
-
-          stubNsiMakePayment201(expectedNsiResponseBody)
-
-          val response = ws
-            .url(s"$baseUrl/")
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
-            )
-            .post(validEppPaymentRequestWithPayeeTypeSetToEPP.sample.get)
-            .futureValue
-
-          checkErrorResponse(response, BAD_REQUEST, "E0022", EXPECTED_400_ERROR_DESCRIPTION)
+              checkErrorResponse(response, BAD_REQUEST, "E0007", expectedErrorDesc)
+            }
+          }
         }
-      }
     }
 
     "respond 400 with E0023" when {
