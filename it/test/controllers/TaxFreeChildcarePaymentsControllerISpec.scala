@@ -21,6 +21,7 @@ import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
 import models.requests.LinkRequest.CHILD_DOB_KEY
 import models.requests.Payee.PAYEE_TYPE_KEY
+import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
 import org.scalatest.Assertion
 import play.api.Logger
 import play.api.libs.json.{JsString, Json}
@@ -373,11 +374,11 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
         }
     }
 
-    "respond 400 with E0023" when {
-      val expectedCorrelationId = UUID.randomUUID()
+    "respond 400 with E0008 and expected errorDescription" when {
+      val expectedErrorDesc = s"$PAYMENT_AMOUNT_KEY is in invalid format or missing"
 
       "payment amount is fractional" in
-        forAll(paymentPayloadsWithFractionalPaymentAmount) { payload =>
+        forAll(Gen.uuid, paymentPayloadsWithFractionalPaymentAmount) { (expectedCorrelationId, payload) =>
           withClient { ws =>
             withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
               val res = ws
@@ -389,13 +390,13 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
                 .post(payload)
                 .futureValue
 
-              checkErrorResponse(res, BAD_REQUEST, "E0023", EXPECTED_400_ERROR_DESCRIPTION)
+              checkErrorResponse(res, BAD_REQUEST, "E0008", expectedErrorDesc)
             }
           }
         }
 
       "payment amount is a string" in
-        forAll(paymentPayloadsWithStringPaymentAmount) { payload =>
+        forAll(Gen.uuid, paymentPayloadsWithFractionalPaymentAmount) { (expectedCorrelationId, payload) =>
           withClient { ws =>
             withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
               val res = ws
@@ -407,13 +408,13 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
                 .post(payload)
                 .futureValue
 
-              checkErrorResponse(res, BAD_REQUEST, "E0023", EXPECTED_400_ERROR_DESCRIPTION)
+              checkErrorResponse(res, BAD_REQUEST, "E0008", expectedErrorDesc)
             }
           }
         }
 
       "payment amount is non-positive" in
-        forAll(paymentPayloadsWithNonPositivePaymentAmount) { payload =>
+        forAll(Gen.uuid, paymentPayloadsWithNonPositivePaymentAmount) { (expectedCorrelationId, payload) =>
           withClient { ws =>
             withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
               val res = ws
@@ -425,7 +426,7 @@ class TaxFreeChildcarePaymentsControllerISpec extends BaseISpec with NsiStubs wi
                 .post(payload)
                 .futureValue
 
-              checkErrorResponse(res, BAD_REQUEST, "E0023", EXPECTED_400_ERROR_DESCRIPTION)
+              checkErrorResponse(res, BAD_REQUEST, "E0008", expectedErrorDesc)
             }
           }
         }
