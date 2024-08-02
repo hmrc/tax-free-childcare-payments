@@ -45,7 +45,7 @@ object ErrorResponseFactory extends ErrorDescriptions with FormattedLogging {
     }
 
     new Status(nsiErrorResponse.reportAs)(
-      getJson(errorCode, descriptions(nsiErrorResponse.reportAs))
+      getJson(errorCode, nsiErrorResponse.message)
     )
   }
 
