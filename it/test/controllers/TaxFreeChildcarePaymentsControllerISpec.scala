@@ -33,7 +33,7 @@ import java.util.UUID
 import scala.util.matching.Regex
 
 class TaxFreeChildcarePaymentsControllerISpec
-  extends BaseISpec
+    extends BaseISpec
     with AuthStubs
     with NsiStubs
     with models.request.Generators {
@@ -84,7 +84,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             val response = wsClient
               .url(s"$baseUrl/link")
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
               )
               .post(payload)
@@ -102,7 +102,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             val response = wsClient
               .url(s"$baseUrl/link")
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
               )
               .post(payload)
@@ -172,23 +172,24 @@ class TaxFreeChildcarePaymentsControllerISpec
     }
 
     "respond 400 with errorCode E0024 and expected errorDescription" when {
+      val expectedErrorDesc = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
+
       "NSI responds 400 with errorCode E0024" in
         forAll(Gen.uuid, validLinkPayloads, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
+          stubAuthRetrievalOf(randomNinos.sample.get)
           stubNsiLinkAccountsError(BAD_REQUEST, "E0024", errorDesc)
 
           withClient { wsClient =>
-            withAuthNinoRetrieval {
-              val response = wsClient
-                .url(s"$baseUrl/link")
-                .withHttpHeaders(
-                  AUTHORIZATION  -> "Bearer qwertyuiop",
-                  CORRELATION_ID -> expectedCorrelationId.toString
-                )
-                .post(payload)
-                .futureValue
+            val response = wsClient
+              .url(s"$baseUrl/link")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
 
-              checkErrorResponse(response, BAD_REQUEST, "E0024", EXPECTED_400_ERROR_DESCRIPTION)
-            }
+            checkErrorResponse(response, BAD_REQUEST, "E0024", expectedErrorDesc)
           }
         }
     }
@@ -239,7 +240,8 @@ class TaxFreeChildcarePaymentsControllerISpec
   }
 
   "POST /balance" should {
-    s"respond with status $OK and correct JSON body" when {
+
+    s"respond with status 200 and correct JSON body" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withClient { wsClient =>
         withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
@@ -291,7 +293,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             val response = wsClient
               .url(s"$baseUrl/balance")
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
               )
               .post(payload)
@@ -309,13 +311,36 @@ class TaxFreeChildcarePaymentsControllerISpec
             val response = wsClient
               .url(s"$baseUrl/balance")
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
               )
               .post(payload)
               .futureValue
 
             checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
+          }
+        }
+    }
+
+    "response 400 with errorCode E0024 and expected errorDescription" when {
+      val expectedErrorDesc = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
+
+      "NSI responds 400 with errorCode E0024" in
+        forAll(Gen.uuid, validCheckBalanceRequestPayloads, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
+          stubAuthRetrievalOf(randomNinos.sample.get)
+          stubNsiCheckBalanceError(BAD_REQUEST, "E0024", errorDesc)
+
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/balance")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0024", expectedErrorDesc)
           }
         }
     }
@@ -431,7 +456,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             val response = wsClient
               .url(s"$baseUrl/")
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
               )
               .post(payload)
@@ -449,7 +474,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             val response = wsClient
               .url(s"$baseUrl/")
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
               )
               .post(payload)
@@ -495,6 +520,29 @@ class TaxFreeChildcarePaymentsControllerISpec
 
               checkErrorResponse(response, BAD_REQUEST, "E0007", expectedErrorDesc)
             }
+          }
+        }
+    }
+
+    "response 400 with errorCode E0024 and expected errorDescription" when {
+      val expectedErrorDesc = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
+
+      "NSI responds 400 with errorCode E0024" in
+        forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
+          stubAuthRetrievalOf(randomNinos.sample.get)
+          stubNsiMakePaymentError(BAD_REQUEST, "E0024", errorDesc)
+
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0024", expectedErrorDesc)
           }
         }
     }
