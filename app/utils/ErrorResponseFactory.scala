@@ -27,16 +27,11 @@ import play.api.mvc.{RequestHeader, Result}
 
 object ErrorResponseFactory extends ErrorDescriptions with FormattedLogging {
 
-  // noinspection ScalaStyle
-  def getJson(errors: collection.Seq[(JsPath, collection.Seq[JsonValidationError])]): JsValue =
-    errors.head match {
-      case (JsPath(KeyPathNode(key) :: Nil), error) =>
-        JSON_VALIDATION_ERROR_CODES get key match {
-          case Some(errorCode) => getJson(errorCode, s"$key is in invalid format or missing")
-          case None            => getJson("E0000", (key, error).toString)
-        }
-      case otherJsonError                           => getJson("E0000", otherJsonError.toString)
-    }
+  def getJson(errors: collection.Seq[(JsPath, collection.Seq[JsonValidationError])]): JsValue = {
+    val (JsPath(KeyPathNode(key) :: Nil), _) = errors.head
+    val errorCode = JSON_VALIDATION_ERROR_CODES(key)
+    getJson(errorCode, s"$key is in invalid format or missing")
+  }
 
   def getResult(nsiErrorResponse: NsiErrorResponse)(implicit req: RequestHeader): Result = {
     val errorCode = nsiErrorResponse.toString

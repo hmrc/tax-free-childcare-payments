@@ -100,8 +100,8 @@ class ErrorResponseFactorySpec extends BaseSpec
 
   private lazy val linkRequestJsonErrorScenarios = Table(
     ("Invalid Payloads",                   "Expected Error Code", "Expected Error Description"),
-    (linkPayloadsWithInvalidTfcAccountRef, "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
     (linkPayloadsWithMissingTfcAccountRef, "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
+    (linkPayloadsWithInvalidTfcAccountRef, "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
     (linkPayloadsWithMissingEppUrn,        "E0002",               "epp_reg_reference is in invalid format or missing"),
     (linkPayloadsWithInvalidEppUrn,        "E0002",               "epp_reg_reference is in invalid format or missing"),
     (linkPayloadsWithMissingEppAccountId,  "E0004",               "epp_unique_customer_id is in invalid format or missing"),
