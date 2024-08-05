@@ -17,17 +17,13 @@
 package utils
 
 import base.BaseSpec
-import ch.qos.logback.classic.Level
 import models.requests.{LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse._
 import org.apache.pekko.actor.ActorSystem
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
-import play.api.Logger
 import play.api.http.Status
-import play.api.libs.json.{JsDefined, JsString, Json}
-import play.api.mvc.RequestHeader
-import play.api.test.FakeRequest
+import play.api.libs.json.Json
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 class ErrorResponseFactorySpec extends BaseSpec
@@ -37,9 +33,6 @@ class ErrorResponseFactorySpec extends BaseSpec
     with Status
     with ScalaFutures {
   private implicit val as: ActorSystem = ActorSystem(getClass.getSimpleName)
-  private implicit val rh: RequestHeader = FakeRequest()
-
-  private val expectedLogger = Logger(classOf[ErrorResponseFactory.type])
 
   "method getJson" should {
     "return expected errorCode and errorDescription" when {
@@ -83,18 +76,17 @@ class ErrorResponseFactorySpec extends BaseSpec
 
   "method getResult" should {
     "return expected status, errorCode, errorDescription and log expected message" in
-      forAll(nsiErrorScenarios) { (nsiError, expectedStatus, expectedCode, expectedLogLvl, expectedLogContent) =>
-        withCaptureOfLoggingFrom(expectedLogger) { logs =>
-          val response = ErrorResponseFactory getResult nsiError
-          val responseBody = response.body.consumeData.futureValue.toArray
-          val responseJson = Json parse responseBody
+      forAll(nsiErrorScenarios) { (nsiError, expectedStatus, expectedErrorCode, expectedErrorDescription) =>
+        val response = ErrorResponseFactory getResult nsiError
+        val responseBody = response.body.consumeData.futureValue.toArray
+        val responseJson = Json parse responseBody
 
-          response.header.status shouldBe expectedStatus
-          responseJson \ "errorCode" shouldBe JsDefined(JsString(expectedCode))
-
-          val expectedLogMessage = s"[Error] - [payment] - [null: $expectedLogContent]"
-          checkLoneLog(expectedLogLvl, expectedLogMessage)(logs)
-        }
+        response.header.status shouldBe expectedStatus
+        checkErrorJson(
+          responseJson,
+          expectedErrorCode,
+          expectedErrorDescription
+        )
       }
   }
 
@@ -142,38 +134,40 @@ class ErrorResponseFactorySpec extends BaseSpec
   )
 
   private lazy val nsiErrorScenarios = Table(
-    ("Error", "Expected Status",     "Code",  "Log Level", "Expected Log Content"),
-    (E0000,   INTERNAL_SERVER_ERROR, "E0000", Level.WARN,  "E0000 - Invalid input data"),
-    (E0001,   INTERNAL_SERVER_ERROR, "E0001", Level.WARN,  "E0001 - childAccountPaymentRef is missing"),
-    (E0002,   INTERNAL_SERVER_ERROR, "E0002", Level.WARN,  "E0002 - eppURN is missing"),
-    (E0003,   INTERNAL_SERVER_ERROR, "E0003", Level.WARN,  "E0003 - ccpURN is missing"),
-    (E0004,   INTERNAL_SERVER_ERROR, "E0004", Level.WARN,  "E0004 - eppAccount is missing"),
-    (E0005,   INTERNAL_SERVER_ERROR, "E0005", Level.WARN,  "E0005 - parentNino is missing"),
-    (E0006,   INTERNAL_SERVER_ERROR, "E0006", Level.WARN,  "E0006 - childDob is missing"),
-    (E0007,   INTERNAL_SERVER_ERROR, "E0007", Level.WARN,  "E0007 - payeeType is missing"),
-    (E0008,   INTERNAL_SERVER_ERROR, "E0008", Level.WARN,  "E0008 - amount is missing"),
-    (E0020,   BAD_GATEWAY,           "E0020", Level.WARN,  "E0020 - parentNino does not match expected format (AANNNNNNA)"),
-    (E0021,   INTERNAL_SERVER_ERROR, "E0021", Level.WARN,  "E0021 - childDob does not match expected format (YYYY-MM-DD)"),
-    (E0022,   INTERNAL_SERVER_ERROR, "E0022", Level.WARN,  "E0022 - payeeType value should be one of ['CCP','EPP']"),
-    (E0023,   INTERNAL_SERVER_ERROR, "E0023", Level.WARN,  "E0023 - amount most be a number"),
-    (E0024,   BAD_REQUEST,           "E0024", Level.INFO,  "E0024 - eppAccount does not correlate with the provided eppURN"),
-    (E0025,   BAD_REQUEST,           "E0025", Level.INFO,  "E0025 - childDob does not correlate with the provided childAccountPaymentRef"),
-    (E0026,   BAD_REQUEST,           "E0026", Level.INFO,  "E0026 - childAccountPaymentRef is not related to parentNino"),
-    (E0401,   INTERNAL_SERVER_ERROR, "E0401", Level.WARN,  "E0401 - Authentication information is missing or invalid"),
-    (E0030,   BAD_REQUEST,           "E0030", Level.INFO,  "E0030 - EPP is not Active"),
-    (E0031,   BAD_REQUEST,           "E0031", Level.INFO,  "E0031 - CCP is not Active"),
-    (E0032,   BAD_REQUEST,           "E0032", Level.INFO,  "E0032 - EPP is not linked to Child Account"),
-    (E0033,   BAD_REQUEST,           "E0033", Level.INFO,  "E0033 - Insufficient funds"),
-    (E0034,   SERVICE_UNAVAILABLE,   "E0034", Level.WARN,  "E0034 - Error returned from banking services"),
-    (E0035,   BAD_REQUEST,           "E0035", Level.INFO,  "E0035 - Payments from this TFC account are blocked"),
-    (E0040,   BAD_REQUEST,           "E0040", Level.INFO,  "E0040 - childAccountPaymentRef not found"),
-    (E0041,   BAD_REQUEST,           "E0041", Level.INFO,  "E0041 - eppURN not found"),
-    (E0042,   BAD_REQUEST,           "E0042", Level.INFO,  "E0042 - ccpURN not found"),
-    (E0043,   BAD_REQUEST,           "E0043", Level.INFO,  "E0043 - parentNino not found"),
-    (E9000,   SERVICE_UNAVAILABLE,   "E9000", Level.WARN,  "E9000 - Internal server error"),
-    (E9999,   SERVICE_UNAVAILABLE,   "E9999", Level.WARN,  "E9999 - Error during execution"),
-    (E8000,   SERVICE_UNAVAILABLE,   "E8000", Level.WARN,  "E8000 - Service not available"),
-    (E8001,   SERVICE_UNAVAILABLE,   "E8001", Level.WARN,  "E8001 - Service not available due to lack of connection to provider"),
-    (ETFC3,   BAD_GATEWAY,           "ETFC3", Level.WARN,  "ETFC3 - Unexpected NSI response")
+    ("Error", "Expected Status",     "Expected Error Code", "Expected Error Description"),
+    (E0000,   INTERNAL_SERVER_ERROR, "E0000",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0001,   INTERNAL_SERVER_ERROR, "E0001",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0002,   INTERNAL_SERVER_ERROR, "E0002",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0003,   INTERNAL_SERVER_ERROR, "E0003",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0004,   INTERNAL_SERVER_ERROR, "E0004",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0005,   INTERNAL_SERVER_ERROR, "E0005",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0006,   INTERNAL_SERVER_ERROR, "E0006",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0007,   INTERNAL_SERVER_ERROR, "E0007",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0008,   INTERNAL_SERVER_ERROR, "E0008",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0020,   BAD_GATEWAY,           "E0020",               "Bad Gateway"),
+    (E0021,   INTERNAL_SERVER_ERROR, "E0021",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0022,   INTERNAL_SERVER_ERROR, "E0022",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0023,   INTERNAL_SERVER_ERROR, "E0023",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0024,   BAD_REQUEST,           "E0024",               "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"),
+    (E0025,   BAD_REQUEST,           "E0025",               "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct"),
+    (E0026,   BAD_REQUEST,           "E0026",               "Please check the outbound_child_payment_ref supplied"),
+    (E0401,   INTERNAL_SERVER_ERROR, "E0401",               "We encountered an error on our servers and did not process your request, please try again later."),
+    (E0030,   BAD_REQUEST,           "E0030",               "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information"),
+    (E0031,   BAD_REQUEST,           "E0031",               "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds."),
+    (E0032,   BAD_REQUEST,           "E0032",               "TBD"),
+    (E0033,   BAD_REQUEST,           "E0033",               "The TFC account used to request payment contains insufficient funds."),
+    (E0034,   SERVICE_UNAVAILABLE,   "E0034",               "The service is currently unavailable."),
+    (E0035,   BAD_REQUEST,           "E0035",               "There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services"),
+    (E0036,   BAD_REQUEST,           "E0036",               "Error processing payment due to Payee bank details"),
+    (E0040,   BAD_REQUEST,           "E0040",               "The outbound_child_payment_ref could not be found in the TFC system - please ensure parent checks their details and tries again."),
+    (E0041,   BAD_REQUEST,           "E0041",               "The epp_reg_reference could not be found in the TFC system. Please check the details and try again."),
+    (E0042,   BAD_REQUEST,           "E0042",               "The ccp_reg_reference could not be found in the TFC system or does not correlate with the ccp_postcode. Please check the details and try again."),
+    (E0043,   BAD_REQUEST,           "E0043",               "Parent associated with the bearer token does not have a TFC account. Please ask the parent to create a TFC account first."),
+    (E9000,   SERVICE_UNAVAILABLE,   "E9000",               "The service is currently unavailable."),
+    (E9999,   SERVICE_UNAVAILABLE,   "E9999",               "The service is currently unavailable."),
+    (E8000,   SERVICE_UNAVAILABLE,   "E8000",               "The service is currently unavailable."),
+    (E8001,   SERVICE_UNAVAILABLE,   "E8001",               "The service is currently unavailable."),
+    (ETFC3,   BAD_GATEWAY,           "ETFC3",               "Bad Gateway"),
+    (ETFC4,   BAD_GATEWAY,           "ETFC4",               "Bad Gateway")
   )
 }
