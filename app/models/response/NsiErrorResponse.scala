@@ -41,6 +41,7 @@ object NsiErrorResponse extends Status {
   case object E0024 extends NsiErrorResponse(BAD_REQUEST, "Please check that the epp_reg_reference and epp_unique_customer_id are both correct")
   case object E0025 extends NsiErrorResponse(BAD_REQUEST, "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct")
   case object E0026 extends NsiErrorResponse(BAD_REQUEST, "Please check the outbound_child_payment_ref supplied")
+  case object E0027 extends NsiErrorResponse(BAD_REQUEST, "Please check the outbound_child_payment_ref supplied")
 
   case object E0401 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
 

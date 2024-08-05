@@ -22,7 +22,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.scenarios._
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
-import models.response.NsiErrorResponse.{E0001, E0024, ETFC3, ETFC4}
+import models.response.NsiErrorResponse._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Gen, Shrink}
 import org.scalatest.EitherValues
@@ -168,7 +168,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
   }
 
   "method makePayment" should {
-    s"respond $OK with a defined PaymentResponse" when {
+    "return Right PaymentResponse" when {
       s"NSI responds $CREATED with expected JSON format" in
         forAll { scenario: NsiMakePayment201Scenario =>
           stubNsiMakePayment201(scenario.expectedRequestJson)
@@ -179,6 +179,31 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
 
           actualResponse shouldBe scenario.expectedResponse
           WireMock.verify(postRequestedFor(nsiPaymentUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
+        }
+    }
+
+    "return Left E0027 and log errorDescription" when {
+      "NSI responds with error status, errorCode E0027, and defined errorDescription" in
+        forAll(
+          arbitrary[IdentifierRequest[PaymentRequest]],
+          Gen.asciiPrintableStr
+        ) {
+          (request, expectedErrorDescription) =>
+            withCaptureOfLoggingFrom(LOGGER) { logs =>
+              val expectedStatus = randomHttpErrorCodes.sample.get
+              stubNsiMakePaymentError(expectedStatus, "E0027", expectedErrorDescription)
+
+              val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
+
+              actualNsiErrorResponse shouldBe E0027
+
+              val expectedResponseJson = Json.obj("errorCode" -> "E0027", "errorDescription" -> expectedErrorDescription)
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
+              checkLoneLog(
+                expectedLevel = Level.INFO,
+                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+              )(logs)
+            }
         }
     }
 
