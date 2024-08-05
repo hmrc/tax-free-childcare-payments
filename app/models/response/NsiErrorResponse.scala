@@ -16,12 +16,13 @@
 
 package models.response
 
+import enumeratum._
 import play.api.http.Status
 import play.api.libs.json.{__, Reads}
 
-sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String)
+sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String) extends EnumEntry
 
-object NsiErrorResponse extends Status {
+object NsiErrorResponse extends Enum[NsiErrorResponse] with Status {
   type Maybe[A] = Either[NsiErrorResponse, A]
 
   case object E0000 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
@@ -66,41 +67,7 @@ object NsiErrorResponse extends Status {
   case object ETFC3 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway") // Unexpected NSI response
   case object ETFC4 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway") // Unexpected NSI errorCode
 
-  private val values = Set(
-    E0000,
-    E0001,
-    E0002,
-    E0003,
-    E0004,
-    E0005,
-    E0006,
-    E0007,
-    E0008,
-    E0020,
-    E0021,
-    E0022,
-    E0023,
-    E0024,
-    E0025,
-    E0026,
-    E0401,
-    E0030,
-    E0031,
-    E0032,
-    E0033,
-    E0034,
-    E0035,
-    E0040,
-    E0041,
-    E0042,
-    E0043,
-    E9000,
-    E9999,
-    E8000,
-    E8001,
-    ETFC3,
-    ETFC4
-  )
+  val values: IndexedSeq[NsiErrorResponse] = findValues
 
   implicit val reads: Reads[NsiErrorResponse] =
     (__ \ "errorCode").read[String].map { str =>
