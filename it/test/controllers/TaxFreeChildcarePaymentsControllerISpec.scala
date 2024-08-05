@@ -19,15 +19,15 @@ package controllers
 import base.{AuthStubs, BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
+import connectors.NsiConnector
 import models.requests.LinkRequest.CHILD_DOB_KEY
 import models.requests.Payee.PAYEE_TYPE_KEY
 import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.requests.SharedRequestData.TFC_ACCOUNT_REF_KEY
 import org.scalatest.Assertion
 import play.api.Logger
-import play.api.libs.json.Json
+import play.api.libs.json.{JsPath, Json, JsonValidationError, KeyPathNode}
 import play.api.libs.ws.WSResponse
-import utils.ErrorResponseFactory
 
 import java.util.UUID
 import scala.util.matching.Regex
@@ -210,7 +210,7 @@ class TaxFreeChildcarePaymentsControllerISpec
                 .post(payload)
                 .futureValue
 
-              checkErrorResponse(response, BAD_REQUEST, "E0025", EXPECTED_400_ERROR_DESCRIPTION)
+              checkErrorResponse(response, BAD_REQUEST, "E0025", "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct")
             }
           }
         }
@@ -232,7 +232,7 @@ class TaxFreeChildcarePaymentsControllerISpec
                 .post(payload)
                 .futureValue
 
-              checkErrorResponse(response, BAD_REQUEST, "E0026", EXPECTED_400_ERROR_DESCRIPTION)
+              checkErrorResponse(response, BAD_REQUEST, "E0026", "Please check the outbound_child_payment_ref supplied")
             }
           }
         }
@@ -348,7 +348,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     "respond with status 502, errorCode ETFC3" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK with unknown account status" in
         withClient { wsClient =>
-          withCaptureOfLoggingFrom(ERROR_RESPONSE_FACTORY_LOGGER) { logs =>
+          withCaptureOfLoggingFrom(NSI_CONNECTOR_LOGGER) { logs =>
             withAuthNinoRetrieval {
               val expectedCorrelationId = UUID.randomUUID()
               val expectedNsiResponseBody = Json.obj(
@@ -371,10 +371,12 @@ class TaxFreeChildcarePaymentsControllerISpec
                 .post(validCheckBalanceRequestPayloads.sample.get)
                 .futureValue
 
-              val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: ETFC3 - Unexpected NSI response]"
+              val expectedJsonErrors = List(JsPath(List(KeyPathNode("accountStatus"))) -> List(JsonValidationError("error.invalid.account_status")))
+              val expectedPartialMessage = s"NSI responded 200. Resulted in JSON validation errors - $expectedJsonErrors"
+              val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
               checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
-              checkErrorResponse(response, BAD_GATEWAY, "ETFC3", "Bad Gateway. Please refer to API Documentation for further information")
+              checkErrorResponse(response, BAD_GATEWAY, "ETFC3", "Bad Gateway")
             }
           }
         }
@@ -383,26 +385,27 @@ class TaxFreeChildcarePaymentsControllerISpec
     "respond with status 502, errorCode ETFC4" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds with unknown errorCode" in
         withClient { wsClient =>
-          withCaptureOfLoggingFrom(ERROR_RESPONSE_FACTORY_LOGGER) { logs =>
-            withAuthNinoRetrieval {
-              stubNsiCheckBalanceError(INTERNAL_SERVER_ERROR, "Unknown", "A server error occurred")
+          withCaptureOfLoggingFrom(NSI_CONNECTOR_LOGGER) { logs =>
+            stubAuthRetrievalOf(randomNinos.sample.get)
+            stubNsiCheckBalanceError(INTERNAL_SERVER_ERROR, "Unknown", "A server error occurred")
 
-              val expectedCorrelationId = UUID.randomUUID()
+            val expectedCorrelationId = UUID.randomUUID()
 
-              val response = wsClient
-                .url(s"$baseUrl/balance")
-                .withHttpHeaders(
-                  AUTHORIZATION  -> "Bearer qwertyuiop",
-                  CORRELATION_ID -> expectedCorrelationId.toString
-                )
-                .post(validCheckBalanceRequestPayloads.sample.get)
-                .futureValue
+            val response = wsClient
+              .url(s"$baseUrl/balance")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(validCheckBalanceRequestPayloads.sample.get)
+              .futureValue
 
-              val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: ETFC4 - Unexpected NSI error code]"
-              checkLoneLog(Level.WARN, expectedLogMessage)(logs)
+            val expectedResponseJson = Json.obj("errorCode" -> "Unknown", "errorDescription" -> "A server error occurred")
+            val expectedPartialMessage = s"NSI responded 500 with body $expectedResponseJson"
+            val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
+            checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
-              checkErrorResponse(response, BAD_GATEWAY, "ETFC4", "Bad Gateway. Please refer to API Documentation for further information")
-            }
+            checkErrorResponse(response, BAD_GATEWAY, "ETFC4", "Bad Gateway")
           }
         }
     }
@@ -755,7 +758,7 @@ class TaxFreeChildcarePaymentsControllerISpec
 
   private lazy val CONTROLLER_LOGGER = Logger(classOf[TaxFreeChildcarePaymentsController])
 
-  private lazy val ERROR_RESPONSE_FACTORY_LOGGER = Logger(classOf[ErrorResponseFactory.type])
+  private lazy val NSI_CONNECTOR_LOGGER = Logger(classOf[NsiConnector.type])
 
   private lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
     raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
