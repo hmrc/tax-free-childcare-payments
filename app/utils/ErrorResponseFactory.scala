@@ -22,10 +22,10 @@ import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
 import models.response.{ErrorDescriptions, NsiErrorResponse}
 import play.api.libs.json._
+import play.api.mvc.Result
 import play.api.mvc.Results.Status
-import play.api.mvc.{RequestHeader, Result}
 
-object ErrorResponseFactory extends ErrorDescriptions with FormattedLogging {
+object ErrorResponseFactory extends ErrorDescriptions {
 
   def getJson(errors: collection.Seq[(JsPath, collection.Seq[JsonValidationError])]): JsValue = {
     val (JsPath(KeyPathNode(key) :: Nil), _) = errors.head
@@ -33,21 +33,10 @@ object ErrorResponseFactory extends ErrorDescriptions with FormattedLogging {
     getJson(errorCode, s"$key is in invalid format or missing")
   }
 
-  def getResult(nsiErrorResponse: NsiErrorResponse)(implicit req: RequestHeader): Result = {
-    val errorCode = nsiErrorResponse.toString
-    val errorDesc = nsiErrorResponse.message
-    val logMsg = formattedLog(s"$errorCode - $errorDesc")
-
-    if (nsiErrorResponse.reportAs < 500) {
-      logger.info(logMsg)
-    } else {
-      logger.warn(logMsg)
-    }
-
+  def getResult(nsiErrorResponse: NsiErrorResponse): Result =
     new Status(nsiErrorResponse.reportAs)(
-      getJson(errorCode, nsiErrorResponse.message)
+      getJson(nsiErrorResponse.toString, nsiErrorResponse.message)
     )
-  }
 
   @inline
   def getJson(errorCode: String, errorDescription: String): JsValue =
