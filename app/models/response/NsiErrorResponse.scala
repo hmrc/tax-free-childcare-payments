@@ -17,7 +17,7 @@
 package models.response
 
 import play.api.http.Status
-import play.api.libs.json.{Reads, __}
+import play.api.libs.json.{__, Reads}
 
 sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String)
 
@@ -50,6 +50,7 @@ object NsiErrorResponse extends Status {
   case object E0033 extends NsiErrorResponse(BAD_REQUEST, "Insufficient funds")
   case object E0034 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Error returned from banking services")
   case object E0035 extends NsiErrorResponse(BAD_REQUEST, "Payments from this TFC account are blocked")
+  case object E0036 extends NsiErrorResponse(BAD_REQUEST, "Payments from this TFC account are blocked")
 
   case object E0040 extends NsiErrorResponse(BAD_REQUEST, "childAccountPaymentRef not found")
   case object E0041 extends NsiErrorResponse(BAD_REQUEST, "eppURN not found")
@@ -101,12 +102,7 @@ object NsiErrorResponse extends Status {
   )
 
   implicit val reads: Reads[NsiErrorResponse] =
-    (__ \ "errorCode")
-      .readWithDefault(ETFC3.toString)
-      .map { str =>
-        values.find(_.toString equalsIgnoreCase str) match {
-          case None        => ETFC4
-          case Some(value) => value
-        }
-      }
+    (__ \ "errorCode").read[String].map { str =>
+      values.find(_.toString equalsIgnoreCase str) getOrElse ETFC4
+    }
 }
