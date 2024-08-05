@@ -77,10 +77,6 @@ class NsiConnector @Inject() (
       .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
       .withProxy
       .execute[Maybe[BalanceResponse]]
-      .map { res =>
-        logger.info(formattedLog(s">>>>> response: $res"))
-        res
-      }
   }
 
   def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[Maybe[PaymentResponse]] =
@@ -112,23 +108,18 @@ object NsiConnector extends FormattedLogging with Status {
   private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]) =
     Json.toJsObject(req.body) + ("parentNino" -> JsString(req.nino))
 
-  private implicit def httpReadsMaybeNsiResponse[A: Reads](implicit rh: RequestHeader): HttpReads[Maybe[A]] = (_, _, response) =>
+  private implicit def httpReadsMaybe[A: Reads](implicit rh: RequestHeader): HttpReads[Maybe[A]] = (_, _, response) =>
     if (response.status / 100 == 2) {
       response.json.validate[A] match {
         case JsSuccess(result, _) => Right(result)
         case JsError(errors)      =>
-          logger.warn(formattedLog(s"NSI responded with status ${response.status} and JSON validation errors: $errors"))
+          logger.warn(formattedLog(s"NSI responded ${response.status}. Resulted in JSON validation errors - $errors"))
           Left(ETFC3)
       }
     } else {
       response.json.validate[NsiErrorResponse] match {
         case JsSuccess(nsiErrorResponse, _) =>
-          val message = formattedLog(
-            (response.json \ "errorDescription").validate[String] match {
-              case JsSuccess(errorDesc, _) => errorDesc
-              case JsError(jsonErrors)     => jsonErrors.toString
-            }
-          )
+          val message = formattedLog(s"NSI responded ${response.status} with body ${response.body}")
           if (nsiErrorResponse.reportAs < INTERNAL_SERVER_ERROR) {
             logger.info(message)
           } else {

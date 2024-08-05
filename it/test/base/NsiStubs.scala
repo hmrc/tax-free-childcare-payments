@@ -58,7 +58,7 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
   protected def stubNsiCheckBalance200(expectedResponseJson: JsValue): StubMapping = stubFor {
     nsiCheckBalanceEndpoint
       .withQueryParams(nsiBalanceUrlQueryParams)
-      .willReturn(created() withBody expectedResponseJson.toString)
+      .willReturn(ok() withBody expectedResponseJson.toString)
   }
 
   protected def stubNsiCheckBalanceError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
