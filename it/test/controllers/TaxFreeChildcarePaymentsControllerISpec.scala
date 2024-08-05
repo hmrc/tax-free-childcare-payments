@@ -550,6 +550,29 @@ class TaxFreeChildcarePaymentsControllerISpec
         }
     }
 
+    "response 400 with errorCode E0027 and expected errorDescription" when {
+      val expectedErrorDesc = "The CCP you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later."
+
+      "NSI responds 400 with errorCode E0027" in
+        forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
+          stubAuthRetrievalOf(randomNinos.sample.get)
+          stubNsiMakePaymentError(BAD_REQUEST, "E0027", errorDesc)
+
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0027", expectedErrorDesc)
+          }
+        }
+    }
+
     "respond 400 with E0008 and expected errorDescription" when {
       val expectedErrorDesc = s"$PAYMENT_AMOUNT_KEY is in invalid format or missing"
 
