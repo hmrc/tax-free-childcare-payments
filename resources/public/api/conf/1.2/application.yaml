@@ -62,11 +62,11 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0007</td>
-			<td>We encountered an error on our servers and did not process your request, please try again later.	</td>
+			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
 		</tr>
 		<tr>
 			<td>E0008</td>
-			<td>We encountered an error on our servers and did not process your request, please try again later.	</td>
+			<td>We encountered an error on our servers and did not process your request, please try again later./td>
 		</tr>
 		<tr>
 			<td>E0020</td>
@@ -98,7 +98,7 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0027</td>
-			<td>The Childcare Provider(CCP) you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later.</td>
+			<td>The Childcare Provider (CCP) you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later.</td>
 		</tr>
 		<tr>
 			<td>E0401</td>
@@ -127,6 +127,10 @@ The following table gives the detailed description for each error code you recei
 		<tr>
 			<td>E0035</td>
 			<td>There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services</td>
+		</tr>
+		<tr>
+			<td>E0036</td>
+			<td>Error processing payment due to Payee bank details</td>
 		</tr>
 		<tr>
 			<td>E0040</td>
