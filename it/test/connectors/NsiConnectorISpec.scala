@@ -57,15 +57,18 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
         ) {
           (request, expectedErrorDescription) =>
             withCaptureOfLoggingFrom(LOGGER) { logs =>
-              stubNsiLinkAccountsError(randomHttpErrorCodes.sample.get, "E0001", expectedErrorDescription)
+              val expectedStatus = randomHttpErrorCodes.sample.get
+              stubNsiLinkAccountsError(expectedStatus, "E0001", expectedErrorDescription)
 
               val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
 
               actualNsiErrorResponse shouldBe E0001
 
+              val expectedResponseJson = Json.obj("errorCode" -> "E0001", "errorDescription" -> expectedErrorDescription)
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
               checkLoneLog(
                 expectedLevel = Level.WARN,
-                expectedMessage = getFullLogMessageFrom(expectedErrorDescription)
+                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
               )(logs)
             }
         }
@@ -79,15 +82,18 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
         ) {
           (request, expectedErrorDescription) =>
             withCaptureOfLoggingFrom(LOGGER) { logs =>
-              stubNsiLinkAccountsError(randomHttpErrorCodes.sample.get, "E0024", expectedErrorDescription)
+              val expectedStatus = randomHttpErrorCodes.sample.get
+              stubNsiLinkAccountsError(expectedStatus, "E0024", expectedErrorDescription)
 
               val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
 
               actualNsiErrorResponse shouldBe E0024
 
+              val expectedResponseJson = Json.obj("errorCode" -> "E0024", "errorDescription" -> expectedErrorDescription)
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
               checkLoneLog(
                 expectedLevel = Level.INFO,
-                expectedMessage = getFullLogMessageFrom(expectedErrorDescription)
+                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
               )(logs)
             }
         }
