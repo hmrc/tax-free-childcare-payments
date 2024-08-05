@@ -372,7 +372,7 @@ class TaxFreeChildcarePaymentsControllerISpec
                 .futureValue
 
               val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: ETFC3 - Unexpected NSI response]"
-              checkLog(Level.WARN, expectedLogMessage)(logs)
+              checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
               checkErrorResponse(response, BAD_GATEWAY, "ETFC3", "Bad Gateway. Please refer to API Documentation for further information")
             }
@@ -399,7 +399,7 @@ class TaxFreeChildcarePaymentsControllerISpec
                 .futureValue
 
               val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: ETFC4 - Unexpected NSI error code]"
-              checkLog(Level.WARN, expectedLogMessage)(logs)
+              checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
               checkErrorResponse(response, BAD_GATEWAY, "ETFC4", "Bad Gateway. Please refer to API Documentation for further information")
             }

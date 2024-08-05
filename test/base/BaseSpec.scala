@@ -63,7 +63,7 @@ class BaseSpec
     actualJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
   }
 
-  protected def checkLog(expectedLevel: Level, expectedMessage: String)(logs: List[ILoggingEvent]): Unit = {
+  protected def checkLoneLog(expectedLevel: Level, expectedMessage: String)(logs: List[ILoggingEvent]): Unit = {
     val log = logs.loneElement
 
     log.getLevel shouldBe expectedLevel

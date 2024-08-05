@@ -93,7 +93,7 @@ class ErrorResponseFactorySpec extends BaseSpec
           responseJson \ "errorCode" shouldBe JsDefined(JsString(expectedCode))
 
           val expectedLogMessage = s"[Error] - [payment] - [null: $expectedLogContent]"
-          checkLog(expectedLogLvl, expectedLogMessage)(logs)
+          checkLoneLog(expectedLogLvl, expectedLogMessage)(logs)
         }
       }
   }
