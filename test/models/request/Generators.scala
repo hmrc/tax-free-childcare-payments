@@ -20,8 +20,6 @@ import java.time.{LocalDate, ZoneId}
 
 import models.request.Payee.{CCP_POSTCODE_KEY, CCP_REG_MAX_LEN, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
-import models.request.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
-
 import play.api.libs.json._
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
