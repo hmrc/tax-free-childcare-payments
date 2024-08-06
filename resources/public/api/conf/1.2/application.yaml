@@ -214,7 +214,7 @@ paths:
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
-                  description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
+                  description: The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first three initials of the child's last name, 5 numbers, and ending in 'TFC'.
                   type: string
                   example: ABCD12345TFC
                 child_date_of_birth:
@@ -367,7 +367,7 @@ paths:
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
-                  description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
+                  description:  The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first three initials of the child's last name, 5 numbers, and ending in 'TFC'. 
                   type: string
                   example: ABCD12345TFC
       responses:
@@ -525,7 +525,7 @@ paths:
               type: object
               properties:
                 outbound_child_payment_ref:
-                  description: The reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. 
+                  description:  The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first three initials of the child's last name, 5 numbers, and ending in 'TFC'. 
                   type: string
                   example: ABCD12345TFC
                 epp_unique_customer_id:
