@@ -701,7 +701,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC1, E0001, E0002, E0003, E0007, E0008, E0009, E0024, E0026, E0027, E0030, E0031, E0033, E0035, E0040, E0041, E0042, E0043"
+          description: "One of the following error codes: ETFC1, E0001, E0002, E0003, E0007, E0008, E0009, E0024, E0026, E0027, E0030, E0031, E0033, E0035, E0036, E0040, E0041, E0042, E0043"
           type: string
         errorMessage:
           description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
