@@ -17,7 +17,7 @@
 package connectors.scenarios
 
 import base.Generators
-import models.requests.{IdentifierRequest, SharedRequestData}
+import models.request.{IdentifierRequest, SharedRequestData}
 import models.response.{BalanceResponse, NsiAccountStatus}
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}

@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-import models.requests.IdentifierRequest
+import models.request.IdentifierRequest
 import utils.FormattedLogging.CORRELATION_ID
 import utils.{ErrorResponseFactory, FormattedLogging}
 

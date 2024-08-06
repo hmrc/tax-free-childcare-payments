@@ -16,7 +16,7 @@
 
 package models.request
 
-import models.requests.SharedRequestData
+import models.request.SharedRequestData
 
 class SharedRequestDataSpec extends BaseSpec {
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.request
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.Reads.StringReads

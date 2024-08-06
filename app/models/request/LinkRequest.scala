@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.request
 
 import java.time.LocalDate
 import scala.util.Try

@@ -21,7 +21,7 @@ import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.scenarios._
-import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
+import models.request.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Gen, Shrink}

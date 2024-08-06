@@ -14,14 +14,24 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.request
 
-import java.util.UUID
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{ConstraintReads, Reads, __}
 
-import play.api.mvc.{Request, WrappedRequest}
+final case class PaymentRequest(
+    sharedRequestData: SharedRequestData,
+    payment_amount: Int,
+    payee: Payee
+  )
 
-final case class IdentifierRequest[A](
-    nino: String,
-    correlation_id: UUID,
-    request: Request[A]
-  ) extends WrappedRequest[A](request)
+object PaymentRequest extends ConstraintReads {
+
+  implicit val readsFromApi: Reads[PaymentRequest] = (
+    of[SharedRequestData] ~
+      (__ \ PAYMENT_AMOUNT_KEY).read(min(1)) ~
+      of[Payee]
+  )(apply _)
+
+  lazy val PAYMENT_AMOUNT_KEY = "payment_amount"
+}
