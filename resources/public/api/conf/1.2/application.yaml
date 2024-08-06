@@ -26,75 +26,79 @@ The following table gives the detailed description for each error code you recei
 	<tbody>
 		<tr>
 			<td>ETFC1</td>
-			<td>Correlation-ID is Invalid or Missing</td>
+			<td>Correlation-ID is in an invalid format or missing</td>
 		</tr>
 		<tr>
 			<td>ETFC2</td>
-			<td>Issue with provided bearer token</td>
+			<td>Bearer Token did not return a valid record	</td>
 		</tr>
 		<tr>
 			<td>E0000</td>
-			<td>Request data is invalid or missing.</td>
+			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
 		</tr>
 		<tr>
 			<td>E0001</td>
-			<td>outbound_child_payment_ref is missing</td>
+			<td>outbound_child_payment_ref is in invalid format or missing</td>
 		</tr>
 		<tr>
 			<td>E0002</td>
-			<td>epp_reg_reference is missing</td>
+			<td>epp_reg_reference is in invalid format or missing</td>
 		</tr>
 		<tr>
 			<td>E0003</td>
-			<td>cpp_reg_reference is missing</td>
+			<td>cpp_reg_reference is in invalid format or missing</td>
 		</tr>
 		<tr>
 			<td>E0004</td>
-			<td>epp_unique_customer_id is missing</td>
+			<td>epp_unique_customer_id is in invalid format or missing</td>
 		</tr>
 		<tr>
 			<td>E0005</td>
-			<td>The service failed to process the Parent Data</td>
+			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
 		</tr>
 		<tr>
 			<td>E0006</td>
-			<td>child_date_of_birth is missing</td>
+			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
 		</tr>
 		<tr>
 			<td>E0007</td>
-			<td>payee_type is missing</td>
+			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
 		</tr>
 		<tr>
 			<td>E0008</td>
-			<td>payment_amount is missing</td>
+			<td>We encountered an error on our servers and did not process your request, please try again later./td>
 		</tr>
 		<tr>
 			<td>E0020</td>
-			<td>Data format issue</td>
+			<td>Bad gateway</td>
 		</tr>
 		<tr>
 			<td>E0021</td>
-			<td>child_date_of_birth was not processed correctly</td>
+			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
 		</tr>
 		<tr>
 			<td>E0022</td>
-			<td>payee_type did not match `ccp`</td>
+			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
 		</tr>
 		<tr>
 			<td>E0023</td>
-			<td>payment_amount was not processed correctly</td>
+			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
 		</tr>
 		<tr>
 			<td>E0024</td>
-			<td>epp_reg_reference and epp_unique_customer_id do not refer to the same record</td>
+			<td>Please check that the epp_reg_reference and epp_unique_customer_id are both correct</td>
 		</tr>
 		<tr>
 			<td>E0025</td>
-			<td>child_date_of_birth and outbound_child_payment_ref do not refer to the same record</td>
+			<td>Please check that the child_date_of_birth and outbound_child_payment_ref are both correct</td>
 		</tr>
 		<tr>
 			<td>E0026</td>
-			<td>outbound_child_payment_ref and the bearer token do not refer to the same record</td>
+			<td>Please check the outbound_child_payment_ref supplied</td>
+		</tr>
+		<tr>
+			<td>E0027</td>
+			<td>The Childcare Provider (CCP) you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later.</td>
 		</tr>
 		<tr>
 			<td>E0401</td>
@@ -102,11 +106,11 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0030</td>
-			<td>The epp_unique_customer_id or epp_reg_reference refers to an inactive record</td>
+			<td>The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information.</td>
 		</tr>
 		<tr>
 			<td>E0031</td>
-			<td>The cpp_reg_reference refers to an inactive record</td>
+			<td>The Childcare Provider's(CCP) account is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds.</td>
 		</tr>
 		<tr>
 			<td>E0032</td>
@@ -118,43 +122,47 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0034</td>
-			<td>Downstream service is unable to process the request at this time</td>
+			<td>The service is currently unavailable.</td>
 		</tr>
 		<tr>
 			<td>E0035</td>
-			<td>There is an issue with this TFC account, please ask the parent to contact TFC customer services</td>
+			<td>There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services</td>
+		</tr>
+		<tr>
+			<td>E0036</td>
+			<td>Error processing payment due to Payee bank details</td>
 		</tr>
 		<tr>
 			<td>E0040</td>
-			<td>The `outbound_child_payment_ref` could not be found</td>
+			<td>The outbound_child_payment_ref could not be found in the TFC system - please ensure parent checks their details and tries again.</td>
 		</tr>
 		<tr>
 			<td>E0041</td>
-			<td>The epp_reg_reference could not be found</td>
+			<td>The epp_reg_reference could not be found in the TFC system. Please check the details and try again.	</td>
 		</tr>
 		<tr>
 			<td>E0042</td>
-			<td>The ccp_reg_reference could not be found</td>
+			<td>The ccp_reg_reference could not be found in the TFC system or does not correlate with the ccp_postcode. Please check the details and try again.	</td>
 		</tr>
 		<tr>
 			<td>E0043</td>
-			<td>The parent associated with TFC account could not be found</td>
+			<td>Parent associated with the bearer token does not have a TFC account. Please ask the parent to create a TFC account first.</td>
 		</tr>
 		<tr>
 			<td>E9000</td>
-			<td>Downstream service is unable to process the request at this time.</td>
+			<td>The service is currently unavailable.</td>
 		</tr>
 		<tr>
 			<td>E9999</td>
-			<td>Downstream service is unable to process the request at this time.</td>
+			<td>The service is currently unavailable.</td>
 		</tr>
 		<tr>
 			<td>E8000</td>
-			<td>Downstream service is unable to process the request at this time.</td>
+			<td>The service is currently unavailable.</td>
 		</tr>
 		<tr>
 			<td>E8001</td>
-			<td>Downstream service is unable to process the request at this time.</td>
+			<td>The service is currently unavailable.</td>
 		</tr>
 	</tbody>
 </table>
@@ -253,12 +261,12 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/400errorResponse'
+                    $ref: '#/components/schemas/400errorResponseLink'
                   examples:
                     bad_request:
                       value:
                         errorCode: "E0030"
-                        errorDescription: "Request data is invalid or missing. Please refer to the API Documentation for further information."
+                        errorDescription: "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information."
           "500":
             description: Internal server error
             headers:
@@ -271,12 +279,12 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/500errorResponse'
+                    $ref: '#/components/schemas/500errorResponseLink'
                   examples:
                     internal_server_error:
                       value:
                         errorCode: E0401
-                        errorDescription: "The server encountered an error and couldn't process the request. Please refer to the  Documentation for further information."
+                        errorDescription: "We encountered an error on our servers and did not process your request, please try again later."
           "502":
             description: Bad gateway
             headers:
@@ -294,7 +302,7 @@ paths:
                     bad_gateway:
                       value:
                         errorCode: E0020
-                        errorDescription: "Bad gateway. Please refer to the API Documentation for further information."
+                        errorDescription: "Bad gateway."
           "503":
             description: Service unavailable
             headers:
@@ -312,7 +320,7 @@ paths:
                     service_unavailable:
                       value:
                         errorCode: E9000
-                        errorDescription: "The service is currently unavailable. Please refer to the API Documentation for further information."
+                        errorDescription: "The service is currently unavailable."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -424,12 +432,12 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/400errorResponse'
+                    $ref: '#/components/schemas/400errorResponseBalance'
                   examples:
                     bad_request:
                       value:
                         errorCode: "E0030"
-                        errorDescription: "Request data is invalid or missing. Please refer to the API Documentation for further information."
+                        errorDescription: "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information"
           "500":
             description: Internal server error
             headers:
@@ -442,12 +450,12 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/500errorResponse'
+                    $ref: '#/components/schemas/500errorResponseBalance'
                   examples:
                     internal_server_error:
                       value:
                         errorCode: E0401
-                        errorDescription: "The server encountered an error and couldn't process the request. Please refer to the  Documentation for further information."
+                        errorDescription: "We encountered an error on our servers and did not process your request, please try again later."
           "502":
             description: Bad gateway
             headers:
@@ -465,7 +473,7 @@ paths:
                     bad_gateway:
                       value:
                         errorCode: E0020
-                        errorDescription: "Bad gateway. Please refer to the API Documentation for further information."
+                        errorDescription: "Bad gateway."
           "503":
             description: Service unavailable
             headers:
@@ -483,7 +491,7 @@ paths:
                     service_unavailable:
                       value:
                         errorCode: E9000
-                        errorDescription: "The service is currently unavailable. Please refer to the API Documentation for further information."
+                        errorDescription: "The service is currently unavailable."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -588,12 +596,12 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/400errorResponse'
+                    $ref: '#/components/schemas/400errorResponsePayment'
                   examples:
                     bad_request:
                       value:
                         errorCode: "E0030"
-                        errorDescription: "Request data is invalid or missing. Please refer to the API Documentation for further information."
+                        errorDescription: "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information."
           "500":
             description: Internal server error
             headers:
@@ -606,12 +614,12 @@ paths:
             content:
                 application/json:
                   schema:
-                    $ref: '#/components/schemas/500errorResponse'
+                    $ref: '#/components/schemas/500errorResponsePayment'
                   examples:
                     internal_server_error:
                       value:
                         errorCode: E0401
-                        errorDescription: "The server encountered an error and couldn't process the request. Please refer to the  Documentation for further information."
+                        errorDescription: "We encountered an error on our servers and did not process your request, please try again later."
           "502":
             description: Bad gateway
             headers:
@@ -629,7 +637,7 @@ paths:
                     bad_gateway:
                       value:
                         errorCode: E0020
-                        errorDescription: "Bad gateway. Please refer to the API Documentation for further information."
+                        errorDescription: "Bad gateway."
           "503":
             description: Service unavailable
             headers:
@@ -647,7 +655,7 @@ paths:
                     service_unavailable:
                       value:
                         errorCode: E9000
-                        errorDescription: "The service is currently unavailable. Please refer to the API Documentation for further information."
+                        errorDescription: "The service is currently unavailable."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -666,27 +674,72 @@ components:
           scopes:
             tax-free-childcare-payments: Access all aspects of Tax Free Childcare Payments API
   schemas:
-    400errorResponse:
+    400errorResponseLink:
       description: Refer to the Error mapping table above for full details of the error.
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC1, E0001, E0002, E0003, E0004, E0006, E0007, E0008, E0021, E0022, E0023, E0024, E0025, E0026, E0030, E0031, E0032, E0033, E0035, E0040, E0041, E0042, E0043"
+          description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0006, E0024, E0025, E0026, E0030, E0040, E0041, E0043"
           type: string
         errorMessage:
-          description: Request data is invalid or missing. Please refer to API Documentation for further information.
+          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
           type: string
 
-    500errorResponse:
+    400errorResponseBalance:
       description: Refer to the Error mapping table above for full details of the error.
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC2, E0000, E0002, E0003, E0004, E0005, E0006, E0007, E0008, E0021, E0022, E0023, E0401, E0001"
+          description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0024, E0026, E0030, E0040, E0041, E0043"
           type: string
         errorMessage:
-          description: The server encountered an error and couldn't process the request. Please refer to API Documentation for further information.
+          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
           type: string
+
+    400errorResponsePayment:
+      description: Refer to the Error mapping table above for full details of the error.
+      type: object
+      properties:
+        errorCode:
+          description: "One of the following error codes: ETFC1, E0001, E0002, E0003, E0007, E0008, E0009, E0024, E0026, E0027, E0030, E0031, E0033, E0035, E0036, E0040, E0041, E0042, E0043"
+          type: string
+        errorMessage:
+          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
+          type: string
+
+    500errorResponseLink:
+      description: Refer to the Error mapping table above for full details of the error.
+      type: object
+      properties:
+        errorCode:
+          description: "One of the following error codes: ETFC2, E0000, E0002, E0004, E0005, E0006, E0021, E0022, E0023, E0401, E0001"
+          type: string
+        errorMessage:
+          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
+          type: string
+
+    500errorResponseBalance:
+      description: Refer to the Error mapping table above for full details of the error.
+      type: object
+      properties:
+        errorCode:
+          description: "One of the following error codes: ETFC2, E0000, E0002, E0004, E0005, E0401, E0001"
+          type: string
+        errorMessage:
+          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
+          type: string
+
+    500errorResponsePayment:
+      description: Refer to the Error mapping table above for full details of the error.
+      type: object
+      properties:
+        errorCode:
+          description: "One of the following error codes: ETFC2, E0000, E0002, E0003, E0004, E0005, E0007, E0008, E0009, E0022, E0023, E0401, E0001"
+          type: string
+        errorMessage:
+          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
+          type: string
+
 
     502errorResponse:
       description: Refer to the Error mapping table above for full details of the error.
@@ -696,7 +749,7 @@ components:
           description: "E0020"
           type: string
         errorMessage:
-          description: Bad Gateway. Please refer to API Documentation for further information.
+          description: Bad Gateway.
           type: string
 
     503errorResponse:
@@ -707,7 +760,7 @@ components:
           description: "One of the following error codes: E0034,E9000, E9999, E8000, E8001"
           type: string
         errorMessage:
-          description: The service is currently unavailable. Please refer to API Documentation for further information.
+          description: The service is currently unavailable.
           type: string
 
 
