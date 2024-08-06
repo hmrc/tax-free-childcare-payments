@@ -21,7 +21,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests._
+import models.request._
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import utils.{ErrorResponseFactory, FormattedLogging}

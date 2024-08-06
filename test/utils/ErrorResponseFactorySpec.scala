@@ -17,7 +17,7 @@
 package utils
 
 import base.BaseSpec
-import models.requests.{LinkRequest, PaymentRequest, SharedRequestData}
+import models.request.{LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse._
 import org.apache.pekko.actor.ActorSystem
 import org.scalatest.EitherValues

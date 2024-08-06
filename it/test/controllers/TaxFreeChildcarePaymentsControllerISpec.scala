@@ -20,10 +20,10 @@ import base.{AuthStubs, BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.NsiConnector
-import models.requests.LinkRequest.CHILD_DOB_KEY
-import models.requests.Payee.PAYEE_TYPE_KEY
-import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
-import models.requests.SharedRequestData.TFC_ACCOUNT_REF_KEY
+import models.request.LinkRequest.CHILD_DOB_KEY
+import models.request.Payee.PAYEE_TYPE_KEY
+import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
+import models.request.SharedRequestData.TFC_ACCOUNT_REF_KEY
 import org.scalatest.Assertion
 import play.api.Logger
 import play.api.libs.json.{JsPath, Json, JsonValidationError, KeyPathNode}

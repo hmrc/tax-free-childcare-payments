@@ -17,7 +17,7 @@
 package connectors.scenarios
 
 import base.Generators
-import models.requests.{IdentifierRequest, Payee, PaymentRequest, SharedRequestData}
+import models.request.{IdentifierRequest, Payee, PaymentRequest, SharedRequestData}
 import models.response.PaymentResponse
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}

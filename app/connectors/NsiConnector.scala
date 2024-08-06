@@ -16,8 +16,8 @@
 
 package connectors
 
-import models.requests.Payee.{ChildCareProvider, ExternalPaymentProvider}
-import models.requests._
+import models.request.Payee.{ChildCareProvider, ExternalPaymentProvider}
+import models.request._
 import models.response.NsiErrorResponse.{ETFC3, Maybe}
 import models.response._
 import play.api.http.Status
