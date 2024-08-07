@@ -63,16 +63,10 @@ class BaseSpec
     actualJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
   }
 
-  protected def checkLog(expectedLevel: Level, expectedMessage: String)(logs: List[ILoggingEvent]): Unit = {
+  protected def checkLoneLog(expectedLevel: Level, expectedMessage: String)(logs: List[ILoggingEvent]): Unit = {
     val log = logs.loneElement
 
     log.getLevel shouldBe expectedLevel
     log.getMessage shouldBe expectedMessage
   }
-
-  protected lazy val EXPECTED_400_ERROR_DESCRIPTION =
-    "Request data is invalid or missing. Please refer to API Documentation for further information"
-
-  protected lazy val EXPECTED_500_ERROR_DESCRIPTION =
-    "The server encountered an error and couldn't process the request. Please refer to API Documentation for further information"
 }

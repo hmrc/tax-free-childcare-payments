@@ -16,24 +16,25 @@
 
 package connectors
 
+import models.requests.Payee.{ChildCareProvider, ExternalPaymentProvider}
+import models.requests._
+import models.response.NsiErrorResponse.{ETFC3, Maybe}
+import models.response._
+import play.api.http.Status
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json._
+import play.api.mvc.RequestHeader
+import sttp.model.HeaderNames
+import uk.gov.hmrc.http.HttpReads
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import utils.FormattedLogging
+
 import java.net.URL
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-
-import models.requests.Payee.{ChildCareProvider, ExternalPaymentProvider}
-import models.requests._
-import models.response.NsiErrorResponse.Maybe
-import models.response.{BalanceResponse, LinkResponse, NsiAccountStatus, PaymentResponse}
-import sttp.model.HeaderNames
-import utils.FormattedLogging
-
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HttpReads, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
 class NsiConnector @Inject() (
@@ -42,12 +43,6 @@ class NsiConnector @Inject() (
   )(implicit ec: ExecutionContext
   ) extends BackendHeaderCarrierProvider with FormattedLogging with HeaderNames {
   import NsiConnector._
-  import uk.gov.hmrc.http.HttpReads.Implicits._
-
-  private implicit def httpReadsEither[A: Reads, B: Reads]: HttpReads[Either[B, A]] =
-    HttpReads[HttpResponse].map { response =>
-      response.json.validate[A].asOpt toRight response.json.as[B]
-    }
 
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] = {
     val queryString = Map(
@@ -82,10 +77,6 @@ class NsiConnector @Inject() (
       .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
       .withProxy
       .execute[Maybe[BalanceResponse]]
-      .map { res =>
-        logger.info(formattedLog(s">>>>> response: $res"))
-        res
-      }
   }
 
   def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[Maybe[PaymentResponse]] =
@@ -98,24 +89,48 @@ class NsiConnector @Inject() (
       .execute[Maybe[PaymentResponse]]
 
   private def resource(endpoint: String, params: String*) = {
-    val domain       = servicesConfig.baseUrl(serviceName)
-    val rootPath     = servicesConfig.getString(s"microservice.services.$serviceName.rootPath")
+    val domain = servicesConfig.baseUrl(serviceName)
+    val rootPath = servicesConfig.getString(s"microservice.services.$serviceName.rootPath")
     val resourcePath = servicesConfig.getString(s"microservice.services.$serviceName.$endpoint")
-    val pathParams   = params.map("/" + _).mkString
+    val pathParams = params.map("/" + _).mkString
 
     s"$domain$rootPath$resourcePath$pathParams"
   }
 
-  private val CORRELATION_ID   = servicesConfig.getString(s"microservice.services.$serviceName.correlationIdHeader")
+  private val CORRELATION_ID = servicesConfig.getString(s"microservice.services.$serviceName.correlationIdHeader")
   private val NSI_HEADER_TOKEN = servicesConfig.getString(s"microservice.services.$serviceName.token")
 }
 
-object NsiConnector {
+object NsiConnector extends FormattedLogging with Status {
 
   private val serviceName = "nsi"
 
   private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]) =
     Json.toJsObject(req.body) + ("parentNino" -> JsString(req.nino))
+
+  private implicit def httpReadsMaybe[A: Reads](implicit rh: RequestHeader): HttpReads[Maybe[A]] = (_, _, response) =>
+    if (response.status / 100 == 2) {
+      response.json.validate[A] match {
+        case JsSuccess(result, _) => Right(result)
+        case JsError(errors)      =>
+          logger.warn(formattedLog(s"NSI responded ${response.status}. Resulted in JSON validation errors - $errors"))
+          Left(ETFC3)
+      }
+    } else {
+      response.json.validate[NsiErrorResponse] match {
+        case JsSuccess(nsiErrorResponse, _) =>
+          val message = formattedLog(s"NSI responded ${response.status} with body ${response.body}")
+          if (nsiErrorResponse.reportAs < INTERNAL_SERVER_ERROR) {
+            logger.info(message)
+          } else {
+            logger.warn(message)
+          }
+          Left(nsiErrorResponse)
+        case JsError(jsonErrors)            =>
+          logger.warn(formattedLog(jsonErrors.toString))
+          Left(ETFC3)
+      }
+    }
 
   private implicit val writesPaymentReq: OWrites[PaymentRequest] = pr =>
     Json.toJsObject(pr.sharedRequestData) ++

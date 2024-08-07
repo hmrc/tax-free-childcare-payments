@@ -40,7 +40,7 @@ class AuthActionISpec extends BaseISpec with Results {
 
         val actualResult = authAction.invokeBlock(requestSansCorrelationId, successBlock).futureValue
 
-        checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", EXPECTED_400_ERROR_DESCRIPTION)
+        checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
       }
 
       "correlation ID is invalid" in withAuthNinoRetrieval {
@@ -51,7 +51,7 @@ class AuthActionISpec extends BaseISpec with Results {
 
         val actualResult = authAction.invokeBlock(requestWithBadCorrelationId, successBlock).futureValue
 
-        checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", EXPECTED_400_ERROR_DESCRIPTION)
+        checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
       }
     }
 
@@ -66,7 +66,7 @@ class AuthActionISpec extends BaseISpec with Results {
 
         val actualResult = authAction.invokeBlock(requestWithCorrelationId, successBlock).futureValue
 
-        checkErrorResult(actualResult, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_500_ERROR_DESCRIPTION)
+        checkErrorResult(actualResult, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC)
       }
     }
 

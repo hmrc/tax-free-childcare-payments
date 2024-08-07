@@ -16,97 +16,61 @@
 
 package models.response
 
+import enumeratum._
 import play.api.http.Status
-import play.api.libs.json.{Reads, __}
+import play.api.libs.json.{__, Reads}
 
-sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String)
+sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String) extends EnumEntry
 
-object NsiErrorResponse extends Status {
+object NsiErrorResponse extends Enum[NsiErrorResponse] with Status {
   type Maybe[A] = Either[NsiErrorResponse, A]
 
-  case object E0000 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "Invalid input data")
-  case object E0001 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "childAccountPaymentRef is missing")
-  case object E0002 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "eppURN is missing")
-  case object E0003 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "ccpURN is missing")
-  case object E0004 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "eppAccount is missing")
-  case object E0005 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "parentNino is missing")
-  case object E0006 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "childDob is missing")
-  case object E0007 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "payeeType is missing")
-  case object E0008 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "amount is missing")
+  case object E0000 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0001 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0002 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0003 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0004 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0005 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0006 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0007 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0008 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
 
-  case object E0020 extends NsiErrorResponse(BAD_GATEWAY, "parentNino does not match expected format (AANNNNNNA)")
-  case object E0021 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "childDob does not match expected format (YYYY-MM-DD)")
-  case object E0022 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "payeeType value should be one of ['CCP','EPP']")
-  case object E0023 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "amount most be a number")
-  case object E0024 extends NsiErrorResponse(BAD_REQUEST, "eppAccount does not correlate with the provided eppURN")
-  case object E0025 extends NsiErrorResponse(BAD_REQUEST, "childDob does not correlate with the provided childAccountPaymentRef")
-  case object E0026 extends NsiErrorResponse(BAD_REQUEST, "childAccountPaymentRef is not related to parentNino")
+  case object E0020 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway")
+  case object E0021 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0022 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0023 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0024 extends NsiErrorResponse(BAD_REQUEST, "Please check that the epp_reg_reference and epp_unique_customer_id are both correct")
+  case object E0025 extends NsiErrorResponse(BAD_REQUEST, "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct")
+  case object E0026 extends NsiErrorResponse(BAD_REQUEST, "Please check the outbound_child_payment_ref supplied")
+  case object E0027 extends NsiErrorResponse(BAD_REQUEST, "The CCP you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later.")
 
-  case object E0401 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "Authentication information is missing or invalid")
+  case object E0401 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
 
-  case object E0030 extends NsiErrorResponse(BAD_REQUEST, "EPP is not Active")
-  case object E0031 extends NsiErrorResponse(BAD_REQUEST, "CCP is not Active")
-  case object E0032 extends NsiErrorResponse(BAD_REQUEST, "EPP is not linked to Child Account")
-  case object E0033 extends NsiErrorResponse(BAD_REQUEST, "Insufficient funds")
-  case object E0034 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Error returned from banking services")
-  case object E0035 extends NsiErrorResponse(BAD_REQUEST, "Payments from this TFC account are blocked")
+  case object E0030 extends NsiErrorResponse(BAD_REQUEST, "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information")
+  case object E0031 extends NsiErrorResponse(BAD_REQUEST, "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds.")
+  case object E0032 extends NsiErrorResponse(BAD_REQUEST, "TBD")
+  case object E0033 extends NsiErrorResponse(BAD_REQUEST, "The TFC account used to request payment contains insufficient funds.")
+  case object E0034 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "The service is currently unavailable.")
+  case object E0035 extends NsiErrorResponse(BAD_REQUEST, "There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services")
+  case object E0036 extends NsiErrorResponse(BAD_REQUEST, "Error processing payment due to Payee bank details")
 
-  case object E0040 extends NsiErrorResponse(BAD_REQUEST, "childAccountPaymentRef not found")
-  case object E0041 extends NsiErrorResponse(BAD_REQUEST, "eppURN not found")
-  case object E0042 extends NsiErrorResponse(BAD_REQUEST, "ccpURN not found")
-  case object E0043 extends NsiErrorResponse(BAD_REQUEST, "parentNino not found")
+  case object E0040 extends NsiErrorResponse(BAD_REQUEST, "The outbound_child_payment_ref could not be found in the TFC system - please ensure parent checks their details and tries again.")
+  case object E0041 extends NsiErrorResponse(BAD_REQUEST, "The epp_reg_reference could not be found in the TFC system. Please check the details and try again.")
+  case object E0042 extends NsiErrorResponse(BAD_REQUEST, "The ccp_reg_reference could not be found in the TFC system or does not correlate with the ccp_postcode. Please check the details and try again.")
+  case object E0043 extends NsiErrorResponse(BAD_REQUEST, "Parent associated with the bearer token does not have a TFC account. Please ask the parent to create a TFC account first.")
 
-  case object E9000 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Internal server error")
-  case object E9999 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Error during execution")
-  case object E8000 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Service not available")
-  case object E8001 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Service not available due to lack of connection to provider")
+  case object E9000 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "The service is currently unavailable.")
+  case object E9999 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "The service is currently unavailable.")
+  case object E8000 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "The service is currently unavailable.")
+  case object E8001 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "The service is currently unavailable.")
 
-  case object ETFC3 extends NsiErrorResponse(BAD_GATEWAY, "Unexpected NSI response")
-  case object ETFC4 extends NsiErrorResponse(BAD_GATEWAY, "Unexpected NSI error code")
+  case object ETFC3 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway") // Unexpected NSI response
+  case object ETFC4 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway") // Unexpected NSI errorCode
 
-  private val values = Set(
-    E0000,
-    E0001,
-    E0002,
-    E0003,
-    E0004,
-    E0005,
-    E0006,
-    E0007,
-    E0008,
-    E0020,
-    E0021,
-    E0022,
-    E0023,
-    E0024,
-    E0025,
-    E0026,
-    E0401,
-    E0030,
-    E0031,
-    E0032,
-    E0033,
-    E0034,
-    E0035,
-    E0040,
-    E0041,
-    E0042,
-    E0043,
-    E9000,
-    E9999,
-    E8000,
-    E8001,
-    ETFC3,
-    ETFC4
-  )
+  val values: IndexedSeq[NsiErrorResponse] = findValues
 
   implicit val reads: Reads[NsiErrorResponse] =
-    (__ \ "errorCode")
-      .readWithDefault(ETFC3.toString)
-      .map { str =>
-        values.find(_.toString equalsIgnoreCase str) match {
-          case None        => ETFC4
-          case Some(value) => value
-        }
-      }
+    (__ \ "errorCode").read[String].map { str =>
+      values.find(_.toString equalsIgnoreCase str) getOrElse ETFC4
+    }
 }
