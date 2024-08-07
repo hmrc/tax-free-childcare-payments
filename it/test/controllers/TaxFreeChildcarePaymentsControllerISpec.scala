@@ -345,6 +345,29 @@ class TaxFreeChildcarePaymentsControllerISpec
         }
     }
 
+    "response 400 with errorCode E0032 and expected errorDescription" when {
+      val expectedErrorDesc = "EPP is not linked to Child Account"
+
+      "NSI responds 403 with errorCode E0032" in
+        forAll(Gen.uuid, validCheckBalanceRequestPayloads, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
+          stubAuthRetrievalOf(randomNinos.sample.get)
+          stubNsiCheckBalanceError(FORBIDDEN, "E0032", errorDesc)
+
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/balance")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0032", expectedErrorDesc)
+          }
+        }
+    }
+
     "respond with status 502, errorCode ETFC3" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK with unknown account status" in
         withClient { wsClient =>
@@ -527,52 +550,6 @@ class TaxFreeChildcarePaymentsControllerISpec
         }
     }
 
-    "response 400 with errorCode E0024 and expected errorDescription" when {
-      val expectedErrorDesc = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
-
-      "NSI responds 400 with errorCode E0024" in
-        forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
-          stubAuthRetrievalOf(randomNinos.sample.get)
-          stubNsiMakePaymentError(BAD_REQUEST, "E0024", errorDesc)
-
-          withClient { wsClient =>
-            val response = wsClient
-              .url(s"$baseUrl/")
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
-              )
-              .post(payload)
-              .futureValue
-
-            checkErrorResponse(response, BAD_REQUEST, "E0024", expectedErrorDesc)
-          }
-        }
-    }
-
-    "response 400 with errorCode E0027 and expected errorDescription" when {
-      val expectedErrorDesc = "The CCP you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later."
-
-      "NSI responds 400 with errorCode E0027" in
-        forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
-          stubAuthRetrievalOf(randomNinos.sample.get)
-          stubNsiMakePaymentError(BAD_REQUEST, "E0027", errorDesc)
-
-          withClient { wsClient =>
-            val response = wsClient
-              .url(s"$baseUrl/")
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
-              )
-              .post(payload)
-              .futureValue
-
-            checkErrorResponse(response, BAD_REQUEST, "E0027", expectedErrorDesc)
-          }
-        }
-    }
-
     "respond 400 with E0008 and expected errorDescription" when {
       val expectedErrorDesc = s"$PAYMENT_AMOUNT_KEY is in invalid format or missing"
 
@@ -627,6 +604,75 @@ class TaxFreeChildcarePaymentsControllerISpec
 
               checkErrorResponse(res, BAD_REQUEST, "E0008", expectedErrorDesc)
             }
+          }
+        }
+    }
+
+    "response 400 with errorCode E0024 and expected errorDescription" when {
+      val expectedErrorDesc = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
+
+      "NSI responds 400 with errorCode E0024" in
+        forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
+          stubAuthRetrievalOf(randomNinos.sample.get)
+          stubNsiMakePaymentError(BAD_REQUEST, "E0024", errorDesc)
+
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0024", expectedErrorDesc)
+          }
+        }
+    }
+
+    "response 400 with errorCode E0027 and expected errorDescription" when {
+      val expectedErrorDesc = "The CCP you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later."
+
+      "NSI responds 400 with errorCode E0027" in
+        forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
+          stubAuthRetrievalOf(randomNinos.sample.get)
+          stubNsiMakePaymentError(BAD_REQUEST, "E0027", errorDesc)
+
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0027", expectedErrorDesc)
+          }
+        }
+    }
+
+    "response 400 with errorCode E0032 and expected errorDescription" when {
+      val expectedErrorDesc = "EPP is not linked to Child Account"
+
+      "NSI responds 403 with errorCode E0032" in
+        forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
+          stubAuthRetrievalOf(randomNinos.sample.get)
+          stubNsiMakePaymentError(FORBIDDEN, "E0032", errorDesc)
+
+          withClient { wsClient =>
+            val response = wsClient
+              .url(s"$baseUrl/")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0032", expectedErrorDesc)
           }
         }
     }
