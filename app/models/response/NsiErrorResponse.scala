@@ -17,12 +17,14 @@
 package models.response
 
 import enumeratum._
+import play.api.Logging
 import play.api.http.Status
-import play.api.libs.json.{__, Reads}
+import play.api.libs.json.{Reads, __}
 
 sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String) extends EnumEntry
 
-object NsiErrorResponse extends Enum[NsiErrorResponse] with Status {
+/** The Logging mixin is unused but fixes a Heisenbug appearing in Reads instance. */
+object NsiErrorResponse extends Enum[NsiErrorResponse] with Status with Logging {
   type Maybe[A] = Either[NsiErrorResponse, A]
 
   case object E0000 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
