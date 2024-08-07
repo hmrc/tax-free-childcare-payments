@@ -18,7 +18,7 @@ package models.response
 
 /** All currency quantities are in pence. For example, £250.00 is given as 25000. */
 final case class BalanceResponse(
-    accountStatus: AccountStatus.Value,
+    accountStatus: NsiAccountStatus,
     topUpAvailable: Int,
     topUpRemaining: Int,
     paidIn: Int,

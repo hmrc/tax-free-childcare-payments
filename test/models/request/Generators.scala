@@ -16,17 +16,42 @@
 
 package models.request
 
+import java.time.{LocalDate, ZoneId}
+
 import models.requests.Payee.{CCP_POSTCODE_KEY, CCP_REG_MAX_LEN, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
-import models.requests.SharedRequestData
-import play.api.libs.json._
+import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 
-import java.time.LocalDate
+import play.api.libs.json._
+import play.api.mvc.Headers
+import play.api.test.FakeRequest
 
 trait Generators extends base.Generators {
-  import org.scalacheck.Gen
+  import org.scalacheck.{Arbitrary, Gen}
+  import Arbitrary.arbitrary
+
+  protected implicit def arbIdentifierRequest[A: Arbitrary]: Arbitrary[IdentifierRequest[A]] = Arbitrary(
+    for {
+      nino          <- randomNinos
+      correlationId <- Gen.uuid
+      body          <- arbitrary[A]
+    } yield IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), body))
+  )
 
   /** START Link Accounts generators */
+
+  protected implicit val arbLinkRequest: Arbitrary[LinkRequest] = Arbitrary(
+    for {
+      sharedRequestData <- validSharedDataModels
+      calendar          <- Gen.calendar
+      childDateOfBirth   = calendar.toInstant.atZone(ZoneId.systemDefault()).toLocalDate
+      childYearOfBirth  <- Gen.chooseNum(2000, 3000)
+    } yield LinkRequest(
+      sharedRequestData,
+      childDateOfBirth withYear childYearOfBirth
+    )
+  )
+
   protected val validLinkPayloads: Gen[JsObject] = linkPayloadsWith(validSharedPayloads)
 
   protected lazy val linkPayloadsWithMissingTfcAccountRef: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)
@@ -65,12 +90,22 @@ trait Generators extends base.Generators {
     *
     * BEGIN Check Balance generators
     */
+  protected implicit val arbSharedRequestData: Arbitrary[SharedRequestData] = Arbitrary(validSharedDataModels)
+
   protected val validCheckBalanceRequestPayloads: Gen[JsObject] = validSharedPayloads
 
   /** END Check Balance generators
     *
     * BEGIN Make Payment generators
     */
+  protected implicit val arbPaymentRequest: Arbitrary[PaymentRequest] = Arbitrary(
+    for {
+      sharedRequestData  <- arbitrary[SharedRequestData]
+      payee              <- payees
+      paymentAmountPence <- Gen.posNum[Int]
+    } yield PaymentRequest(sharedRequestData, paymentAmountPence, payee)
+  )
+
   protected val validPaymentRequestWithPayeeTypeSetToCCP: Gen[JsObject] = paymentPayloadsWith(validSharedPayloads)
 
   protected val paymentPayloadsWithMissingTfcAccountRef: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)

@@ -17,7 +17,7 @@
 package models.response
 
 import play.api.http.Status
-import play.api.libs.json.{JsError, JsSuccess, Reads}
+import play.api.libs.json.{Reads, __}
 
 sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String)
 
@@ -61,6 +61,9 @@ object NsiErrorResponse extends Status {
   case object E8000 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Service not available")
   case object E8001 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "Service not available due to lack of connection to provider")
 
+  case object ETFC3 extends NsiErrorResponse(BAD_GATEWAY, "Unexpected NSI response")
+  case object ETFC4 extends NsiErrorResponse(BAD_GATEWAY, "Unexpected NSI error code")
+
   private val values = Set(
     E0000,
     E0001,
@@ -92,15 +95,18 @@ object NsiErrorResponse extends Status {
     E9000,
     E9999,
     E8000,
-    E8001
+    E8001,
+    ETFC3,
+    ETFC4
   )
 
-  implicit val reads: Reads[NsiErrorResponse] = json =>
-    for {
-      str <- (json \ "errorCode").validate[String]
-      err <- values.find(_.toString equalsIgnoreCase str) match {
-               case None        => JsError(s"Invalid error string: $str")
-               case Some(value) => JsSuccess(value)
-             }
-    } yield err
+  implicit val reads: Reads[NsiErrorResponse] =
+    (__ \ "errorCode")
+      .readWithDefault(ETFC3.toString)
+      .map { str =>
+        values.find(_.toString equalsIgnoreCase str) match {
+          case None        => ETFC4
+          case Some(value) => value
+        }
+      }
 }

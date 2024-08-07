@@ -18,7 +18,7 @@ package connectors.scenarios
 
 import base.Generators
 import models.requests.{IdentifierRequest, SharedRequestData}
-import models.response.{AccountStatus, BalanceResponse}
+import models.response.{BalanceResponse, NsiAccountStatus}
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Headers
@@ -36,7 +36,7 @@ final case class NsiCheckBalance200Scenario(
   ) {
 
   val expectedRequestJson: JsObject = Json.obj(
-    "accountStatus"  -> expectedResponse.accountStatus,
+    "accountStatus"  -> expectedResponse.accountStatus.toString,
     "topUpAvailable" -> expectedResponse.topUpAvailable,
     "topUpRemaining" -> expectedResponse.topUpRemaining,
     "paidIn"         -> expectedResponse.paidIn,
@@ -63,7 +63,7 @@ object NsiCheckBalance200Scenario extends Generators {
       childAccountPaymentRef <- nonEmptyAlphaNumStrings
       eppURN                 <- nonEmptyAlphaNumStrings
       eppAccount             <- nonEmptyAlphaNumStrings
-      parentNino             <- ninos
+      parentNino             <- randomNinos
       expectedResponse       <- balanceResponses
     } yield apply(
       correlationId,
@@ -76,7 +76,7 @@ object NsiCheckBalance200Scenario extends Generators {
   )
 
   private lazy val balanceResponses = for {
-    accountStatus  <- Gen oneOf AccountStatus.values
+    accountStatus  <- Gen oneOf NsiAccountStatus.values
     topUpAvailable <- Gen.chooseNum(0, Int.MaxValue)
     topUpRemaining <- Gen.chooseNum(0, Int.MaxValue)
     paidIn         <- Gen.chooseNum(0, Int.MaxValue)

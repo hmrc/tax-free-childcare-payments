@@ -18,12 +18,17 @@ package connectors
 
 import base.{BaseISpec, NsiStubs}
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, getRequestedFor, postRequestedFor}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.scenarios._
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
+import models.response.NsiErrorResponse.{ETFC3, ETFC4}
+import org.scalacheck.{Gen, Shrink}
 import org.scalatest.EitherValues
+import play.api.libs.json.Json
+import play.api.mvc.Headers
+import play.api.test.FakeRequest
 
-class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues {
+class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with models.request.Generators {
   private val connector = app.injector.instanceOf[NsiConnector]
 
   "method linkAccounts" should {
@@ -40,10 +45,21 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues {
           WireMock.verify(getRequestedFor(nsiLinkAccountsUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
         }
     }
+
+    "return Left ETFC4" when {
+      "NSI responds with unknown errorCode" in
+        forAll { implicit req: IdentifierRequest[LinkRequest] =>
+          stubNsiLinkAccountsError(BAD_REQUEST, "UNKNOWN", "An error occurred")
+
+          val actualNsiErrorResponse = connector.linkAccounts.futureValue.left.value
+
+          actualNsiErrorResponse shouldBe ETFC4
+        }
+    }
   }
 
   "method checkBalance" should {
-    s"respond $OK with a defined BalanceResponse" when {
+    "return Right(BalanceResponse)" when {
       s"NSI responds $OK with expected JSON format" in
         forAll { scenario: NsiCheckBalance200Scenario =>
           stubNsiCheckBalance200(scenario.expectedRequestJson)
@@ -54,6 +70,46 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues {
 
           actualResponse shouldBe scenario.expectedResponse
           WireMock.verify(getRequestedFor(nsiBalanceUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
+        }
+    }
+
+    "return Left ETFC3" when {
+      implicit val shr: Shrink[String] = Shrink.shrinkAny
+
+      "NSI responds with an invalid account status" in
+        forAll(randomNinos, Gen.uuid, validSharedDataModels) { (nino, correlationId, sharedRequestData) =>
+          implicit val req: IdentifierRequest[SharedRequestData] =
+            IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), sharedRequestData))
+
+          val invalidBalanceResponse = Json.obj(
+            "accountStatus"  -> "unknown",
+            "topUpAvailable" -> 1234,
+            "topUpRemaining" -> 1234,
+            "paidIn"         -> 1234,
+            "totalBalance"   -> 1234,
+            "clearedFunds"   -> 1234
+          )
+
+          stubFor {
+            nsiCheckBalanceEndpoint
+              .withQueryParams(nsiBalanceUrlQueryParams)
+              .willReturn(created() withBody invalidBalanceResponse.toString)
+          }
+
+          val actualNsiErrorResponse = connector.checkBalance.futureValue.left.value
+
+          actualNsiErrorResponse shouldBe ETFC3
+        }
+    }
+
+    "return Left ETFC4" when {
+      "NSI responds with unknown errorCode" in
+        forAll { implicit req: IdentifierRequest[SharedRequestData] =>
+          stubNsiCheckBalanceError(BAD_REQUEST, "UNKNOWN", "An error occurred")
+
+          val actualNsiErrorResponse = connector.checkBalance.futureValue.left.value
+
+          actualNsiErrorResponse shouldBe ETFC4
         }
     }
   }
@@ -70,6 +126,17 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues {
 
           actualResponse shouldBe scenario.expectedResponse
           WireMock.verify(postRequestedFor(nsiPaymentUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
+        }
+    }
+
+    "return Left ETFC4" when {
+      "NSI responds with unknown errorCode" in
+        forAll { implicit req: IdentifierRequest[PaymentRequest] =>
+          stubNsiMakePaymentError(BAD_REQUEST, "UNKNOWN", "An error occurred")
+
+          val actualNsiErrorResponse = connector.makePayment.futureValue.left.value
+
+          actualNsiErrorResponse shouldBe ETFC4
         }
     }
   }

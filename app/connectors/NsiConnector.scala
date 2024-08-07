@@ -22,9 +22,9 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 import models.requests.Payee.{ChildCareProvider, ExternalPaymentProvider}
-import models.requests.{IdentifierRequest, LinkRequest, Payee, PaymentRequest, SharedRequestData}
+import models.requests._
 import models.response.NsiErrorResponse.Maybe
-import models.response.{AccountStatus, BalanceResponse, LinkResponse, PaymentResponse}
+import models.response.{BalanceResponse, LinkResponse, NsiAccountStatus, PaymentResponse}
 import sttp.model.HeaderNames
 import utils.FormattedLogging
 
@@ -144,7 +144,7 @@ object NsiConnector {
     (__ \ "childFullName").read[String] map LinkResponse.apply
 
   private implicit val readsBalanceResponse: Reads[BalanceResponse] = (
-    (__ \ "accountStatus").read[AccountStatus.Value] ~
+    (__ \ "accountStatus").read[NsiAccountStatus] ~
       (__ \ "topUpAvailable").read[Int] ~
       (__ \ "topUpRemaining").read[Int] ~
       (__ \ "paidIn").read[Int] ~

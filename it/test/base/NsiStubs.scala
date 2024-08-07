@@ -18,12 +18,13 @@ package base
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.matching.UrlPattern
+import com.github.tomakehurst.wiremock.matching.{StringValuePattern, UrlPattern}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Configuration
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 
+import java.util
 import scala.jdk.CollectionConverters.MapHasAsJava
 
 /** The specs below should follow the NSI documentation at <https://drive.google.com/drive/folders/1ES36CjJpVumXXCM8VC5VQQa7J3xIIqoW>. */
@@ -35,6 +36,10 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
     nsiLinkAccountsEndpoint
       .withQueryParams(nsiLinkAccountsUrlQueryParams)
       .willReturn(created() withBody expectedResponseJson.toString)
+  }
+
+  protected def stubNsiLinkAccountsError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
+    nsiLinkAccountsEndpoint willReturn nsiErrorResponse(status, errorCode, errorDesc)
   }
 
   protected lazy val nsiLinkAccountsEndpoint: MappingBuilder = get(nsiLinkAccountsUrlPattern)
@@ -56,9 +61,13 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
       .willReturn(created() withBody expectedResponseJson.toString)
   }
 
+  protected def stubNsiCheckBalanceError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
+    nsiCheckBalanceEndpoint willReturn nsiErrorResponse(status, errorCode, errorDesc)
+  }
+
   protected lazy val nsiCheckBalanceEndpoint: MappingBuilder = get(nsiBalanceUrlPattern)
 
-  private lazy val nsiBalanceUrlQueryParams = Map(
+  protected lazy val nsiBalanceUrlQueryParams: util.Map[String, StringValuePattern] = Map(
     "eppURN"     -> matching("[a-zA-Z0-9]+"),
     "eppAccount" -> matching("[a-zA-Z0-9]+"),
     "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]")
@@ -74,6 +83,10 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
       .willReturn(created() withBody expectedResponseJson.toString)
   }
 
+  protected def stubNsiMakePaymentError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
+    nsiMakePaymentEndpoint willReturn nsiErrorResponse(status, errorCode, errorDesc)
+  }
+
   protected lazy val nsiMakePaymentEndpoint: MappingBuilder = post(nsiPaymentUrlPattern)
 
   protected lazy val nsiPaymentUrlPattern: UrlPattern = nsiUrlPattern("makePayment")
@@ -85,10 +98,10 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
 
   /** Utils */
 
-  protected def nsiJsonBody(errorCode: String, errorDescription: String): String = Json.obj(
-    "errorCode"        -> errorCode,
-    "errorDescription" -> errorDescription
-  ).toString
+  private def nsiErrorResponse(status: Int, errorCode: String, errorDesc: String) =
+    aResponse()
+      .withStatus(status)
+      .withBody(Json.obj("errorCode" -> errorCode, "errorDescription" -> errorDesc).toString)
 
   private def nsiUrlPattern(endpointName: String, pathPatterns: String*) = {
     val initPath   = nsiRootPath + nsiConfig.get[String](endpointName)

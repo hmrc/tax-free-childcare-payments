@@ -31,6 +31,7 @@ The following table gives the detailed description for each error code you recei
 		<tr>
 			<td>ETFC2</td>
 			<td>Bearer Token did not return a valid record</td>
+
 		</tr>
 		<tr>
 			<td>E0000</td>
@@ -47,10 +48,12 @@ The following table gives the detailed description for each error code you recei
 		<tr>
 			<td>E0003</td>
 			<td>ccp_reg_reference is in invalid format or missing</td>
+
 		</tr>
 		<tr>
 			<td>E0004</td>
 			<td>epp_unique_customer_id is in invalid format or missing</td>
+
 		</tr>
 		<tr>
 			<td>E0024</td>

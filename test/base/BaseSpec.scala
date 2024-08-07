@@ -16,20 +16,24 @@
 
 package base
 
-import org.scalatest.matchers.should
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.{Assertion, OptionValues}
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.libs.json._
-
 import java.time.LocalDate
 import scala.util.Random
+
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.spi.ILoggingEvent
+import org.scalatest.matchers.should
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{Assertion, LoneElement, OptionValues}
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+
+import play.api.libs.json._
 
 class BaseSpec
     extends AnyWordSpec
     with should.Matchers
     with OptionValues
-    with ScalaCheckPropertyChecks {
+    with ScalaCheckPropertyChecks
+    with LoneElement {
 
   protected def randomOutboundChildPaymentRef: String = {
     val letters = randomStringOf(EXPECTED_PAYMENT_REF_LETTERS, 'A' to 'Z')
@@ -57,6 +61,13 @@ class BaseSpec
     ): Assertion = {
     actualJson \ "errorCode" shouldBe JsDefined(JsString(expectedErrorCode))
     actualJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
+  }
+
+  protected def checkLog(expectedLevel: Level, expectedMessage: String)(logs: List[ILoggingEvent]): Unit = {
+    val log = logs.loneElement
+
+    log.getLevel shouldBe expectedLevel
+    log.getMessage shouldBe expectedMessage
   }
 
   protected lazy val EXPECTED_400_ERROR_DESCRIPTION =

@@ -21,9 +21,10 @@ import models.requests.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
 import models.response.{ErrorDescriptions, NsiErrorResponse}
+
 import play.api.libs.json._
-import play.api.mvc.{RequestHeader, Result}
 import play.api.mvc.Results.Status
+import play.api.mvc.{RequestHeader, Result}
 
 object ErrorResponseFactory extends ErrorDescriptions with FormattedLogging {
 
@@ -58,9 +59,9 @@ object ErrorResponseFactory extends ErrorDescriptions with FormattedLogging {
   def getResult(nsiErrorResponse: NsiErrorResponse)(implicit req: RequestHeader): Result = {
     val errorCode = nsiErrorResponse.toString
     val errorDesc = nsiErrorResponse.message
-    val logMsg = formattedLog(s"$errorCode - $errorDesc")
+    val logMsg    = formattedLog(s"$errorCode - $errorDesc")
 
-    if(nsiErrorResponse.reportAs < 500) {
+    if (nsiErrorResponse.reportAs < 500) {
       logger.info(logMsg)
     } else {
       logger.warn(logMsg)
