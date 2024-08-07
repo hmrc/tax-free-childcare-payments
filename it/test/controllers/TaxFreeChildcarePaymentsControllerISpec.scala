@@ -687,7 +687,7 @@ class TaxFreeChildcarePaymentsControllerISpec
               .post(validPayload)
               .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "ETFC1", EXPECTED_400_ERROR_DESCRIPTION)
+            checkErrorResponse(response, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
           }
         }
 
@@ -703,7 +703,7 @@ class TaxFreeChildcarePaymentsControllerISpec
                 .post(validPayload)
                 .futureValue
 
-              checkErrorResponse(response, BAD_REQUEST, "ETFC1", EXPECTED_400_ERROR_DESCRIPTION)
+              checkErrorResponse(response, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
             }
           }
         }
@@ -722,7 +722,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             .post(validPayload)
             .futureValue
 
-          checkErrorResponse(response, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_500_ERROR_DESCRIPTION)
+          checkErrorResponse(response, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC)
         }
       }
 
@@ -781,7 +781,7 @@ class TaxFreeChildcarePaymentsControllerISpec
 
   private lazy val CONTROLLER_LOGGER = Logger(classOf[TaxFreeChildcarePaymentsController])
 
-  private lazy val NSI_CONNECTOR_LOGGER = Logger(classOf[NsiConnector.type])
+  private lazy val NSI_CONNECTOR_LOGGER = Logger(classOf[NsiConnector])
 
   private lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
     raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
