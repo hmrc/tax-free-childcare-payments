@@ -20,12 +20,12 @@ import models.requests.LinkRequest.CHILD_DOB_KEY
 import models.requests.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
-import models.response.{ErrorDescriptions, NsiErrorResponse}
+import models.response.NsiErrorResponse
 import play.api.libs.json._
 import play.api.mvc.Result
 import play.api.mvc.Results.Status
 
-object ErrorResponseFactory extends ErrorDescriptions {
+object ErrorResponseFactory {
 
   def getJson(errors: collection.Seq[(JsPath, collection.Seq[JsonValidationError])]): JsValue = {
     val (JsPath(KeyPathNode(key) :: Nil), _) = errors.head

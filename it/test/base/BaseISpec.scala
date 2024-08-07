@@ -23,7 +23,6 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.http.{HeaderNames, Status}
-import play.api.libs.json.JsValue
 import play.api.mvc.Result
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
@@ -63,11 +62,6 @@ abstract class BaseISpec
     check
   }
 
-  protected lazy val EXPECTED_JSON_ERROR_RESPONSE: JsValue = Json.obj(
-    "errorCode"        -> "BAD_REQUEST",
-    "errorDescription" -> "Request data is invalid or missing"
-  )
-
   protected lazy val CORRELATION_ID = "Correlation-ID"
 
   protected def checkErrorResult(
@@ -83,4 +77,7 @@ abstract class BaseISpec
 
     checkErrorJson(Json parse actualResultStream, expectedErrorCode, expectedErrorDescription)
   }
+
+  protected lazy val EXPECTED_CORRELATION_ID_ERROR_DESC = "Correlation ID is in an invalid format or is missing"
+  protected lazy val EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC = "Bearer Token did not return a valid record"
 }
