@@ -50,7 +50,7 @@ object NsiErrorResponse extends Enum[NsiErrorResponse] with Status with Logging 
 
   case object E0030 extends NsiErrorResponse(BAD_REQUEST, "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information")
   case object E0031 extends NsiErrorResponse(BAD_REQUEST, "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds.")
-  case object E0032 extends NsiErrorResponse(BAD_REQUEST, "EPP is not linked to Child Account")
+  case object E0032 extends NsiErrorResponse(BAD_REQUEST, "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref")
   case object E0033 extends NsiErrorResponse(BAD_REQUEST, "The TFC account used to request payment contains insufficient funds.")
   case object E0034 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "The service is currently unavailable.")
   case object E0035 extends NsiErrorResponse(BAD_REQUEST, "There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services")

@@ -154,7 +154,7 @@ class ErrorResponseFactorySpec extends BaseSpec
     (E0401,   INTERNAL_SERVER_ERROR, "E0401",               "We encountered an error on our servers and did not process your request, please try again later."),
     (E0030,   BAD_REQUEST,           "E0030",               "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information"),
     (E0031,   BAD_REQUEST,           "E0031",               "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds."),
-    (E0032,   BAD_REQUEST,           "E0032",               "EPP is not linked to Child Account"),
+    (E0032,   BAD_REQUEST,           "E0032",               "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref"),
     (E0033,   BAD_REQUEST,           "E0033",               "The TFC account used to request payment contains insufficient funds."),
     (E0034,   SERVICE_UNAVAILABLE,   "E0034",               "The service is currently unavailable."),
     (E0035,   BAD_REQUEST,           "E0035",               "There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services"),
