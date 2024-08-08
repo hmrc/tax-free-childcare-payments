@@ -115,7 +115,7 @@ The following scenarios relate to all endpoints:
 
 <table>
     <tr>
-        <th colspan="2" text-align: left>EEAA00000TFC</td>
+        <th colspan="2" align="left">EEAA00000TFC</td>
     </tr>
     <tr>
         <td>Invalid input data</td>
@@ -128,7 +128,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EELL00000TFC</td>
+        <th colspan="2" align="left">EELL00000TFC</td>
     </tr>
     <tr>
         <td>Parent's National Insurance number does not match the expected format</td>
@@ -141,7 +141,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EERR00000TFC</td>
+        <th colspan="2" align="left">EERR00000TFC</td>
     </tr>
     <tr>
         <td>outbound_child_payment_ref does not match the parent's National Insurance number</td>
@@ -154,7 +154,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EETT00000TFC</td>
+        <th colspan="2" align="left">EETT00000TFC</td>
     </tr>
     <tr>
         <td>Online payment provider's registration is not Active</td>
@@ -167,7 +167,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEXX00000TFC</td>
+        <th colspan="2" align="left">EEXX00000TFC</td>
     </tr>
     <tr>
         <td>An error is returned by the parent's banking services</td>
@@ -180,7 +180,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEZZ00000TFC</td>
+        <th colspan="2" align="left">EEZZ00000TFC</td>
     </tr>
     <tr>
         <td>outbound_child_payment_ref not found</td>
@@ -193,7 +193,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEBA00000TFC</td>
+        <th colspan="2" align="left">EEBA00000TFC</td>
     </tr>
     <tr>
         <td>epp_reg_reference not found</td>
@@ -206,7 +206,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEBD00000TFC</td>
+        <th colspan="2" align="left">EEBD00000TFC</td>
     </tr>
     <tr>
         <td>Parent's National Insurance number not found</td>
@@ -224,7 +224,7 @@ The following scenarios relate to all endpoints:
 
 <table>
     <tr>
-        <th colspan="2" text-align: left>EEPP00000TFC</td>
+        <th colspan="2" align="left">EEPP00000TFC</td>
     </tr>
     <tr>
         <td>epp_reg_reference and epp_unique_customer_id do not match</td>
@@ -237,7 +237,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEQQ00000TFC</td>
+        <th colspan="2" align="left">EEQQ00000TFC</td>
     </tr>
     <tr>
         <td> child_date_of_birth and outbound_child_payment_ref do not match</td>
@@ -255,7 +255,7 @@ The following scenarios relate to all endpoints:
 
 <table>
     <tr>
-        <th colspan="2" text-align: left>EESS00000TFC</td>
+        <th colspan="2" align="left">EESS00000TFC</td>
     </tr>
     <tr>
         <td>Authentication information is missing or invalid</td>
@@ -268,7 +268,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEVV00000TFC</td>
+        <th colspan="2" align="left">EEVV00000TFC</td>
     </tr>
     <tr>
         <td>The Online Payment Provider's details do not match the outbound_child_payment_reference</td>
@@ -286,7 +286,7 @@ The following scenarios relate to all endpoints:
 
 <table>
     <tr>
-        <th colspan="2" text-align: left>EEPP00000TFC</td>
+        <th colspan="2" align="left">EEPP00000TFC</td>
     </tr>
     <tr>
         <td>epp_reg_reference and epp_unique_customer_id do not match</td>
@@ -299,7 +299,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EERS00000TFC</td>
+        <th colspan="2" align="left">EERS00000TFC</td>
     </tr>
     <tr>
         <td>ccp_reg_reference and outbound_child_payment_reference do not match</td>
@@ -312,7 +312,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEUU00000TFC</td>
+        <th colspan="2" align="left">EEUU00000TFC</td>
     </tr>
     <tr>
         <td></td>
@@ -325,7 +325,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEVV00000TFC</td>
+        <th colspan="2" align="left">EEVV00000TFC</td>
     </tr>
     <tr>
         <td>The Online Payment Provider's details do not match the outbound_child_payment_reference</td>
@@ -338,7 +338,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEYY00000TFC</td>
+        <th colspan="2" align="left">EEYY00000TFC</td>
     </tr>
     <tr>
         <td>Payments from this TFC account are blocked</td>
@@ -351,7 +351,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEYZ00000TFC</td>
+        <th colspan="2" align="left">EEYZ00000TFC</td>
     </tr>
     <tr>
         <td>The payee's bank details are incorrect</td>
@@ -364,7 +364,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEBC00000TFC</td>
+        <th colspan="2" align="left">EEBC00000TFC</td>
     </tr>
     <tr>
         <td>ccp_reg_reference not found</td>
@@ -377,7 +377,7 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" text-align: left>EEBE00000TFC</td>
+        <th colspan="2" align="left">EEBE00000TFC</td>
     </tr>
     <tr>
         <td>Internal server error</td>
