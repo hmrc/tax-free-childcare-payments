@@ -346,7 +346,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     }
 
     "response 400 with errorCode E0032 and expected errorDescription" when {
-      val expectedErrorDesc = "EPP is not linked to Child Account"
+      val expectedErrorDesc = "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref"
 
       "NSI responds 403 with errorCode E0032" in
         forAll(Gen.uuid, validCheckBalanceRequestPayloads, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
@@ -656,7 +656,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     }
 
     "response 400 with errorCode E0032 and expected errorDescription" when {
-      val expectedErrorDesc = "EPP is not linked to Child Account"
+      val expectedErrorDesc = "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref"
 
       "NSI responds 403 with errorCode E0032" in
         forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
