@@ -20,15 +20,17 @@ import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.{StringValuePattern, UrlPattern}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import org.scalacheck.Gen
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Configuration
+import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 
 import java.util
 import scala.jdk.CollectionConverters.MapHasAsJava
 
 /** The specs below should follow the NSI documentation at <https://drive.google.com/drive/folders/1ES36CjJpVumXXCM8VC5VQQa7J3xIIqoW>. */
-trait NsiStubs { self: GuiceOneServerPerSuite =>
+trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
 
   /** NSI Link Accounts spec */
 
@@ -111,4 +113,8 @@ trait NsiStubs { self: GuiceOneServerPerSuite =>
 
   private lazy val nsiConfig   = app.configuration.get[Configuration]("microservice.services.nsi")
   private lazy val nsiRootPath = nsiConfig.get[String]("rootPath")
+
+  /** Random data */
+
+  protected lazy val randomHttpErrorCodes: Gen[Int] = Gen.chooseNum(BAD_REQUEST, NETWORK_AUTHENTICATION_REQUIRED)
 }

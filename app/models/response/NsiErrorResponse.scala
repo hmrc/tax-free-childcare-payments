@@ -23,7 +23,6 @@ import play.api.libs.json.{Reads, __}
 
 sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String) extends EnumEntry
 
-/** The Logging mixin is unused but fixes a Heisenbug appearing in Reads instance. */
 object NsiErrorResponse extends Enum[NsiErrorResponse] with Status with Logging {
   type Maybe[A] = Either[NsiErrorResponse, A]
 
@@ -36,6 +35,7 @@ object NsiErrorResponse extends Enum[NsiErrorResponse] with Status with Logging 
   case object E0006 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
   case object E0007 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
   case object E0008 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
+  case object E0009 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
 
   case object E0020 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway")
   case object E0021 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
