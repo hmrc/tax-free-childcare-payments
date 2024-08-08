@@ -4,7 +4,7 @@ info:
   description: "An API which allows online cashless payment providers to give parents the option of paying for their childcare with funds from their Tax-free Childcare (TFC) account.
   
   
-  There are three different operations involved in this process:
+  There are 3 different operations involved in this process:
 
 - Linking the parent's TFC account with their account on the online payment provider's platform.
 
@@ -30,7 +30,11 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>ETFC2</td>
-			<td>Bearer Token did not return a valid record	</td>
+			<td>Bearer Token did not return a valid record</td>
+		</tr>
+		<tr>
+			<td>ETFC3</td>
+			<td>Bad Gateway</td>
 		</tr>
 		<tr>
 			<td>E0000</td>
@@ -46,43 +50,13 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0003</td>
-			<td>cpp_reg_reference is in invalid format or missing</td>
+			<td>ccp_reg_reference is in invalid format or missing</td>
+
 		</tr>
 		<tr>
 			<td>E0004</td>
 			<td>epp_unique_customer_id is in invalid format or missing</td>
-		</tr>
-		<tr>
-			<td>E0005</td>
-			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
-		</tr>
-		<tr>
-			<td>E0006</td>
-			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
-		</tr>
-		<tr>
-			<td>E0007</td>
-			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
-		</tr>
-		<tr>
-			<td>E0008</td>
-			<td>We encountered an error on our servers and did not process your request, please try again later./td>
-		</tr>
-		<tr>
-			<td>E0020</td>
-			<td>Bad gateway</td>
-		</tr>
-		<tr>
-			<td>E0021</td>
-			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
-		</tr>
-		<tr>
-			<td>E0022</td>
-			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
-		</tr>
-		<tr>
-			<td>E0023</td>
-			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
+
 		</tr>
 		<tr>
 			<td>E0024</td>
@@ -101,10 +75,6 @@ The following table gives the detailed description for each error code you recei
 			<td>The Childcare Provider (CCP) you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later.</td>
 		</tr>
 		<tr>
-			<td>E0401</td>
-			<td>Service was denied access to required services</td>
-		</tr>
-		<tr>
 			<td>E0030</td>
 			<td>The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information.</td>
 		</tr>
@@ -114,15 +84,11 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0032</td>
-			<td>the epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref</td>
+			<td>The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref</td>
 		</tr>
 		<tr>
 			<td>E0033</td>
 			<td>The TFC account used to request payment contains insufficient funds</td>
-		</tr>
-		<tr>
-			<td>E0034</td>
-			<td>The service is currently unavailable.</td>
 		</tr>
 		<tr>
 			<td>E0035</td>
@@ -147,22 +113,6 @@ The following table gives the detailed description for each error code you recei
 		<tr>
 			<td>E0043</td>
 			<td>Parent associated with the bearer token does not have a TFC account. Please ask the parent to create a TFC account first.</td>
-		</tr>
-		<tr>
-			<td>E9000</td>
-			<td>The service is currently unavailable.</td>
-		</tr>
-		<tr>
-			<td>E9999</td>
-			<td>The service is currently unavailable.</td>
-		</tr>
-		<tr>
-			<td>E8000</td>
-			<td>The service is currently unavailable.</td>
-		</tr>
-		<tr>
-			<td>E8001</td>
-			<td>The service is currently unavailable.</td>
 		</tr>
 	</tbody>
 </table>
@@ -218,7 +168,7 @@ paths:
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
-                  description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
+                  description: This alphanumeric unique ID (max. 20 characters) is assigned to the online payment provider when they register with HMRC.
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
@@ -285,42 +235,6 @@ paths:
                       value:
                         errorCode: E0401
                         errorDescription: "We encountered an error on our servers and did not process your request, please try again later."
-          "502":
-            description: Bad gateway
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/502errorResponse'
-                  examples:
-                    bad_gateway:
-                      value:
-                        errorCode: E0020
-                        errorDescription: "Bad gateway."
-          "503":
-            description: Service unavailable
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/503errorResponse'
-                  examples:
-                    service_unavailable:
-                      value:
-                        errorCode: E9000
-                        errorDescription: "The service is currently unavailable."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -371,7 +285,7 @@ paths:
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
-                  description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
+                  description: This alphanumeric unique ID (max. 20 characters) is assigned to the online payment provider when they register with HMRC.
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
@@ -398,7 +312,7 @@ paths:
                       description: The status of the child's TFC account. Indicates whether the account is active or not.
                       enum:
                        - Active
-                       - Inactive
+                       - Blocked
                       example: Active
                     paid_in_by_you:
                       type: integer
@@ -456,42 +370,6 @@ paths:
                       value:
                         errorCode: E0401
                         errorDescription: "We encountered an error on our servers and did not process your request, please try again later."
-          "502":
-            description: Bad gateway
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/502errorResponse'
-                  examples:
-                    bad_gateway:
-                      value:
-                        errorCode: E0020
-                        errorDescription: "Bad gateway."
-          "503":
-            description: Service unavailable
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/503errorResponse'
-                  examples:
-                    service_unavailable:
-                      value:
-                        errorCode: E9000
-                        errorDescription: "The service is currently unavailable."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -541,7 +419,7 @@ paths:
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
-                  description: This 16 character alphanumeric unique ID is assigned to the online payment provider when they register with HMRC.
+                  description: This alphanumeric unique ID (max. 20 characters) is assigned to the online payment provider when they register with HMRC.
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 payment_amount:
@@ -620,42 +498,6 @@ paths:
                       value:
                         errorCode: E0401
                         errorDescription: "We encountered an error on our servers and did not process your request, please try again later."
-          "502":
-            description: Bad gateway
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/502errorResponse'
-                  examples:
-                    bad_gateway:
-                      value:
-                        errorCode: E0020
-                        errorDescription: "Bad gateway."
-          "503":
-            description: Service unavailable
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/503errorResponse'
-                  examples:
-                    service_unavailable:
-                      value:
-                        errorCode: E9000
-                        errorDescription: "The service is currently unavailable."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -715,7 +557,7 @@ components:
           description: "One of the following error codes: ETFC2, E0000, E0002, E0004, E0005, E0006, E0021, E0022, E0023, E0401, E0001"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
+          description: We encountered an error on our servers and did not process your request, please try again later.	
           type: string
 
     500errorResponseBalance:
@@ -726,7 +568,7 @@ components:
           description: "One of the following error codes: ETFC2, E0000, E0002, E0004, E0005, E0401, E0001"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
+          description: We encountered an error on our servers and did not process your request, please try again later.	
           type: string
 
     500errorResponsePayment:
@@ -737,7 +579,7 @@ components:
           description: "One of the following error codes: ETFC2, E0000, E0002, E0003, E0004, E0005, E0007, E0008, E0009, E0022, E0023, E0401, E0001"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
+          description: We encountered an error on our servers and did not process your request, please try again later.	
           type: string
 
 
@@ -746,7 +588,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "E0020"
+          description: "One of the following error codes: ETFC3, E0020"
           type: string
         errorMessage:
           description: Bad Gateway.
