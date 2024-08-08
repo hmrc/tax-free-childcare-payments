@@ -37,6 +37,10 @@ The following table gives the detailed description for each error code you recei
 			<td>Bad Gateway</td>
 		</tr>
 		<tr>
+			<td>ETFC4</td>
+			<td>Bad Gateway</td>
+		</tr>
+		<tr>
 			<td>E0000</td>
 			<td>We encountered an error on our servers and did not process your request, please try again later.</td>
 		</tr>
