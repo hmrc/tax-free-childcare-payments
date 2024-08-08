@@ -84,15 +84,11 @@ The following table gives the detailed description for each error code you recei
 		</tr>
 		<tr>
 			<td>E0032</td>
-			<td>the epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref</td>
+			<td>The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref</td>
 		</tr>
 		<tr>
 			<td>E0033</td>
 			<td>The TFC account used to request payment contains insufficient funds</td>
-		</tr>
-		<tr>
-			<td>E0034</td>
-			<td>The service is currently unavailable.</td>
 		</tr>
 		<tr>
 			<td>E0035</td>
@@ -117,22 +113,6 @@ The following table gives the detailed description for each error code you recei
 		<tr>
 			<td>E0043</td>
 			<td>Parent associated with the bearer token does not have a TFC account. Please ask the parent to create a TFC account first.</td>
-		</tr>
-		<tr>
-			<td>E9000</td>
-			<td>The service is currently unavailable.</td>
-		</tr>
-		<tr>
-			<td>E9999</td>
-			<td>The service is currently unavailable.</td>
-		</tr>
-		<tr>
-			<td>E8000</td>
-			<td>The service is currently unavailable.</td>
-		</tr>
-		<tr>
-			<td>E8001</td>
-			<td>The service is currently unavailable.</td>
 		</tr>
 	</tbody>
 </table>
@@ -255,42 +235,6 @@ paths:
                       value:
                         errorCode: E0401
                         errorDescription: "We encountered an error on our servers and did not process your request, please try again later."
-          "502":
-            description: Bad gateway
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/502errorResponse'
-                  examples:
-                    bad_gateway:
-                      value:
-                        errorCode: E0020
-                        errorDescription: "Bad gateway."
-          "503":
-            description: Service unavailable
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/503errorResponse'
-                  examples:
-                    service_unavailable:
-                      value:
-                        errorCode: E9000
-                        errorDescription: "The service is currently unavailable."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -426,42 +370,6 @@ paths:
                       value:
                         errorCode: E0401
                         errorDescription: "We encountered an error on our servers and did not process your request, please try again later."
-          "502":
-            description: Bad gateway
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/502errorResponse'
-                  examples:
-                    bad_gateway:
-                      value:
-                        errorCode: E0020
-                        errorDescription: "Bad gateway."
-          "503":
-            description: Service unavailable
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/503errorResponse'
-                  examples:
-                    service_unavailable:
-                      value:
-                        errorCode: E9000
-                        errorDescription: "The service is currently unavailable."
       security:
         - user-restricted:
           - tax-free-childcare-payments
@@ -590,42 +498,6 @@ paths:
                       value:
                         errorCode: E0401
                         errorDescription: "We encountered an error on our servers and did not process your request, please try again later."
-          "502":
-            description: Bad gateway
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/502errorResponse'
-                  examples:
-                    bad_gateway:
-                      value:
-                        errorCode: E0020
-                        errorDescription: "Bad gateway."
-          "503":
-            description: Service unavailable
-            headers:
-              Correlation-ID:
-                schema:
-                  format: uuid
-                  type: string
-                  description: A unique key shared between all parties which can be used for tracing and error tracking. This is generated and sent by the online payment provider.
-                  example: 5fb3b626-7399-48c2-a92a-b97ed8d6fed7
-            content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/503errorResponse'
-                  examples:
-                    service_unavailable:
-                      value:
-                        errorCode: E9000
-                        errorDescription: "The service is currently unavailable."
       security:
         - user-restricted:
           - tax-free-childcare-payments

@@ -115,29 +115,106 @@ The following scenarios relate to all endpoints:
 
 <table>
     <tr>
-        <td>outbound_child_payment_ref</td>
-        <td>Scenario</td>
-        <td>Example response</td>
+        <th colspan="2">EEAA00000TFC</td>
     </tr>
     <tr>
-        <td>EETT00000TFC</td>
+        <td>Invalid input data</td>
+        <td>500<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0000",
+ "errorDescription": "We encountered an error on our servers and did not process your request, please try again later.",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EELL00000TFC</td>
+    </tr>
+    <tr>
+        <td>Parent's National Insurance number does not match the expected format</td>
+        <td>502<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0020",
+ "errorDescription": "Bad Gateway",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EERR00000TFC</td>
+    </tr>
+    <tr>
+        <td>outbound_child_payment_ref does not match the parent's National Insurance number</td>
+        <td>400<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0026",
+ "errorDescription": "Please check the outbound_child_payment_ref supplied",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EETT00000TFC</td>
+    </tr>
+    <tr>
         <td>Online payment provider's registration is not Active</td>
         <td>400<br>
            <pre class="code--block">
 {
  "errorCode": "E0030",
- "errorDescription": "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information",
+ "errorDescription": "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information.",
 }
            </pre></td>
     </tr>
     <tr>
-        <td>EEBE00000TFC</td>
-        <td>Internal server error</td>
+        <th colspan="2">EEXX00000TFC</td>
+    </tr>
+    <tr>
+        <td>An error is returned by the parent's banking services</td>
         <td>503<br>
            <pre class="code--block">
 {
- "errorCode": "E9000",
- "errorDescription": "The service is currently unavailable.",
+ "errorCode": "E0034",
+ "errorDescription": "The service is currently unavailable",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EEZZ00000TFC</td>
+    </tr>
+    <tr>
+        <td>outbound_child_payment_ref not found</td>
+        <td>400<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0040",
+ "errorDescription": "The outbound_child_payment_ref could not be found in the TFC system - please ensure parent checks their details and tries again.",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EEBA00000TFC</td>
+    </tr>
+    <tr>
+        <td>epp_reg_reference not found</td>
+        <td>400<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0041",
+ "errorDescription": "The epp_reg_reference could not be found in the TFC system. Please check the details and try again.",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EEBD00000TFC</td>
+    </tr>
+    <tr>
+        <td>Parent's National Insurance number not found</td>
+        <td>400<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0043",
+ "errorDescription": "Parent associated with the bearer token does not have a TFC account. Please ask the parent to create a TFC account first.",
 }
            </pre></td>
     </tr>
@@ -147,18 +224,59 @@ The following scenarios relate to all endpoints:
 
 <table>
     <tr>
-        <td style="width:33%">outbound_child_payment_ref</td>
-        <td style="width:33%">Scenario</td>
-        <td style="width:33%">Example response</td>
+        <th colspan="2">EEPP00000TFC</td>
     </tr>
     <tr>
-        <td>EEQQ00000TFC</td>
-        <td>The given child_dob does not correlate with the provided outbound_child_payment_ref</td>
+        <td>epp_reg_reference and epp_unique_customer_id do not match</td>
+        <td>400<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0024",
+ "errorDescription": "Please check that the epp_reg_reference and epp_unique_customer_id are both correct",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EEQQ00000TFC</td>
+    </tr>
+    <tr>
+        <td> child_date_of_birth and outbound_child_payment_ref do not match</td>
         <td>400<br>
            <pre class="code--block">
 {
  "errorCode": "E0025",
- "errorDescription": "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct",
+ "errorDescription": "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct	",
+}
+           </pre></td>
+    </tr>
+</table>
+
+##### Balance endpoint errors
+
+<table>
+    <tr>
+        <th colspan="2">EESS00000TFC</td>
+    </tr>
+    <tr>
+        <td>Authentication information is missing or invalid</td>
+        <td>500<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0401",
+ "errorDescription": "We encountered an error on our servers and did not process your request, please try again later.",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EEVV00000TFC</td>
+    </tr>
+    <tr>
+        <td>The Online Payment Provider's details do not match the outbound_child_payment_reference</td>
+        <td>400<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0032",
+ "errorDescription": "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref",
 }
            </pre></td>
     </tr>
@@ -168,13 +286,36 @@ The following scenarios relate to all endpoints:
 
 <table>
     <tr>
-        <td style="width:33%">outbound_child_payment_ref</td>
-        <td style="width:33%">Scenario</td>
-        <td style="width:33%">Example response</td>
+        <th colspan="2">EEPP00000TFC</td>
     </tr>
     <tr>
-        <td>EEUU00000TFC</td>
-        <td>The childcare provider's registration is not active</td>
+        <td>epp_reg_reference and epp_unique_customer_id do not match</td>
+        <td>400<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0024",
+ "errorDescription": "Please check that the epp_reg_reference and epp_unique_customer_id are both correct",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EERS00000TFC</td>
+    </tr>
+    <tr>
+        <td>ccp_reg_reference and outbound_child_payment_reference do not match</td>
+        <td>400<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0027",
+ "errorDescription": "The CCP you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later.",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EEUU00000TFC</td>
+    </tr>
+    <tr>
+        <td></td>
         <td>400<br>
            <pre class="code--block">
 {
@@ -184,24 +325,67 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <td>EEWW00000TFC</td>
-        <td>Insufficient funds</td>
+        <th colspan="2">EEVV00000TFC</td>
+    </tr>
+    <tr>
+        <td>The Online Payment Provider's details do not match the outbound_child_payment_reference</td>
         <td>400<br>
            <pre class="code--block">
 {
- "errorCode": "E0033",
- "errorDescription": "The TFC account used to request payment contains insufficient funds.",
+ "errorCode": "E0032",
+ "errorDescription": "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref",
 }
            </pre></td>
     </tr>
     <tr>
-        <td>EEYY00000TFC</td>
+        <th colspan="2">EEYY00000TFC</td>
+    </tr>
+    <tr>
         <td>Payments from this TFC account are blocked</td>
-        <td>400<br>
+        <td>500<br>
            <pre class="code--block">
 {
  "errorCode": "E0035",
- "errorDescription": "There is an issue with this TFC account, please advise parent / carer to contact TFC customer services.",
+ "errorDescription": "There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services.",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EEYZ00000TFC</td>
+    </tr>
+    <tr>
+        <td>The payee's bank details are incorrect</td>
+        <td>400<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0036",
+ "errorDescription": "Error processing payment due to payee bank details",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EEBC00000TFC</td>
+    </tr>
+    <tr>
+        <td>ccp_reg_reference not found</td>
+        <td>400<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0042",
+ "errorDescription": "The ccp_reg_reference could not be found in the TFC system or does not correlate with the ccp_postcode. Please check the details and try again.",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2">EEBE00000TFC</td>
+    </tr>
+    <tr>
+        <td>Internal server error</td>
+        <td>503<br>
+           <pre class="code--block">
+{
+ "errorCode": "E9000",
+ "errorDescription": "The service is currently unavailable",
 }
            </pre></td>
     </tr>
