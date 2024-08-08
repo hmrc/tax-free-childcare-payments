@@ -127,20 +127,7 @@ The following scenarios relate to all endpoints:
 }
            </pre></td>
     </tr>
-    <tr>
-        <th colspan="2" align="left">EELL00000TFC</td>
-    </tr>
-    <tr>
-        <td>Parent's National Insurance number does not match the expected format</td>
-        <td>502<br>
-           <pre class="code--block">
-{
- "errorCode": "E0020",
- "errorDescription": "Bad Gateway",
-}
-           </pre></td>
-    </tr>
-    <tr>
+   <tr>
         <th colspan="2" align="left">EERR00000TFC</td>
     </tr>
     <tr>
@@ -163,19 +150,6 @@ The following scenarios relate to all endpoints:
 {
  "errorCode": "E0030",
  "errorDescription": "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information.",
-}
-           </pre></td>
-    </tr>
-    <tr>
-        <th colspan="2" align="left">EEXX00000TFC</td>
-    </tr>
-    <tr>
-        <td>An error is returned by the parent's banking services</td>
-        <td>503<br>
-           <pre class="code--block">
-{
- "errorCode": "E0034",
- "errorDescription": "The service is currently unavailable",
 }
            </pre></td>
     </tr>
@@ -342,7 +316,7 @@ The following scenarios relate to all endpoints:
     </tr>
     <tr>
         <td>Payments from this TFC account are blocked</td>
-        <td>500<br>
+        <td>400<br>
            <pre class="code--block">
 {
  "errorCode": "E0035",
