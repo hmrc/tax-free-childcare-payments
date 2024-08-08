@@ -54,14 +54,14 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
     </td>
     <td>Returns the following: <br>
       <br><pre class="code--block">
-        {
-          "tfc_account_status": "ACTIVE",
-          "government_top_up": 14159,
-          "top_up_allowance": 26535,
-          "paid_in_by_you": 89793,
-          "total_balance": 23846
-          "cleared_funds": 26433
-        }
+{
+ "tfc_account_status": "ACTIVE",
+ "government_top_up": 14159,
+ "top_up_allowance": 26535,
+ "paid_in_by_you": 89793,
+ "total_balance": 23846
+ "cleared_funds": 26433
+}
         </pre>
       </td>
   </tr>
@@ -70,14 +70,14 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
     </td>
     <td>Returns the following: <br>
       <br><pre class="code--block">
-        {
-          "tfc_account_status": "INACTIVE",
-          "government_top_up": 14159,
-          "top_up_allowance": 26535,
-          "paid_in_by_you": 89793,
-          "total_balance": 23846
-          "cleared_funds": 26433
-        }
+{
+ "tfc_account_status": "INACTIVE",
+ "government_top_up": 14159,
+ "top_up_allowance": 26535,
+ "paid_in_by_you": 89793,
+ "total_balance": 23846
+ "cleared_funds": 26433
+}
         </pre>
       </td>
   </tr>
@@ -99,10 +99,10 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
     </td>
     <td>Return the following: <br>
       <br><pre class="code--block">
-        {
-          "payment_reference": "8427950288419716",
-          "estimated_payment_date": "2024-10-01",
-        }
+{
+ "payment_reference": "8427950288419716",
+ "estimated_payment_date": "2024-10-01",
+}
         </pre>
     </td>
   </tr>
@@ -124,10 +124,10 @@ The following scenarios relate to all endpoints:
         <td>Online payment provider's registration is not Active</td>
         <td>400<br>
            <pre class="code--block">
-           {
-            "errorCode": "E0030",
-            "errorDescription": "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information",
-           }
+{
+ "errorCode": "E0030",
+ "errorDescription": "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information",
+}
            </pre></td>
     </tr>
     <tr>
@@ -135,10 +135,10 @@ The following scenarios relate to all endpoints:
         <td>Internal server error</td>
         <td>503<br>
            <pre class="code--block">
-           {
-            "errorCode": "E9000",
-            "errorDescription": "The service is currently unavailable.",
-           }
+{
+ "errorCode": "E9000",
+ "errorDescription": "The service is currently unavailable.",
+}
            </pre></td>
     </tr>
 </table>
@@ -156,10 +156,10 @@ The following scenarios relate to all endpoints:
         <td>The given child_dob does not correlate with the provided outbound_child_payment_ref</td>
         <td>400<br>
            <pre class="code--block">
-            {
-             "errorCode": "E0025",
-             "errorDescription": "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct",
-            }
+{
+ "errorCode": "E0025",
+ "errorDescription": "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct",
+}
            </pre></td>
     </tr>
 </table>
@@ -177,10 +177,10 @@ The following scenarios relate to all endpoints:
         <td>The childcare provider's registration is not active</td>
         <td>400<br>
            <pre class="code--block">
-            {
-             "errorCode": "E0031",
-             "errorDescription": "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds.",
-            }
+{
+ "errorCode": "E0031",
+ "errorDescription": "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds.",
+}
            </pre></td>
     </tr>
     <tr>
@@ -188,10 +188,10 @@ The following scenarios relate to all endpoints:
         <td>Insufficient funds</td>
         <td>400<br>
            <pre class="code--block">
-            {
-             "errorCode": "E0033",
-             "errorDescription": "The TFC account used to request payment contains insufficient funds.",
-            }
+{
+ "errorCode": "E0033",
+ "errorDescription": "The TFC account used to request payment contains insufficient funds.",
+}
            </pre></td>
     </tr>
     <tr>
@@ -199,10 +199,10 @@ The following scenarios relate to all endpoints:
         <td>Payments from this TFC account are blocked</td>
         <td>400<br>
            <pre class="code--block">
-            {
-             "errorCode": "E0035",
-             "errorDescription": "There is an issue with this TFC account, please advise parent / carer to contact TFC customer services.",
-            }
+{
+ "errorCode": "E0035",
+ "errorDescription": "There is an issue with this TFC account, please advise parent / carer to contact TFC customer services.",
+}
            </pre></td>
     </tr>
 </table>

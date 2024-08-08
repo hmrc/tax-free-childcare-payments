@@ -31,7 +31,10 @@ The following table gives the detailed description for each error code you recei
 		<tr>
 			<td>ETFC2</td>
 			<td>Bearer Token did not return a valid record</td>
-
+		</tr>
+		<tr>
+			<td>ETFC3</td>
+			<td>Bad Gateway</td>
 		</tr>
 		<tr>
 			<td>E0000</td>
@@ -713,7 +716,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "E0020"
+          description: "One of the following error codes: ETFC3, E0020"
           type: string
         errorMessage:
           description: Bad Gateway.
