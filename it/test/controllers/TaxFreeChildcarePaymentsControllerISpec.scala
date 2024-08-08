@@ -608,7 +608,7 @@ class TaxFreeChildcarePaymentsControllerISpec
         }
     }
 
-    "response 400 with errorCode E0024 and expected errorDescription" when {
+    "respond 400 with E0024 and expected errorDescription" when {
       val expectedErrorDesc = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
 
       "NSI responds 400 with errorCode E0024" in
@@ -632,7 +632,8 @@ class TaxFreeChildcarePaymentsControllerISpec
     }
 
     "response 400 with errorCode E0027 and expected errorDescription" when {
-      val expectedErrorDesc = "The CCP you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later."
+      val expectedErrorDesc =
+        "The CCP you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later."
 
       "NSI responds 400 with errorCode E0027" in
         forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
@@ -673,6 +674,33 @@ class TaxFreeChildcarePaymentsControllerISpec
               .futureValue
 
             checkErrorResponse(response, BAD_REQUEST, "E0032", expectedErrorDesc)
+          }
+        }
+    }
+
+    "respond 500 with E0009 and expected errorDescription" when {
+      val expectedErrorDesc = "We encountered an error on our servers and did not process your request, please try again later."
+
+      "NSI responds with HTTP error status and JSON errorCode E0009" in
+        forAll(
+          Gen.uuid,
+          validPaymentRequestWithPayeeTypeSetToCCP,
+          Gen.asciiPrintableStr
+        ) { (expectedCorrelationId, payload, nsiErrorDesc) =>
+          withClient { ws =>
+            stubAuthRetrievalOf(randomNinos.sample.get)
+            stubNsiMakePaymentError(randomHttpErrorCodes.sample.get, "E0009", nsiErrorDesc)
+
+            val response = ws
+              .url(s"$baseUrl/")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, INTERNAL_SERVER_ERROR, "E0009", expectedErrorDesc)
           }
         }
     }

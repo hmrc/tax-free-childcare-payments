@@ -182,6 +182,31 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
         }
     }
 
+    "return Left E0009 and log errorDescription" when {
+      "NSI responds with error status, errorCode E0027, and defined errorDescription" in
+        forAll(
+          arbitrary[IdentifierRequest[PaymentRequest]],
+          Gen.asciiPrintableStr
+        ) {
+          (request, expectedErrorDescription) =>
+            withCaptureOfLoggingFrom(LOGGER) { logs =>
+              val expectedStatus = randomHttpErrorCodes.sample.get
+              stubNsiMakePaymentError(expectedStatus, "E0009", expectedErrorDescription)
+
+              val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
+
+              actualNsiErrorResponse shouldBe E0009
+
+              val expectedResponseJson = Json.obj("errorCode" -> "E0009", "errorDescription" -> expectedErrorDescription)
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
+              checkLoneLog(
+                expectedLevel = Level.WARN,
+                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+              )(logs)
+            }
+        }
+    }
+
     "return Left E0027 and log errorDescription" when {
       "NSI responds with error status, errorCode E0027, and defined errorDescription" in
         forAll(
@@ -222,6 +247,4 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
   private def getFullLogMessageFrom(partialLogMessage: String) = s"[Error] - [ ] - [null: $partialLogMessage]"
 
   private lazy val LOGGER = Logger(classOf[NsiConnector.type])
-
-  private lazy val randomHttpErrorCodes = Gen.chooseNum(BAD_REQUEST, NETWORK_AUTHENTICATION_REQUIRED)
 }
