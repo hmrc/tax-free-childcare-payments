@@ -17,7 +17,7 @@
 package models.request
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{ConstraintReads, JsError, Reads, __}
+import play.api.libs.json._
 
 sealed abstract class Payee
 
@@ -38,11 +38,21 @@ object Payee extends ConstraintReads {
       .read(CCP_ONLY)
       .flatMap(_ => ChildCareProvider.reads)
 
-  val readsPayeeFromApi: Reads[Payee] = _ => JsError("")
+  val readsPayeeFromApi: Reads[Payee] =
+    (__ \ PAYEE_TYPE_KEY)
+      .read[String]
+      .flatMap {
+        case "EPP" => Reads pure ExternalPaymentProvider
+        case "CCP" => ChildCareProvider.reads
+        case _     => _ => JsError(JsPath(List(KeyPathNode(PAYEE_TYPE_KEY))), "error.payee_type")
+      }
 
-  val readsCcpFromApi: Reads[Payee] = _ => JsError("")
+  val readsCcpFromApi: Reads[Payee] =
+    (__ \ PAYEE_TYPE_KEY)
+      .read(CCP_ONLY)
+      .flatMap(_ => ChildCareProvider.reads)
 
-  lazy private val POST_CODE = pattern("[a-zA-Z0-9]{2,4}\\s*[a-zA-Z0-9]{3}".r)
+  lazy private val POST_CODE = pattern("[a-zA-Z0-9]{2,4}\\s+[a-zA-Z0-9]{3}".r)
   lazy private val CCP_ONLY  = pattern("CCP".r)
   lazy private val CCP_REG   = pattern(s".{1,$CCP_REG_MAX_LEN}".r)
   lazy val CCP_REG_MAX_LEN   = 20
