@@ -69,7 +69,8 @@ object NsiErrorResponse extends Enum[NsiErrorResponse] with Status with Logging 
   case object ETFC3 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway") // Unexpected NSI response
   case object ETFC4 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway") // Unexpected NSI errorCode
 
-  val values: IndexedSeq[NsiErrorResponse] = findValues
+  /** This must be lazy to stop NPE thrown by JSON reader. */
+  lazy val values: IndexedSeq[NsiErrorResponse] = findValues
 
   implicit val reads: Reads[NsiErrorResponse] =
     (__ \ "errorCode").read[String].map { str =>
