@@ -31,12 +31,14 @@ trait Generators extends base.Generators {
   import Arbitrary.arbitrary
 
   protected implicit def arbIdentifierRequest[A: Arbitrary]: Arbitrary[IdentifierRequest[A]] = Arbitrary(
-    for {
-      nino          <- randomNinos
-      correlationId <- Gen.uuid
-      body          <- arbitrary[A]
-    } yield IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), body))
+    randomIdentifierRequest(arbitrary[A])
   )
+
+  protected def randomIdentifierRequest[A](randomBody: Gen[A]): Gen[IdentifierRequest[A]] = for {
+    nino          <- randomNinos
+    correlationId <- Gen.uuid
+    body          <- randomBody
+  } yield IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), body))
 
   /** START Link Accounts generators */
 

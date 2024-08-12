@@ -20,57 +20,23 @@ import models.requests.LinkRequest.CHILD_DOB_KEY
 import models.requests.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.requests.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
-import models.response.{ErrorDescriptions, NsiErrorResponse}
-
+import models.response.NsiErrorResponse
 import play.api.libs.json._
+import play.api.mvc.Result
 import play.api.mvc.Results.Status
-import play.api.mvc.{RequestHeader, Result}
 
-object ErrorResponseFactory extends ErrorDescriptions with FormattedLogging {
+object ErrorResponseFactory {
 
-  // noinspection ScalaStyle
   def getJson(errors: collection.Seq[(JsPath, collection.Seq[JsonValidationError])]): JsValue = {
-    val errorCode = errors.head match {
-      case (JsPath(KeyPathNode(key) :: Nil), error :: _) =>
-        (key, error.message) match {
-          case (TFC_ACCOUNT_REF_KEY, "error.path.missing") => "E0001"
-          case (EPP_URN_KEY, "error.path.missing")         => "E0002"
-          case (CCP_URN_KEY, "error.path.missing")         => "E0003"
-          case (EPP_ACCOUNT_ID_KEY, "error.path.missing")  => "E0004"
-          case (CHILD_DOB_KEY, "error.path.missing")       => "E0006"
-          case (PAYEE_TYPE_KEY, "error.path.missing")      => "E0007"
-          case (PAYMENT_AMOUNT_KEY, "error.path.missing")  => "E0008"
-          case (CHILD_DOB_KEY, _)                          => "E0021"
-          case (PAYEE_TYPE_KEY, _)                         => "E0022"
-          case (PAYMENT_AMOUNT_KEY, _)                     => "E0023"
-          case (TFC_ACCOUNT_REF_KEY, _)                    => "E0000"
-          case (EPP_URN_KEY, _)                            => "E0000"
-          case (EPP_ACCOUNT_ID_KEY, _)                     => "E0000"
-          case (CCP_URN_KEY, _)                            => "E0000"
-          case (CCP_POSTCODE_KEY, _)                       => "E0000"
-          case _                                           => "E0000"
-        }
-      case _                                             => "E0000"
-    }
-
-    getJson(errorCode, ERROR_400_DESCRIPTION)
+    val (JsPath(KeyPathNode(key) :: Nil), _) = errors.head
+    val errorCode = JSON_VALIDATION_ERROR_CODES(key)
+    getJson(errorCode, s"$key is in invalid format or missing")
   }
 
-  def getResult(nsiErrorResponse: NsiErrorResponse)(implicit req: RequestHeader): Result = {
-    val errorCode = nsiErrorResponse.toString
-    val errorDesc = nsiErrorResponse.message
-    val logMsg    = formattedLog(s"$errorCode - $errorDesc")
-
-    if (nsiErrorResponse.reportAs < 500) {
-      logger.info(logMsg)
-    } else {
-      logger.warn(logMsg)
-    }
-
+  def getResult(nsiErrorResponse: NsiErrorResponse): Result =
     new Status(nsiErrorResponse.reportAs)(
-      getJson(errorCode, descriptions(nsiErrorResponse.reportAs))
+      getJson(nsiErrorResponse.toString, nsiErrorResponse.message)
     )
-  }
 
   @inline
   def getJson(errorCode: String, errorDescription: String): JsValue =
@@ -78,4 +44,15 @@ object ErrorResponseFactory extends ErrorDescriptions with FormattedLogging {
       "errorCode"        -> errorCode,
       "errorDescription" -> errorDescription
     )
+
+  private val JSON_VALIDATION_ERROR_CODES = Map(
+    TFC_ACCOUNT_REF_KEY -> "E0001",
+    EPP_URN_KEY         -> "E0002",
+    EPP_ACCOUNT_ID_KEY  -> "E0004",
+    CHILD_DOB_KEY       -> "E0006",
+    PAYEE_TYPE_KEY      -> "E0007",
+    CCP_URN_KEY         -> "E0003",
+    CCP_POSTCODE_KEY    -> "E0009",
+    PAYMENT_AMOUNT_KEY  -> "E0008"
+  )
 }

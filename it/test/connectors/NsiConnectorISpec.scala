@@ -17,13 +17,16 @@
 package connectors
 
 import base.{BaseISpec, NsiStubs}
+import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.scenarios._
 import models.requests.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
-import models.response.NsiErrorResponse.{ETFC3, ETFC4}
+import models.response.NsiErrorResponse._
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Gen, Shrink}
 import org.scalatest.EitherValues
+import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
@@ -32,8 +35,8 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
   private val connector = app.injector.instanceOf[NsiConnector]
 
   "method linkAccounts" should {
-    s"respond $OK with a defined LinkResponse" when {
-      s"NSI responds $CREATED with expected JSON format" in
+    "return Right LinkResponse" when {
+      "NSI responds 201 with expected JSON format" in
         forAll { scenario: NsiLinkAccounts201Scenario =>
           stubNsiLinkAccounts201(scenario.expectedRequestJson)
 
@@ -43,6 +46,56 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
 
           actualResponse shouldBe scenario.expectedResponse
           WireMock.verify(getRequestedFor(nsiLinkAccountsUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
+        }
+    }
+
+    "return Left E0001 and log errorDescription" when {
+      "NSI responds with error status, errorCode E0001, and defined errorDescription" in
+        forAll(
+          arbitrary[IdentifierRequest[LinkRequest]],
+          Gen.asciiPrintableStr
+        ) {
+          (request, expectedErrorDescription) =>
+            withCaptureOfLoggingFrom(LOGGER) { logs =>
+              val expectedStatus = randomHttpErrorCodes.sample.get
+              stubNsiLinkAccountsError(expectedStatus, "E0001", expectedErrorDescription)
+
+              val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
+
+              actualNsiErrorResponse shouldBe E0001
+
+              val expectedResponseJson = Json.obj("errorCode" -> "E0001", "errorDescription" -> expectedErrorDescription)
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
+              checkLoneLog(
+                expectedLevel = Level.WARN,
+                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+              )(logs)
+            }
+        }
+    }
+
+    "return Left E0024 and log errorDescription" when {
+      "NSI responds with error status, errorCode E0024, and defined errorDescription" in
+        forAll(
+          arbitrary[IdentifierRequest[LinkRequest]],
+          Gen.asciiPrintableStr
+        ) {
+          (request, expectedErrorDescription) =>
+            withCaptureOfLoggingFrom(LOGGER) { logs =>
+              val expectedStatus = randomHttpErrorCodes.sample.get
+              stubNsiLinkAccountsError(expectedStatus, "E0024", expectedErrorDescription)
+
+              val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
+
+              actualNsiErrorResponse shouldBe E0024
+
+              val expectedResponseJson = Json.obj("errorCode" -> "E0024", "errorDescription" -> expectedErrorDescription)
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
+              checkLoneLog(
+                expectedLevel = Level.INFO,
+                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+              )(logs)
+            }
         }
     }
 
@@ -115,7 +168,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
   }
 
   "method makePayment" should {
-    s"respond $OK with a defined PaymentResponse" when {
+    "return Right PaymentResponse" when {
       s"NSI responds $CREATED with expected JSON format" in
         forAll { scenario: NsiMakePayment201Scenario =>
           stubNsiMakePayment201(scenario.expectedRequestJson)
@@ -126,6 +179,56 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
 
           actualResponse shouldBe scenario.expectedResponse
           WireMock.verify(postRequestedFor(nsiPaymentUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
+        }
+    }
+
+    "return Left E0009 and log errorDescription" when {
+      "NSI responds with error status, errorCode E0027, and defined errorDescription" in
+        forAll(
+          arbitrary[IdentifierRequest[PaymentRequest]],
+          Gen.asciiPrintableStr
+        ) {
+          (request, expectedErrorDescription) =>
+            withCaptureOfLoggingFrom(LOGGER) { logs =>
+              val expectedStatus = randomHttpErrorCodes.sample.get
+              stubNsiMakePaymentError(expectedStatus, "E0009", expectedErrorDescription)
+
+              val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
+
+              actualNsiErrorResponse shouldBe E0009
+
+              val expectedResponseJson = Json.obj("errorCode" -> "E0009", "errorDescription" -> expectedErrorDescription)
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
+              checkLoneLog(
+                expectedLevel = Level.WARN,
+                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+              )(logs)
+            }
+        }
+    }
+
+    "return Left E0027 and log errorDescription" when {
+      "NSI responds with error status, errorCode E0027, and defined errorDescription" in
+        forAll(
+          arbitrary[IdentifierRequest[PaymentRequest]],
+          Gen.asciiPrintableStr
+        ) {
+          (request, expectedErrorDescription) =>
+            withCaptureOfLoggingFrom(LOGGER) { logs =>
+              val expectedStatus = randomHttpErrorCodes.sample.get
+              stubNsiMakePaymentError(expectedStatus, "E0027", expectedErrorDescription)
+
+              val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
+
+              actualNsiErrorResponse shouldBe E0027
+
+              val expectedResponseJson = Json.obj("errorCode" -> "E0027", "errorDescription" -> expectedErrorDescription)
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
+              checkLoneLog(
+                expectedLevel = Level.INFO,
+                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+              )(logs)
+            }
         }
     }
 
@@ -140,4 +243,8 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
         }
     }
   }
+
+  private def getFullLogMessageFrom(partialLogMessage: String) = s"[Error] - [ ] - [null: $partialLogMessage]"
+
+  private lazy val LOGGER = Logger(classOf[NsiConnector.type])
 }

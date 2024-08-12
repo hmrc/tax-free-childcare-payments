@@ -22,7 +22,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 import models.requests.IdentifierRequest
-import models.response.ErrorDescriptions
 import utils.FormattedLogging.CORRELATION_ID
 import utils.{ErrorResponseFactory, FormattedLogging}
 
@@ -40,8 +39,7 @@ class AuthAction @Inject() (
     with BackendHeaderCarrierProvider
     with AuthorisedFunctions
     with FormattedLogging
-    with Results
-    with ErrorDescriptions {
+    with Results {
 
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
     implicit val req: Request[A] = request
@@ -73,6 +71,6 @@ class AuthAction @Inject() (
       }
   }
 
-  private lazy val ETFC1 = BadRequest(ErrorResponseFactory.getJson("ETFC1", ERROR_400_DESCRIPTION))
-  private lazy val ETFC2 = InternalServerError(ErrorResponseFactory.getJson("ETFC2", ERROR_500_DESCRIPTION))
+  private lazy val ETFC1 = BadRequest(ErrorResponseFactory.getJson("ETFC1", "Correlation ID is in an invalid format or is missing"))
+  private lazy val ETFC2 = InternalServerError(ErrorResponseFactory.getJson("ETFC2", "Bearer Token did not return a valid record"))
 }
