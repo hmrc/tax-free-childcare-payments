@@ -528,7 +528,7 @@ components:
           description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0006, E0024, E0025, E0026, E0030, E0040, E0041, E0043"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
+          description: Refer to the [Error mapping table](Error-mapping) for the corresponding error message.
           type: string
 
     400errorResponseBalance:
@@ -539,7 +539,7 @@ components:
           description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0024, E0026, E0030, E0040, E0041, E0043"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error mapping) for the corresponding error message.
+          description: Refer to the [Error mapping table](Error-mapping) for the corresponding error message.
           type: string
 
     400errorResponsePayment:
