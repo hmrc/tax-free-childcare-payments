@@ -350,4 +350,30 @@ The following scenarios relate to all endpoints:
 }
            </pre></td>
     </tr>
+    <tr>
+        <th colspan="2" align="left">EEBE00000TFC</td>
+    </tr>
+    <tr>
+        <td>Internal server error</td>
+        <td>503<br>
+           <pre class="code--block">
+{
+ "errorCode": "E9000",
+ "errorDescription": "The service is currently unavailable",
+}
+           </pre></td>
+    </tr>
+    <tr>
+        <th colspan="2" align="left">EEWW00000TFC</td>
+    </tr>
+    <tr>
+        <td>Insufficient funds in the child's TFC account</td>
+        <td>503<br>
+           <pre class="code--block">
+{
+ "errorCode": "E0033",
+ "errorDescription": "Insufficient funds",
+}
+           </pre></td>
+    </tr>
 </table>
