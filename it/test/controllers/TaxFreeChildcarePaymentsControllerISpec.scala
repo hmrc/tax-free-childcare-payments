@@ -475,7 +475,7 @@ class TaxFreeChildcarePaymentsControllerISpec
       val expectedErrorDesc = s"$TFC_ACCOUNT_REF_KEY is in invalid format or missing"
 
       "TFC account ref is missing" in
-        forAll(Gen.uuid, randomNinos, paymentPayloadsWithMissingTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
+        forAll(Gen.uuid, randomNinos, randomPaymentJsonWithCcpOnlyAndMissingTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
           withClient { wsClient =>
             stubAuthRetrievalOf(nino)
 
@@ -493,7 +493,7 @@ class TaxFreeChildcarePaymentsControllerISpec
         }
 
       "TFC account ref is invalid" in
-        forAll(Gen.uuid, randomNinos, paymentPayloadsWithInvalidTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
+        forAll(Gen.uuid, randomNinos, randomPaymentJsonWithCcpOnlyAndInvalidTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
           withClient { wsClient =>
             stubAuthRetrievalOf(nino)
 
@@ -515,7 +515,7 @@ class TaxFreeChildcarePaymentsControllerISpec
       val expectedErrorDesc = s"$PAYEE_TYPE_KEY is in invalid format or missing"
 
       "payee type is missing" in
-        forAll(Gen.uuid, paymentPayloadsWithMissingPayeeType) { (expectedCorrelationId, payload) =>
+        forAll(Gen.uuid, randomPaymentJsonWithCcpOnlyAndMissingPayeeType) { (expectedCorrelationId, payload) =>
           withClient { ws =>
             withAuthNinoRetrieval {
               val response = ws
@@ -532,7 +532,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           }
         }
       "payee type is invalid" in
-        forAll(Gen.uuid, paymentPayloadsWithInvalidPayeeType) { (expectedCorrelationId, payload) =>
+        forAll(Gen.uuid, randomPaymentJsonWithCcpOnlyAndInvalidPayeeType) { (expectedCorrelationId, payload) =>
           withClient { ws =>
             withAuthNinoRetrieval {
               val response = ws
@@ -554,7 +554,7 @@ class TaxFreeChildcarePaymentsControllerISpec
       val expectedErrorDesc = s"$PAYMENT_AMOUNT_KEY is in invalid format or missing"
 
       "payment amount is fractional" in
-        forAll(Gen.uuid, paymentPayloadsWithFractionalPaymentAmount) { (expectedCorrelationId, payload) =>
+        forAll(Gen.uuid, randomPaymentJsonWithCcpOnlyAndFractionalPaymentAmount) { (expectedCorrelationId, payload) =>
           withClient { ws =>
             withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
               val res = ws
@@ -572,7 +572,7 @@ class TaxFreeChildcarePaymentsControllerISpec
         }
 
       "payment amount is a string" in
-        forAll(Gen.uuid, paymentPayloadsWithFractionalPaymentAmount) { (expectedCorrelationId, payload) =>
+        forAll(Gen.uuid, randomPaymentJsonWithCcpOnlyAndFractionalPaymentAmount) { (expectedCorrelationId, payload) =>
           withClient { ws =>
             withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
               val res = ws
@@ -590,7 +590,7 @@ class TaxFreeChildcarePaymentsControllerISpec
         }
 
       "payment amount is non-positive" in
-        forAll(Gen.uuid, paymentPayloadsWithNonPositivePaymentAmount) { (expectedCorrelationId, payload) =>
+        forAll(Gen.uuid, randomPaymentJsonWithCcpOnlyAndNonPositivePaymentAmount) { (expectedCorrelationId, payload) =>
           withClient { ws =>
             withAuthNinoRetrievalExpectLog("payment", expectedCorrelationId.toString) {
               val res = ws

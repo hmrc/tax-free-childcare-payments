@@ -17,57 +17,65 @@
 package models.request
 
 import models.request.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
-import models.request.PaymentRequest
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
+import play.api.libs.json.Reads
 
 class PaymentRequestSpec extends BaseSpec {
 
-  "API JSON reader" should {
+  "With implcit Payee Reads in scope, API Reads" should {
+    implicit val readsPayee: Reads[Payee] = Payee.readsPayeeFromApi
 
     "return JsError" when {
-      "field outbound_child_payment_ref is missing" in
-        forAll(paymentPayloadsWithMissingTfcAccountRef) {
+    }
+  }
+
+  "With implcit CCP Reads in scope, API Reads" should {
+    implicit val readsCcp: Reads[Payee] = Payee.readsCcpFromApi
+
+    "return JsError" when {
+      "TFC account ref is missing" in
+        forAll(randomPaymentJsonWithCcpOnlyAndMissingTfcAccountRef) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = TFC_ACCOUNT_REF_KEY,
             expectedMessage = "error.path.missing"
           )
         }
 
-      "field outbound_child_payment_ref is invalid" in
-        forAll(paymentPayloadsWithInvalidTfcAccountRef) {
+      "TFC account ref is invalid" in
+        forAll(randomPaymentJsonWithCcpOnlyAndInvalidTfcAccountRef) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = TFC_ACCOUNT_REF_KEY,
             expectedMessage = "error.pattern"
           )
         }
 
-      "field epp_reg_reference is missing" in
-        forAll(paymentPayloadsWithMissingEppUrn) {
+      "EPP URN is missing" in
+        forAll(randomPaymentJsonWithCcpOnlyAndMissingEppUrn) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = EPP_URN_KEY,
             expectedMessage = "error.path.missing"
           )
         }
 
-      "field epp_reg_reference is invalid" in
-        forAll(paymentPayloadsWithInvalidEppUrn) {
+      "EPP URN is invalid" in
+        forAll(randomPaymentJsonWithCcpOnlyAndInvalidEppUrn) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = EPP_URN_KEY,
             expectedMessage = "error.pattern"
           )
         }
 
-      "field epp_unique_customer_id is missing" in
-        forAll(paymentPayloadsWithMissingEppAccountId) {
+      "EPP account ID is missing" in
+        forAll(randomPaymentJsonWithCcpOnlyAndMissingEppAccountId) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = EPP_ACCOUNT_ID_KEY,
             expectedMessage = "error.path.missing"
           )
         }
 
-      "field epp_unique_customer_id is invalid" in
-        forAll(paymentPayloadsWithInvalidEppAccountId) {
+      "EPP account ID is invalid" in
+        forAll(randomPaymentJsonWithCcpOnlyAndInvalidEppAccountId) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = EPP_ACCOUNT_ID_KEY,
             expectedMessage = "error.pattern"
@@ -75,47 +83,47 @@ class PaymentRequestSpec extends BaseSpec {
         }
 
       "payee type is missing" in
-        forAll(paymentPayloadsWithMissingPayeeType) {
+        forAll(randomPaymentJsonWithCcpOnlyAndMissingPayeeType) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = PAYEE_TYPE_KEY,
             expectedMessage = "error.path.missing"
           )
         }
 
-      "payee type is invalid" in
-        forAll(paymentPayloadsWithInvalidPayeeType) {
+      "payee type is not CCP" in
+        forAll(randomPaymentJsonWithCcpOnlyAndInvalidPayeeType) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = PAYEE_TYPE_KEY,
             expectedMessage = "error.pattern"
           )
         }
 
-      "CCP URN is missing" in
-        forAll(paymentPayloadsWithMissingCcpUrn) {
+      "payee type is CCP & CCP URN is missing" in
+        forAll(randomPaymentJsonWithCcpOnlyAndMissingCcpUrn) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = CCP_URN_KEY,
             expectedMessage = "error.path.missing"
           )
         }
 
-      "CCP URN is invalid" in
-        forAll(paymentPayloadsWithInvalidCcpUrn) {
+      "payee type is CCP & CCP URN is invalid" in
+        forAll(randomPaymentJsonWithCcpOnlyAndInvalidCcpUrn) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = CCP_URN_KEY,
             expectedMessage = "error.pattern"
           )
         }
 
-      "CCP postcode is missing" in
-        forAll(paymentPayloadsWithMissingCcpPostcode) {
+      "payee type is CCP & CCP postcode is missing" in
+        forAll(randomPaymentJsonWithCcpOnlyAndMissinCcpPostcode) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = CCP_POSTCODE_KEY,
             expectedMessage = "error.path.missing"
           )
         }
 
-      "CCP postcode is invalid" in
-        forAll(paymentPayloadsWithInvalidCcpPostcode) {
+      "payee type is CCP & CCP postcode is invalid" in
+        forAll(randomPaymentJsonWithCcpOnlyAndInvalidCcpPostcode) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = CCP_POSTCODE_KEY,
             expectedMessage = "error.pattern"
@@ -123,7 +131,7 @@ class PaymentRequestSpec extends BaseSpec {
         }
 
       "payment amount is missing" in
-        forAll(paymentPayloadsWithMissingPaymentAmount) {
+        forAll(randomPaymentJsonWithCcpOnlyAndMissingPaymentAmount) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = PAYMENT_AMOUNT_KEY,
             expectedMessage = "error.path.missing"
@@ -131,7 +139,7 @@ class PaymentRequestSpec extends BaseSpec {
         }
 
       "payment amount is fractional" in
-        forAll(paymentPayloadsWithFractionalPaymentAmount) {
+        forAll(randomPaymentJsonWithCcpOnlyAndFractionalPaymentAmount) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = PAYMENT_AMOUNT_KEY,
             expectedMessage = "error.expected.int"
@@ -139,7 +147,7 @@ class PaymentRequestSpec extends BaseSpec {
         }
 
       "payment amount is not numeric" in
-        forAll(paymentPayloadsWithStringPaymentAmount) {
+        forAll(randomPaymentJsonWithCcpOnlyAndStringPaymentAmount) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = PAYMENT_AMOUNT_KEY,
             expectedMessage = "error.expected.jsnumber"
@@ -147,7 +155,7 @@ class PaymentRequestSpec extends BaseSpec {
         }
 
       "payment amount is not positive" in
-        forAll(paymentPayloadsWithNonPositivePaymentAmount) {
+        forAll(randomPaymentJsonWithCcpOnlyAndNonPositivePaymentAmount) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = PAYMENT_AMOUNT_KEY,
             expectedMessage = "error.min"

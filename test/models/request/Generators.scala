@@ -108,21 +108,21 @@ trait Generators extends base.Generators {
 
   protected val validPaymentRequestWithPayeeTypeSetToCCP: Gen[JsObject] = paymentPayloadsWith(validSharedPayloads)
 
-  protected val paymentPayloadsWithMissingTfcAccountRef: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)
+  protected val randomPaymentJsonWithCcpOnlyAndMissingTfcAccountRef: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)
 
-  protected val paymentPayloadsWithInvalidTfcAccountRef: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithInvalidTfcAccountRef)
+  protected val randomPaymentJsonWithCcpOnlyAndInvalidTfcAccountRef: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithInvalidTfcAccountRef)
 
-  protected val paymentPayloadsWithMissingEppUrn: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingEppUrn)
+  protected val randomPaymentJsonWithCcpOnlyAndMissingEppUrn: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingEppUrn)
 
-  protected val paymentPayloadsWithInvalidEppUrn: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithInvalidEppUrn)
+  protected val randomPaymentJsonWithCcpOnlyAndInvalidEppUrn: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithInvalidEppUrn)
 
-  protected val paymentPayloadsWithMissingEppAccountId: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingEppAccountId)
+  protected val randomPaymentJsonWithCcpOnlyAndMissingEppAccountId: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithMissingEppAccountId)
 
-  protected val paymentPayloadsWithInvalidEppAccountId: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithInvalidEppAccountId)
+  protected val randomPaymentJsonWithCcpOnlyAndInvalidEppAccountId: Gen[JsObject] = paymentPayloadsWith(sharedPayloadsWithInvalidEppAccountId)
 
-  protected val paymentPayloadsWithMissingPayeeType: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - PAYEE_TYPE_KEY)
+  protected val randomPaymentJsonWithCcpOnlyAndMissingPayeeType: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - PAYEE_TYPE_KEY)
 
-  protected val paymentPayloadsWithInvalidPayeeType: Gen[JsObject] = for {
+  protected val randomPaymentJsonWithCcpOnlyAndInvalidPayeeType: Gen[JsObject] = for {
     paymentPayload   <- validPaymentRequestWithPayeeTypeSetToCCP
     invalidPayeeType <- Gen.oneOf(
                           nonAlphaNumStrings,
@@ -132,9 +132,9 @@ trait Generators extends base.Generators {
                         )
   } yield paymentPayload + ("payee_type" -> JsString(invalidPayeeType))
 
-  protected val paymentPayloadsWithMissingCcpUrn: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - CCP_URN_KEY)
+  protected val randomPaymentJsonWithCcpOnlyAndMissingCcpUrn: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - CCP_URN_KEY)
 
-  protected val paymentPayloadsWithInvalidCcpUrn: Gen[JsObject] = for {
+  protected val randomPaymentJsonWithCcpOnlyAndInvalidCcpUrn: Gen[JsObject] = for {
     paymentPayload <- validPaymentRequestWithPayeeTypeSetToCCP
     invalidCcpUrn  <- Gen.oneOf(
                         Gen const "",
@@ -142,26 +142,26 @@ trait Generators extends base.Generators {
                       )
   } yield paymentPayload + (CCP_URN_KEY -> JsString(invalidCcpUrn))
 
-  protected val paymentPayloadsWithMissingCcpPostcode: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - CCP_POSTCODE_KEY)
+  protected val randomPaymentJsonWithCcpOnlyAndMissinCcpPostcode: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - CCP_POSTCODE_KEY)
 
-  protected val paymentPayloadsWithInvalidCcpPostcode: Gen[JsObject] = for {
+  protected val randomPaymentJsonWithCcpOnlyAndInvalidCcpPostcode: Gen[JsObject] = for {
     paymentPayload     <- validPaymentRequestWithPayeeTypeSetToCCP
     invalidCcpPostcode <- nonAlphaNumStrings
   } yield paymentPayload + (CCP_POSTCODE_KEY -> JsString(invalidCcpPostcode))
 
-  protected val paymentPayloadsWithMissingPaymentAmount: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - PAYMENT_AMOUNT_KEY)
+  protected val randomPaymentJsonWithCcpOnlyAndMissingPaymentAmount: Gen[JsObject] = validPaymentRequestWithPayeeTypeSetToCCP.map(_ - PAYMENT_AMOUNT_KEY)
 
-  protected val paymentPayloadsWithFractionalPaymentAmount: Gen[JsObject] = for {
+  protected val randomPaymentJsonWithCcpOnlyAndFractionalPaymentAmount: Gen[JsObject] = for {
     paymentPayload          <- validPaymentRequestWithPayeeTypeSetToCCP
     fractionalPaymentAmount <- Gen.double if !fractionalPaymentAmount.isValidInt
   } yield paymentPayload + (PAYMENT_AMOUNT_KEY -> JsNumber(fractionalPaymentAmount))
 
-  protected val paymentPayloadsWithStringPaymentAmount: Gen[JsObject] = for {
+  protected val randomPaymentJsonWithCcpOnlyAndStringPaymentAmount: Gen[JsObject] = for {
     paymentPayload          <- validPaymentRequestWithPayeeTypeSetToCCP
     fractionalPaymentAmount <- Gen.asciiPrintableStr
   } yield paymentPayload + (PAYMENT_AMOUNT_KEY -> JsString(fractionalPaymentAmount))
 
-  protected val paymentPayloadsWithNonPositivePaymentAmount: Gen[JsObject] = for {
+  protected val randomPaymentJsonWithCcpOnlyAndNonPositivePaymentAmount: Gen[JsObject] = for {
     paymentPayload     <- validPaymentRequestWithPayeeTypeSetToCCP
     nonPositivePayment <- Gen.oneOf(Gen const 0, Gen.negNum[Int])
   } yield paymentPayload + (PAYMENT_AMOUNT_KEY -> JsNumber(nonPositivePayment))

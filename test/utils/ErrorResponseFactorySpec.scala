@@ -115,22 +115,22 @@ class ErrorResponseFactorySpec extends BaseSpec
 
   private lazy val paymentRequestJsonErrorScenarios = Table(
     ("Invalid Payloads",                          "Expected Error Code", "Expected Error Description"),
-    (paymentPayloadsWithInvalidTfcAccountRef,     "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
-    (paymentPayloadsWithMissingTfcAccountRef,     "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
-    (paymentPayloadsWithMissingEppUrn,            "E0002",               "epp_reg_reference is in invalid format or missing"),
-    (paymentPayloadsWithInvalidEppUrn,            "E0002",               "epp_reg_reference is in invalid format or missing"),
-    (paymentPayloadsWithMissingEppAccountId,      "E0004",               "epp_unique_customer_id is in invalid format or missing"),
-    (paymentPayloadsWithInvalidEppAccountId,      "E0004",               "epp_unique_customer_id is in invalid format or missing"),
-    (paymentPayloadsWithMissingPayeeType,         "E0007",               "payee_type is in invalid format or missing"),
-    (paymentPayloadsWithInvalidPayeeType,         "E0007",               "payee_type is in invalid format or missing"),
-    (paymentPayloadsWithMissingCcpUrn,            "E0003",               "ccp_reg_reference is in invalid format or missing"),
-    (paymentPayloadsWithInvalidCcpUrn,            "E0003",               "ccp_reg_reference is in invalid format or missing"),
-    (paymentPayloadsWithMissingCcpPostcode,       "E0009",               "ccp_postcode is in invalid format or missing"),
-    (paymentPayloadsWithInvalidCcpPostcode,       "E0009",               "ccp_postcode is in invalid format or missing"),
-    (paymentPayloadsWithMissingPaymentAmount,     "E0008",               "payment_amount is in invalid format or missing"),
-    (paymentPayloadsWithFractionalPaymentAmount,  "E0008",               "payment_amount is in invalid format or missing"),
-    (paymentPayloadsWithStringPaymentAmount,      "E0008",               "payment_amount is in invalid format or missing"),
-    (paymentPayloadsWithNonPositivePaymentAmount, "E0008",               "payment_amount is in invalid format or missing")
+    (randomPaymentJsonWithCcpOnlyAndInvalidTfcAccountRef,     "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndMissingTfcAccountRef,     "E0001",               "outbound_child_payment_ref is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndMissingEppUrn,            "E0002",               "epp_reg_reference is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndInvalidEppUrn,            "E0002",               "epp_reg_reference is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndMissingEppAccountId,      "E0004",               "epp_unique_customer_id is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndInvalidEppAccountId,      "E0004",               "epp_unique_customer_id is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndMissingPayeeType,         "E0007",               "payee_type is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndInvalidPayeeType,         "E0007",               "payee_type is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndMissingCcpUrn,            "E0003",               "ccp_reg_reference is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndInvalidCcpUrn,            "E0003",               "ccp_reg_reference is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndMissinCcpPostcode,       "E0009",               "ccp_postcode is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndInvalidCcpPostcode,       "E0009",               "ccp_postcode is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndMissingPaymentAmount,     "E0008",               "payment_amount is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndFractionalPaymentAmount,  "E0008",               "payment_amount is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndStringPaymentAmount,      "E0008",               "payment_amount is in invalid format or missing"),
+    (randomPaymentJsonWithCcpOnlyAndNonPositivePaymentAmount, "E0008",               "payment_amount is in invalid format or missing")
   )
 
   private lazy val nsiErrorScenarios = Table(
