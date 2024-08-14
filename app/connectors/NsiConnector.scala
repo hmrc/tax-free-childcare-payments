@@ -113,13 +113,13 @@ object NsiConnector extends FormattedLogging with Status {
       response.json.validate[A] match {
         case JsSuccess(result, _) => Right(result)
         case JsError(errors)      =>
-          logger.warn(formattedLog(s"NSI responded ${response.status}. Resulted in JSON validation errors - $errors"))
+          logger.warn(formattedLog(s"NSI responded ${response.status}. Resulted in JSON validation errors - $errors - triggering ETFC3"))
           Left(ETFC3)
       }
     } else {
       response.json.validate[NsiErrorResponse] match {
         case JsSuccess(nsiErrorResponse, _) =>
-          val message = formattedLog(s"NSI responded ${response.status} with body ${response.body}")
+          val message = formattedLog(s"NSI responded ${response.status} with body ${response.body} - triggering $nsiErrorResponse")
           if (nsiErrorResponse.reportAs < INTERNAL_SERVER_ERROR) {
             logger.info(message)
           } else {
@@ -127,7 +127,7 @@ object NsiConnector extends FormattedLogging with Status {
           }
           Left(nsiErrorResponse)
         case JsError(jsonErrors)            =>
-          logger.warn(formattedLog(jsonErrors.toString))
+          logger.warn(formattedLog(s"NSI error - $jsonErrors.toString - triggering ETFC3"))
           Left(ETFC3)
       }
     }

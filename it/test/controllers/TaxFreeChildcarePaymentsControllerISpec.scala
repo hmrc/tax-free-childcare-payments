@@ -395,7 +395,7 @@ class TaxFreeChildcarePaymentsControllerISpec
                 .futureValue
 
               val expectedJsonErrors = List(JsPath(List(KeyPathNode("accountStatus"))) -> List(JsonValidationError("error.invalid.account_status")))
-              val expectedPartialMessage = s"NSI responded 200. Resulted in JSON validation errors - $expectedJsonErrors"
+              val expectedPartialMessage = s"NSI responded 200. Resulted in JSON validation errors - $expectedJsonErrors - triggering ETFC3"
               val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
               checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
@@ -424,7 +424,7 @@ class TaxFreeChildcarePaymentsControllerISpec
               .futureValue
 
             val expectedResponseJson = Json.obj("errorCode" -> "Unknown", "errorDescription" -> "A server error occurred")
-            val expectedPartialMessage = s"NSI responded 500 with body $expectedResponseJson"
+            val expectedPartialMessage = s"NSI responded 500 with body $expectedResponseJson - triggering ETFC4"
             val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
             checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
