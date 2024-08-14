@@ -46,14 +46,14 @@ class TaxFreeChildcarePaymentsControllerISpec
         forAll(validLinkPayloads) { payload =>
           withClient { wsClient =>
             withAuthNinoRetrieval {
-              val expectedChildName = fullNames.sample.get
-              val expectedCorrelationId = UUID.randomUUID()
+              val expectedChildName       = fullNames.sample.get
+              val expectedCorrelationId   = UUID.randomUUID()
               val expectedTfcResponseBody = Json.obj("child_full_name" -> expectedChildName)
               val expectedNsiResponseBody = Json.obj("childFullName" -> expectedChildName)
 
               stubNsiLinkAccounts201(expectedNsiResponseBody)
 
-              val request = wsClient
+              val request  = wsClient
                 .url(s"$baseUrl/link")
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
@@ -65,9 +65,9 @@ class TaxFreeChildcarePaymentsControllerISpec
 
               val resCorrelationId = UUID fromString response.header(CORRELATION_ID).value
 
-              response.status shouldBe OK
+              response.status  shouldBe OK
               resCorrelationId shouldBe expectedCorrelationId
-              response.json shouldBe expectedTfcResponseBody
+              response.json    shouldBe expectedTfcResponseBody
             }
           }
         }
@@ -244,7 +244,7 @@ class TaxFreeChildcarePaymentsControllerISpec
     s"respond with status 200 and correct JSON body" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withClient { wsClient =>
         withAuthNinoRetrieval {
-          val expectedCorrelationId = UUID.randomUUID()
+          val expectedCorrelationId   = UUID.randomUUID()
           val expectedTfcResponseBody = Json.obj(
             "tfc_account_status" -> "ACTIVE",
             "paid_in_by_you"     -> 0,
@@ -275,9 +275,9 @@ class TaxFreeChildcarePaymentsControllerISpec
 
           val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
 
-          res.status shouldBe OK
+          res.status       shouldBe OK
           resCorrelationId shouldBe expectedCorrelationId
-          res.json shouldBe expectedTfcResponseBody
+          res.json         shouldBe expectedTfcResponseBody
         }
       }
     }
@@ -373,7 +373,7 @@ class TaxFreeChildcarePaymentsControllerISpec
         withClient { wsClient =>
           withCaptureOfLoggingFrom(NSI_CONNECTOR_LOGGER) { logs =>
             withAuthNinoRetrieval {
-              val expectedCorrelationId = UUID.randomUUID()
+              val expectedCorrelationId   = UUID.randomUUID()
               val expectedNsiResponseBody = Json.obj(
                 "accountStatus"  -> "UNKNOWN",
                 "topUpAvailable" -> 0,
@@ -394,9 +394,9 @@ class TaxFreeChildcarePaymentsControllerISpec
                 .post(validCheckBalanceRequestPayloads.sample.get)
                 .futureValue
 
-              val expectedJsonErrors = List(JsPath(List(KeyPathNode("accountStatus"))) -> List(JsonValidationError("error.invalid.account_status")))
+              val expectedJsonErrors     = List(JsPath(List(KeyPathNode("accountStatus"))) -> List(JsonValidationError("error.invalid.account_status")))
               val expectedPartialMessage = s"NSI responded 200. Resulted in JSON validation errors - $expectedJsonErrors - triggering ETFC3"
-              val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
+              val expectedLogMessage     = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
               checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
               checkErrorResponse(response, BAD_GATEWAY, "ETFC3", "Bad Gateway")
@@ -423,9 +423,9 @@ class TaxFreeChildcarePaymentsControllerISpec
               .post(validCheckBalanceRequestPayloads.sample.get)
               .futureValue
 
-            val expectedResponseJson = Json.obj("errorCode" -> "Unknown", "errorDescription" -> "A server error occurred")
+            val expectedResponseJson   = Json.obj("errorCode" -> "Unknown", "errorDescription" -> "A server error occurred")
             val expectedPartialMessage = s"NSI responded 500 with body $expectedResponseJson - triggering ETFC4"
-            val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
+            val expectedLogMessage     = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
             checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
             checkErrorResponse(response, BAD_GATEWAY, "ETFC4", "Bad Gateway")
@@ -439,8 +439,8 @@ class TaxFreeChildcarePaymentsControllerISpec
       "request is valid with payee type set to CCP" in withClient { ws =>
         withAuthNinoRetrieval {
           val expectedCorrelationId = UUID.randomUUID()
-          val expectedPaymentRef = randomOutboundChildPaymentRef
-          val expectedPaymentDate = randomPaymentDate
+          val expectedPaymentRef    = randomOutboundChildPaymentRef
+          val expectedPaymentDate   = randomPaymentDate
 
           val expectedTfcResponseBody = Json.obj(
             "payment_reference"      -> expectedPaymentRef,
@@ -464,9 +464,9 @@ class TaxFreeChildcarePaymentsControllerISpec
 
           val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
 
-          res.status shouldBe OK
+          res.status       shouldBe OK
           resCorrelationId shouldBe expectedCorrelationId
-          res.json shouldBe expectedTfcResponseBody
+          res.json         shouldBe expectedTfcResponseBody
         }
       }
     }
@@ -515,7 +515,7 @@ class TaxFreeChildcarePaymentsControllerISpec
       val expectedErrorDesc = s"$PAYEE_TYPE_KEY is in invalid format or missing"
 
       "payee type is missing" in
-        forAll(Gen.uuid, randomPaymentJsonWithCcpOnlyAndMissingPayeeType) { (expectedCorrelationId, payload) =>
+        forAll(Gen.uuid, randomPaymentJsonWithMissingPayeeType) { (expectedCorrelationId, payload) =>
           withClient { ws =>
             withAuthNinoRetrieval {
               val response = ws
@@ -532,7 +532,7 @@ class TaxFreeChildcarePaymentsControllerISpec
           }
         }
       "payee type is invalid" in
-        forAll(Gen.uuid, randomPaymentJsonWithCcpOnlyAndInvalidPayeeType) { (expectedCorrelationId, payload) =>
+        forAll(Gen.uuid, randomPaymentJsonWithPayeeTypeNotCCP) { (expectedCorrelationId, payload) =>
           withClient { ws =>
             withAuthNinoRetrieval {
               val response = ws
@@ -709,7 +709,7 @@ class TaxFreeChildcarePaymentsControllerISpec
   private val endpoints = Table(
     ("Name",    "TFC URL",  "NSI Mapping",           "Valid Payload"),
     ("link",    "/link",    nsiLinkAccountsEndpoint, validLinkPayloads.sample.get),
-    ("balance", "/balance", nsiCheckBalanceEndpoint, validSharedPayloads.sample.get),
+    ("balance", "/balance", nsiCheckBalanceEndpoint, validSharedJson.sample.get),
     ("payment", "/",        nsiMakePaymentEndpoint,  validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
   )
 
@@ -806,7 +806,7 @@ class TaxFreeChildcarePaymentsControllerISpec
             s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in withClient { ws =>
               withAuthNinoRetrieval {
                 val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
-                val nsiResponse = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
+                val nsiResponse     = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
                 stubFor(nsiMapping willReturn nsiResponse)
 
                 val response = ws
@@ -845,9 +845,9 @@ class TaxFreeChildcarePaymentsControllerISpec
     log.getLevel shouldBe Level.INFO
     log.getMessage match {
       case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
-        loggedEndpoint shouldBe expectedEndpoint
+        loggedEndpoint      shouldBe expectedEndpoint
         loggedCorrelationId shouldBe expectedCorrelationId
-        loggedMessage should include("JsonValidationError")
+        loggedMessage         should include("JsonValidationError")
 
       case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
     }

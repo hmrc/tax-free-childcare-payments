@@ -8,7 +8,7 @@ class PayeeSpec extends BaseSpec with RandomPayeeJson {
 
     "return JsSuccess" when {
       "JSON is valid" in
-        forAll(payees) { expectedPayee =>
+        forAll(randomPayees) { expectedPayee =>
           val json = getJsonFrom(expectedPayee)
           val actualPayee = json.validate[Payee].asEither.value
           actualPayee shouldBe expectedPayee

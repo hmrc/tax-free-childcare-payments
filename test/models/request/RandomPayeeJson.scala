@@ -60,12 +60,12 @@ trait RandomPayeeJson extends base.Generators {
     "ccp_postcode"      -> ccp.postcode
   )
 
-  private lazy val invalidPayeeTypes = Gen.oneOf(
+  protected lazy val invalidPayeeTypes: Gen[JsString] = Gen.oneOf(
     Gen.oneOf("ccp", "epp"),
     Gen.numStr
   ) map JsString.apply
 
-  private lazy val invalidCcpUrns = Gen.oneOf(
+  protected lazy val invalidCcpUrns: Gen[JsString] = Gen.oneOf(
     Gen const "",
     oversizedCcpUrns
   ) map JsString.apply

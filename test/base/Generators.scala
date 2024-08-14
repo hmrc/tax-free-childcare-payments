@@ -47,7 +47,7 @@ trait Generators {
     char8  <- Gen oneOf "ABCD"
   } yield char0 +: char1 +: digits.mkString :+ char8
 
-  protected lazy val payees: Gen[Payee] = Gen.oneOf(
+  protected lazy val randomPayees: Gen[Payee] = Gen.oneOf(
     Gen const Payee.ExternalPaymentProvider,
     childCareProviders
   )
