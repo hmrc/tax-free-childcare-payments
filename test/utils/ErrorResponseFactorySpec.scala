@@ -17,13 +17,13 @@
 package utils
 
 import base.BaseSpec
-import models.request.{LinkRequest, PaymentRequest, SharedRequestData}
+import models.request.{LinkRequest, Payee, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse._
 import org.apache.pekko.actor.ActorSystem
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 class ErrorResponseFactorySpec extends BaseSpec
@@ -36,6 +36,8 @@ class ErrorResponseFactorySpec extends BaseSpec
 
   "method getJson" should {
     "return expected errorCode and errorDescription" when {
+      implicit val readsPayee: Reads[Payee] = Payee.readsCcpFromApi
+
       "LinkRequest JSON is invalid" in
         forAll(linkRequestJsonErrorScenarios) {
           (invalidPayloads, expectedErrorCode, expectedErrorDesc) =>
@@ -122,7 +124,7 @@ class ErrorResponseFactorySpec extends BaseSpec
     (randomPaymentJsonWithCcpOnlyAndMissingEppAccountId,      "E0004",               "epp_unique_customer_id is in invalid format or missing"),
     (randomPaymentJsonWithCcpOnlyAndInvalidEppAccountId,      "E0004",               "epp_unique_customer_id is in invalid format or missing"),
     (randomPaymentJsonWithMissingPayeeType,                   "E0007",               "payee_type is in invalid format or missing"),
-    (randomPaymentJsonWithPayeeTypeNotCCP,         "E0007",               "payee_type is in invalid format or missing"),
+    (randomPaymentJsonWithPayeeTypeNotCCP,                    "E0007",               "payee_type is in invalid format or missing"),
     (randomPaymentJsonWithCcpOnlyAndMissingCcpUrn,            "E0003",               "ccp_reg_reference is in invalid format or missing"),
     (randomPaymentJsonWithCcpOnlyAndInvalidCcpUrn,            "E0003",               "ccp_reg_reference is in invalid format or missing"),
     (randomPaymentJsonWithCcpOnlyAndMissinCcpPostcode,        "E0009",               "ccp_postcode is in invalid format or missing"),

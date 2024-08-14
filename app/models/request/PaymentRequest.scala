@@ -27,10 +27,10 @@ final case class PaymentRequest(
 
 object PaymentRequest extends ConstraintReads {
 
-  implicit val readsFromApi: Reads[PaymentRequest] = (
+  implicit def readsFromApi(implicit ofPayee: Reads[Payee]): Reads[PaymentRequest] = (
     of[SharedRequestData] ~
       (__ \ PAYMENT_AMOUNT_KEY).read(min(1)) ~
-      of[Payee]
+      ofPayee
   )(apply _)
 
   lazy val PAYMENT_AMOUNT_KEY = "payment_amount"

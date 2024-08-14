@@ -33,11 +33,6 @@ object Payee extends ConstraintReads {
     )(apply _)
   }
 
-  implicit val reads: Reads[Payee] =
-    (__ \ PAYEE_TYPE_KEY)
-      .read(CCP_ONLY)
-      .flatMap(_ => ChildCareProvider.reads)
-
   val readsPayeeFromApi: Reads[Payee] =
     (__ \ PAYEE_TYPE_KEY)
       .read[String]
