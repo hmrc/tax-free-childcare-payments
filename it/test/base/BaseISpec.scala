@@ -28,7 +28,7 @@ import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
-abstract class BaseISpec
+abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
     extends BaseSpec
     with WireMockSupport
     with ScalaFutures
@@ -50,7 +50,8 @@ abstract class BaseISpec
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder().configure(
       "microservice.services.auth.port" -> wireMockPort,
-      "microservice.services.nsi.port"  -> wireMockPort
+      "microservice.services.nsi.port"  -> wireMockPort,
+      "features.enablePayeeTypeEPP"     -> enablePayeeTypeEPP
     ).build()
 
   protected lazy val baseUrl = s"http://localhost:$port"
@@ -78,6 +79,6 @@ abstract class BaseISpec
     checkErrorJson(Json parse actualResultStream, expectedErrorCode, expectedErrorDescription)
   }
 
-  protected lazy val EXPECTED_CORRELATION_ID_ERROR_DESC = "Correlation ID is in an invalid format or is missing"
+  protected lazy val EXPECTED_CORRELATION_ID_ERROR_DESC      = "Correlation ID is in an invalid format or is missing"
   protected lazy val EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC = "Bearer Token did not return a valid record"
 }

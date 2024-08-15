@@ -16,20 +16,23 @@
 
 package models.response
 
-import play.api.libs.json.{Json, Writes}
+import org.scalacheck.{Arbitrary, Gen}
+import play.api.libs.json.{JsObject, Json}
 
-import java.time.LocalDate
+import java.time.ZoneId
 
-final case class PaymentResponse(
-    payment_reference: String,
-    estimated_payment_date: LocalDate
+trait Generators {
+
+  implicit val arbPaymentResponse: Arbitrary[PaymentResponse] = Arbitrary(
+    for {
+      reference <- Gen.asciiPrintableStr
+      calendar  <- Gen.calendar
+      date       = calendar.toInstant.atZone(ZoneId.systemDefault()).toLocalDate
+    } yield PaymentResponse(reference, date)
   )
 
-object PaymentResponse {
-
-  implicit val writesToAPI: Writes[PaymentResponse] = pr =>
-    Json.obj(
-      "payment_reference"      -> pr.payment_reference,
-      "estimated_payment_date" -> pr.estimated_payment_date
-    )
+  protected def getNsiJsonFrom(paymentResponse: PaymentResponse): JsObject = Json.obj(
+    "paymentReference" -> paymentResponse.payment_reference,
+    "paymentDate"      -> paymentResponse.estimated_payment_date
+  )
 }

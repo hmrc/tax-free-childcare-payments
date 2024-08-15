@@ -32,7 +32,7 @@ import play.api.libs.ws.WSResponse
 import java.util.UUID
 import scala.util.matching.Regex
 
-class TaxFreeChildcarePaymentsControllerISpec
+class ControllerWithPayeeTypeEppDisabledISpec
     extends BaseISpec
     with AuthStubs
     with NsiStubs

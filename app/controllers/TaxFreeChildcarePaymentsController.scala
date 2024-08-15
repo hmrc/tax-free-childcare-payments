@@ -81,10 +81,4 @@ object TaxFreeChildcarePaymentsController {
       "total_balance"      -> br.totalBalance,
       "cleared_funds"      -> br.clearedFunds
     )
-
-  private implicit val writesPaymentResponse: Writes[PaymentResponse] = pr =>
-    Json.obj(
-      "payment_reference"      -> pr.payment_reference,
-      "estimated_payment_date" -> pr.estimated_payment_date
-    )
 }
