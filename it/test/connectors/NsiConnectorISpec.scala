@@ -65,7 +65,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
               actualNsiErrorResponse shouldBe E0001
 
               val expectedResponseJson = Json.obj("errorCode" -> "E0001", "errorDescription" -> expectedErrorDescription)
-              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0001"
               checkLoneLog(
                 expectedLevel = Level.WARN,
                 expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
@@ -90,7 +90,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
               actualNsiErrorResponse shouldBe E0024
 
               val expectedResponseJson = Json.obj("errorCode" -> "E0024", "errorDescription" -> expectedErrorDescription)
-              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0024"
               checkLoneLog(
                 expectedLevel = Level.INFO,
                 expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
@@ -198,7 +198,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
               actualNsiErrorResponse shouldBe E0009
 
               val expectedResponseJson = Json.obj("errorCode" -> "E0009", "errorDescription" -> expectedErrorDescription)
-              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0009"
               checkLoneLog(
                 expectedLevel = Level.WARN,
                 expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
@@ -223,7 +223,7 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with m
               actualNsiErrorResponse shouldBe E0027
 
               val expectedResponseJson = Json.obj("errorCode" -> "E0027", "errorDescription" -> expectedErrorDescription)
-              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson"
+              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0027"
               checkLoneLog(
                 expectedLevel = Level.INFO,
                 expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
