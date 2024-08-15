@@ -23,7 +23,7 @@ import play.api.libs.json.Reads
 
 class PaymentRequestSpec extends BaseSpec {
 
-  "With implcit Payee Reads in scope, API Reads" should {
+  "With implicit Payee Reads in scope, API Reads" should {
     implicit val readsPayee: Reads[Payee] = Payee.readsPayeeFromApi
 
     "return JsError" when {
@@ -157,7 +157,7 @@ class PaymentRequestSpec extends BaseSpec {
     }
   }
 
-  "With implcit CCP Reads in scope, API Reads" should {
+  "With implicit CCP Reads in scope, API Reads" should {
     implicit val readsCcp: Reads[Payee] = Payee.readsCcpFromApi
 
     "return JsError" when {

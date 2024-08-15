@@ -39,16 +39,22 @@ object Payee extends ConstraintReads {
       .flatMap {
         case "EPP" => Reads pure ExternalPaymentProvider
         case "CCP" => ChildCareProvider.reads
-        case _     => _ => JsError(JsPath(List(KeyPathNode(PAYEE_TYPE_KEY))), "error.payee_type")
+        case _     => readsPayeeFailed
       }
 
   val readsCcpFromApi: Reads[Payee] =
     (__ \ PAYEE_TYPE_KEY)
-      .read(CCP_ONLY)
-      .flatMap(_ => ChildCareProvider.reads)
+      .read[String]
+      .flatMap {
+        case "CCP" => ChildCareProvider.reads
+        case _     => readsPayeeFailed
+      }
+
+  lazy private val readsPayeeFailed = Reads[Payee] { _ =>
+    JsError(JsPath(List(KeyPathNode(PAYEE_TYPE_KEY))), "error.payee_type")
+  }
 
   lazy private val POST_CODE = pattern("[a-zA-Z0-9]{2,4}\\s+[a-zA-Z0-9]{3}".r)
-  lazy private val CCP_ONLY  = pattern("CCP".r)
   lazy private val CCP_REG   = pattern(s".{1,$CCP_REG_MAX_LEN}".r)
   lazy val CCP_REG_MAX_LEN   = 20
 
