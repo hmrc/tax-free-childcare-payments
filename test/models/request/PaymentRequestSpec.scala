@@ -87,7 +87,7 @@ class PaymentRequestSpec extends BaseSpec {
         forAll(randomPaymentJsonWithInvalidPayeeType) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = PAYEE_TYPE_KEY,
-            expectedMessage = "error.pattern"
+            expectedMessage = "error.payee_type"
           )
         }
 
@@ -221,7 +221,7 @@ class PaymentRequestSpec extends BaseSpec {
         forAll(randomPaymentJsonWithPayeeTypeNotCCP) {
           checkJsonError[PaymentRequest](
             expectedJsonPath = PAYEE_TYPE_KEY,
-            expectedMessage = "error.pattern"
+            expectedMessage = "error.payee_type"
           )
         }
 
