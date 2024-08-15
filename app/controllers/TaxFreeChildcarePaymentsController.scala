@@ -34,11 +34,11 @@ class TaxFreeChildcarePaymentsController @Inject() (
     cc: ControllerComponents,
     identify: AuthAction,
     nsiConnector: NsiConnector
-  )(implicit ec: ExecutionContext
+  )(implicit
+    ec: ExecutionContext,
+    readsPayee: Reads[Payee]
   ) extends BackendController(cc) with FormattedLogging {
   import TaxFreeChildcarePaymentsController._
-
-  private implicit val readsPayee: Reads[Payee] = Payee.readsCcpFromApi
 
   def link(): Action[JsValue] = nsiAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
 

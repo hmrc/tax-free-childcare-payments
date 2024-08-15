@@ -16,12 +16,14 @@
 
 package config
 
-import com.google.inject.AbstractModule
+import com.google.inject.{AbstractModule, Provides, Singleton}
+import models.request.Payee
+import play.api.libs.json.Reads
+import play.api.{Configuration, Environment}
 
-class Module extends AbstractModule {
+class Module(env: Environment, config: Configuration) extends AbstractModule {
 
-  override def configure(): Unit = {
-
-    bind(classOf[AppConfig]).asEagerSingleton()
-  }
+  @Provides @Singleton
+  def getReadsPayee: Reads[Payee] =
+    if (config.get[Boolean]("features.enablePayeeTypeEPP")) Payee.readsPayeeFromApi else Payee.readsCcpFromApi
 }
