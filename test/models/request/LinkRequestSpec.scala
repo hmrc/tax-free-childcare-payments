@@ -16,9 +16,9 @@
 
 package models.request
 
-import models.requests.LinkRequest
-import models.requests.LinkRequest.CHILD_DOB_KEY
-import models.requests.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
+import models.request.LinkRequest
+import models.request.LinkRequest.CHILD_DOB_KEY
+import models.request.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
 
 import play.api.libs.json.{JsPath, JsonValidationError, KeyPathNode}
 

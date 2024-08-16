@@ -16,17 +16,18 @@
 
 package base
 
-import java.time.LocalDate
-import scala.util.Random
-
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent
+import models.request.IdentifierRequest
+import org.scalactic.Prettifier
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Assertion, LoneElement, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-
 import play.api.libs.json._
+
+import java.time.LocalDate
+import scala.util.Random
 
 class BaseSpec
     extends AnyWordSpec
@@ -34,6 +35,11 @@ class BaseSpec
     with OptionValues
     with ScalaCheckPropertyChecks
     with LoneElement {
+
+  implicit val prettifier: Prettifier = {
+    case request: IdentifierRequest[_] => s"IdentifierRequest( ${request.request.body} )"
+    case other                         => Prettifier.default(other)
+  }
 
   protected def randomOutboundChildPaymentRef: String = {
     val letters = randomStringOf(EXPECTED_PAYMENT_REF_LETTERS, 'A' to 'Z')
@@ -59,14 +65,14 @@ class BaseSpec
       expectedErrorCode: String,
       expectedErrorDescription: String
     ): Assertion = {
-    actualJson \ "errorCode" shouldBe JsDefined(JsString(expectedErrorCode))
+    actualJson \ "errorCode"        shouldBe JsDefined(JsString(expectedErrorCode))
     actualJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
   }
 
   protected def checkLoneLog(expectedLevel: Level, expectedMessage: String)(logs: List[ILoggingEvent]): Unit = {
     val log = logs.loneElement
 
-    log.getLevel shouldBe expectedLevel
+    log.getLevel   shouldBe expectedLevel
     log.getMessage shouldBe expectedMessage
   }
 }

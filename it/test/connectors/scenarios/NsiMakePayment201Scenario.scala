@@ -17,7 +17,7 @@
 package connectors.scenarios
 
 import base.Generators
-import models.requests.{IdentifierRequest, Payee, PaymentRequest, SharedRequestData}
+import models.request.{IdentifierRequest, Payee, PaymentRequest, SharedRequestData}
 import models.response.PaymentResponse
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
@@ -37,6 +37,7 @@ final case class NsiMakePayment201Scenario(
     amount: Int,
     expectedResponse: PaymentResponse
   ) {
+
   val expectedRequestJson: JsObject = Json.obj(
     "paymentReference" -> expectedResponse.payment_reference,
     "paymentDate"      -> expectedResponse.estimated_payment_date
@@ -62,7 +63,7 @@ object NsiMakePayment201Scenario extends Generators {
       eppURN                 <- nonEmptyAlphaNumStrings
       eppAccount             <- nonEmptyAlphaNumStrings
       parentNino             <- randomNinos
-      payee                <- payees
+      payee                  <- randomPayees
       amount                 <- Gen.chooseNum(0, Int.MaxValue)
       expectedResponse       <- paymentResponses
     } yield apply(

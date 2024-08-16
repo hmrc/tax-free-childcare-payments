@@ -19,7 +19,7 @@ package controllers.actions
 import base.BaseISpec
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{okJson, stubFor}
-import models.requests.IdentifierRequest
+import models.request.IdentifierRequest
 import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.JsString
 import play.api.mvc.Results

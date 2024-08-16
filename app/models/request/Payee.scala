@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package models.requests
+package models.request
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{ConstraintReads, Reads, __}
+import play.api.libs.json._
 
 sealed abstract class Payee
 
@@ -33,13 +33,28 @@ object Payee extends ConstraintReads {
     )(apply _)
   }
 
-  implicit val reads: Reads[Payee] =
+  val readsPayeeFromApi: Reads[Payee] =
     (__ \ PAYEE_TYPE_KEY)
-      .read(CCP_ONLY)
-      .flatMap(_ => ChildCareProvider.reads)
+      .read[String]
+      .flatMap {
+        case "EPP" => Reads pure ExternalPaymentProvider
+        case "CCP" => ChildCareProvider.reads
+        case _     => readsPayeeFailed
+      }
 
-  lazy private val POST_CODE = pattern("[a-zA-Z0-9]{2,4}\\s*[a-zA-Z0-9]{3}".r)
-  lazy private val CCP_ONLY  = pattern("CCP".r)
+  val readsCcpFromApi: Reads[Payee] =
+    (__ \ PAYEE_TYPE_KEY)
+      .read[String]
+      .flatMap {
+        case "CCP" => ChildCareProvider.reads
+        case _     => readsPayeeFailed
+      }
+
+  lazy private val readsPayeeFailed = Reads[Payee] { _ =>
+    JsError(JsPath(List(KeyPathNode(PAYEE_TYPE_KEY))), "error.payee_type")
+  }
+
+  lazy private val POST_CODE = pattern("[a-zA-Z0-9]{2,4}\\s+[a-zA-Z0-9]{3}".r)
   lazy private val CCP_REG   = pattern(s".{1,$CCP_REG_MAX_LEN}".r)
   lazy val CCP_REG_MAX_LEN   = 20
 

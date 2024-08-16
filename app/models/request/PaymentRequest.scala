@@ -14,14 +14,24 @@
  * limitations under the License.
  */
 
-package config
+package models.request
 
-import javax.inject.{Inject, Singleton}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{ConstraintReads, Reads, __}
 
-import play.api.Configuration
+final case class PaymentRequest(
+    sharedRequestData: SharedRequestData,
+    payment_amount: Int,
+    payee: Payee
+  )
 
-@Singleton
-class AppConfig @Inject() (config: Configuration) {
+object PaymentRequest extends ConstraintReads {
 
-  val appName: String = config.get[String]("appName")
+  implicit def readsFromApi(implicit ofPayee: Reads[Payee]): Reads[PaymentRequest] = (
+    of[SharedRequestData] ~
+      (__ \ PAYMENT_AMOUNT_KEY).read(min(1)) ~
+      ofPayee
+  )(apply _)
+
+  lazy val PAYMENT_AMOUNT_KEY = "payment_amount"
 }

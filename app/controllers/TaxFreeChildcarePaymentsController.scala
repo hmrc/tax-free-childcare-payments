@@ -16,26 +16,27 @@
 
 package controllers
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.requests._
+import models.request._
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
-import utils.{ErrorResponseFactory, FormattedLogging}
-
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.{ErrorResponseFactory, FormattedLogging}
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (
     cc: ControllerComponents,
     identify: AuthAction,
     nsiConnector: NsiConnector
-  )(implicit ec: ExecutionContext
+  )(implicit
+    ec: ExecutionContext,
+    readsPayee: Reads[Payee]
   ) extends BackendController(cc) with FormattedLogging {
   import TaxFreeChildcarePaymentsController._
 
@@ -79,11 +80,5 @@ object TaxFreeChildcarePaymentsController {
       "paid_in_by_you"     -> br.paidIn,
       "total_balance"      -> br.totalBalance,
       "cleared_funds"      -> br.clearedFunds
-    )
-
-  private implicit val writesPaymentResponse: Writes[PaymentResponse] = pr =>
-    Json.obj(
-      "payment_reference"      -> pr.payment_reference,
-      "estimated_payment_date" -> pr.estimated_payment_date
     )
 }
