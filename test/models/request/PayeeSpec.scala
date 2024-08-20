@@ -56,7 +56,7 @@ class PayeeSpec extends BaseSpec with RandomPayeeJson {
 
     "return JsSuccess" when {
       "JSON is valid" in
-        forAll(childCareProviders) { expectedCcp =>
+        forAll(randomChildCareProviders) { expectedCcp =>
           val json = getJsonFrom(expectedCcp)
           val actualCcp = json.validate[Payee].asEither.value
           actualCcp shouldBe expectedCcp

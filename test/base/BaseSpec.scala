@@ -26,9 +26,6 @@ import org.scalatest.{Assertion, LoneElement, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json._
 
-import java.time.LocalDate
-import scala.util.Random
-
 class BaseSpec
     extends AnyWordSpec
     with should.Matchers
@@ -37,28 +34,9 @@ class BaseSpec
     with LoneElement {
 
   implicit val prettifier: Prettifier = {
-    case request: IdentifierRequest[_] => s"IdentifierRequest( ${request.request.body} )"
-    case other                         => Prettifier.default(other)
+    case IdentifierRequest(_, _, underlying) => s"IdentifierRequest( ${underlying.body} )"
+    case other                               => Prettifier.default(other)
   }
-
-  protected def randomOutboundChildPaymentRef: String = {
-    val letters = randomStringOf(EXPECTED_PAYMENT_REF_LETTERS, 'A' to 'Z')
-    val digits  = randomStringOf(EXPECTED_PAYMENT_REF_DIGITS, '0' to '9')
-
-    letters + digits + "TFC"
-  }
-
-  private def randomStringOf(n: Int, chars: Seq[Char]) = {
-    def randomChar = chars(Random.nextInt(chars.length))
-    Array.fill(n)(randomChar).mkString
-  }
-
-  protected def randomPaymentDate: LocalDate = LocalDate.now() plusDays Random.nextInt(MAX_PAYMENT_DELAY_DAYS)
-
-  private val EXPECTED_PAYMENT_REF_LETTERS = 4
-  private val EXPECTED_PAYMENT_REF_DIGITS  = 5
-
-  private val MAX_PAYMENT_DELAY_DAYS = 30
 
   protected def checkErrorJson(
       actualJson: => JsValue,

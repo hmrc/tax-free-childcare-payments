@@ -49,10 +49,10 @@ trait Generators {
 
   protected lazy val randomPayees: Gen[Payee] = Gen.oneOf(
     Gen const Payee.ExternalPaymentProvider,
-    childCareProviders
+    randomChildCareProviders
   )
 
-  protected lazy val childCareProviders: Gen[ChildCareProvider] = for {
+  protected lazy val randomChildCareProviders: Gen[ChildCareProvider] = for {
     urn      <- nonEmptyAlphaNumStrings
     postcode <- postcodes
   } yield ChildCareProvider(urn, postcode)

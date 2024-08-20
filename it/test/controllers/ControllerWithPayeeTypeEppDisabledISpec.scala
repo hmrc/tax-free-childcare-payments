@@ -24,6 +24,7 @@ import models.request.LinkRequest.CHILD_DOB_KEY
 import models.request.Payee.PAYEE_TYPE_KEY
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.SharedRequestData.TFC_ACCOUNT_REF_KEY
+import models.response.PaymentResponse
 import org.scalatest.Assertion
 import play.api.Logger
 import play.api.libs.json.{JsPath, Json, JsonValidationError, KeyPathNode}
@@ -36,8 +37,10 @@ class ControllerWithPayeeTypeEppDisabledISpec
     extends BaseISpec
     with AuthStubs
     with NsiStubs
-    with models.request.Generators {
-  import org.scalacheck.Gen
+    with models.request.Generators
+    with models.response.Generators {
+  import org.scalacheck.{Arbitrary, Gen}
+  import Arbitrary.arbitrary
 
   "POST /link" should {
     "respond with status 200 and correct JSON body" when {
@@ -436,39 +439,32 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
   "POST /" should {
     "respond 200" when {
-      "request is valid with payee type set to CCP" in withClient { ws =>
-        withAuthNinoRetrieval {
-          val expectedCorrelationId = UUID.randomUUID()
-          val expectedPaymentRef    = randomOutboundChildPaymentRef
-          val expectedPaymentDate   = randomPaymentDate
+      "request is valid with payee type set to CCP" in
+        forAll (
+          randomIdentifierRequest(randomPaymentRequestWithOnlyCCP),
+          arbitrary[PaymentResponse]
+        ) { (request, expectedResponse) =>
+          stubAuthRetrievalOf(request.nino)
+          stubNsiMakePayment201(getNsiJsonFrom(expectedResponse))
 
-          val expectedTfcResponseBody = Json.obj(
-            "payment_reference"      -> expectedPaymentRef,
-            "estimated_payment_date" -> expectedPaymentDate
-          )
-          val expectedNsiResponseBody = Json.obj(
-            "paymentReference" -> expectedPaymentRef,
-            "paymentDate"      -> expectedPaymentDate
-          )
+          withClient { ws =>
+            val expectedCorrelationId   = request.correlation_id.toString
+            val expectedTfcResponseBody = Json.toJson(expectedResponse)
 
-          stubNsiMakePayment201(expectedNsiResponseBody)
+            val response = ws
+              .url(s"$baseUrl/")
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId
+              )
+              .post(getJsonFrom(request.body))
+              .futureValue
 
-          val res = ws
-            .url(s"$baseUrl/")
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
-            )
-            .post(validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
-            .futureValue
-
-          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
-
-          res.status       shouldBe OK
-          resCorrelationId shouldBe expectedCorrelationId
-          res.json         shouldBe expectedTfcResponseBody
+            response.status                       shouldBe OK
+            response.header(CORRELATION_ID).value shouldBe expectedCorrelationId
+            response.json                         shouldBe expectedTfcResponseBody
+          }
         }
-      }
     }
 
     "respond 400 with errorCode E0001 and expected errorDescription" when {

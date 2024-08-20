@@ -99,12 +99,20 @@ trait Generators extends base.Generators with RandomPayeeJson {
     * BEGIN Make Payment generators
     */
   protected implicit val arbPaymentRequest: Arbitrary[PaymentRequest] = Arbitrary(
-    for {
-      sharedRequestData  <- arbitrary[SharedRequestData]
-      payee              <- randomPayees
-      paymentAmountPence <- Gen.posNum[Int]
-    } yield PaymentRequest(sharedRequestData, paymentAmountPence, payee)
+    randomPaymentRequestWith(arbitrary[SharedRequestData], randomPayees)
   )
+
+  protected def randomPaymentRequestWithOnlyCCP: Gen[PaymentRequest] =
+    randomPaymentRequestWith(randomPayees = randomChildCareProviders)
+
+  protected def randomPaymentRequestWith(
+      randomSharedData: Gen[SharedRequestData] = arbitrary[SharedRequestData],
+      randomPayees: Gen[Payee]
+    ): Gen[PaymentRequest] = for {
+    sharedRequestData  <- randomSharedData
+    payee              <- randomPayees
+    paymentAmountPence <- Gen.posNum[Int]
+  } yield PaymentRequest(sharedRequestData, paymentAmountPence, payee)
 
   protected def getJsonFrom(request: PaymentRequest): JsObject =
     getJsonFrom(request.sharedRequestData) ++ getJsonFrom(request.payee) ++ Json.obj(

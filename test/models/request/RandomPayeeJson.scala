@@ -62,7 +62,7 @@ trait RandomPayeeJson extends base.Generators {
   } yield ccpJson + ("ccp_postcode" -> postcode)
 
   protected lazy val validPayeeJson: Gen[JsObject] = Gen.oneOf(validCcpJson, validEppJson)
-  protected lazy val validCcpJson: Gen[JsObject] = childCareProviders map getJsonFrom
+  protected lazy val validCcpJson: Gen[JsObject] = randomChildCareProviders map getJsonFrom
   protected lazy val validEppJson: Gen[JsObject] = Gen const Json.obj("payee_type" -> "EPP")
 
   protected def getJsonFrom(payee: Payee): JsObject = payee match {
