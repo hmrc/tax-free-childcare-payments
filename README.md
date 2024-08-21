@@ -51,3 +51,6 @@ feature flag `features.enablePayeeTypeEPP`, which when set to:
 
 - `false`, only allows payment to CCP.
 - `true`, allows payment to either CCP or EPP.
+
+This works by reading the config flag in `config.Module` and injecting the appropriate JSON `Reads` into the
+controller.
