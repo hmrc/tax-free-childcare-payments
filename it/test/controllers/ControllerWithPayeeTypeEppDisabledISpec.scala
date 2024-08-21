@@ -43,8 +43,11 @@ class ControllerWithPayeeTypeEppDisabledISpec
   import org.scalacheck.{Arbitrary, Gen}
   import Arbitrary.arbitrary
 
+  private val LINK_URL    = s"$baseUrl/link"
+  private val BALANCE_URL = s"$baseUrl/balance"
+  private val PAYMENT_URL = s"$baseUrl/"
+
   "POST /link" should {
-    val LINK_URL = s"$baseUrl/link"
 
     "respond with status 200 and correct JSON body" when {
       "link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in
@@ -249,7 +252,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
   }
 
   "POST /balance" should {
-    val BALANCE_URL = s"$baseUrl/balance"
 
     s"respond with status 200 and correct JSON body" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in
@@ -444,7 +446,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
   }
 
   "POST /" should {
-    val PAYMENT_URL = s"$baseUrl/"
 
     "respond 200" when {
       "request is valid with payee type set to CCP" in
@@ -541,17 +542,17 @@ class ControllerWithPayeeTypeEppDisabledISpec
           stubAuthRetrievalOf(randomNinos.sample.get)
 
           withClient { ws =>
-              val response = ws
-                .url(PAYMENT_URL)
-                .withHttpHeaders(
-                  AUTHORIZATION  -> "Bearer qwertyuiop",
-                  CORRELATION_ID -> expectedCorrelationId.toString
-                )
-                .post(payload)
-                .futureValue
+            val response = ws
+              .url(PAYMENT_URL)
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
 
-              checkErrorResponse(response, BAD_REQUEST, "E0007", expectedErrorDesc)
-            }
+            checkErrorResponse(response, BAD_REQUEST, "E0007", expectedErrorDesc)
+          }
         }
     }
 
@@ -765,8 +766,10 @@ class ControllerWithPayeeTypeEppDisabledISpec
   forAll(endpoints) { (_, tfc_url, nsiMapping, validPayload) =>
     s"POST $tfc_url" should {
       "respond 400 with errorCode ETFC1 and expected errorDescription" when {
-        "correlation ID is missing" in withClient { ws =>
-          withAuthNinoRetrieval {
+        "correlation ID is missing" in
+          withClient { ws =>
+            stubAuthRetrievalOf(randomNinos.sample.get)
+
             val response = ws
               .url(s"$baseUrl$tfc_url")
               .withHttpHeaders(
@@ -777,11 +780,12 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
             checkErrorResponse(response, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
           }
-        }
 
-        "correlation ID is invalid" in withClient { ws =>
+        "correlation ID is invalid" in
           forAll(Gen.alphaNumStr) { invalid_uuid =>
-            withAuthNinoRetrieval {
+            stubAuthRetrievalOf(randomNinos.sample.get)
+
+            withClient { ws =>
               val response = ws
                 .url(s"$baseUrl$tfc_url")
                 .withHttpHeaders(
@@ -794,7 +798,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
               checkErrorResponse(response, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
             }
           }
-        }
       }
 
       "respond 500 with errorCode ETFC2 and expected errorDescription" when {
@@ -817,10 +820,12 @@ class ControllerWithPayeeTypeEppDisabledISpec
       forAll(nsiErrorScenarios) {
         (nsiStatusCode, nsiErrorCode, expectedStatusCode) =>
           s"respond with status $expectedStatusCode" when {
-            s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in withClient { ws =>
-              withAuthNinoRetrieval {
+            s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in
+              withClient { ws =>
                 val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
                 val nsiResponse     = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
+
+                stubAuthRetrievalOf(randomNinos.sample.get)
                 stubFor(nsiMapping willReturn nsiResponse)
 
                 val response = ws
@@ -834,7 +839,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
                 response.status shouldBe expectedStatusCode
               }
-            }
           }
       }
     }
