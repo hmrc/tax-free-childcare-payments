@@ -47,7 +47,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
     val LINK_URL = s"$baseUrl/link"
 
     "respond with status 200 and correct JSON body" when {
-
       "link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in
         forAll { (request: IdentifierRequest[LinkRequest], linkResponse: LinkResponse) =>
           stubAuthRetrievalOf(request.nino)
@@ -250,10 +249,11 @@ class ControllerWithPayeeTypeEppDisabledISpec
   }
 
   "POST /balance" should {
+    val BALANCE_URL = s"$baseUrl/balance"
 
     s"respond with status 200 and correct JSON body" when {
-      s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in withClient { wsClient =>
-        withAuthNinoRetrieval {
+      s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in
+        withClient { wsClient =>
           val expectedCorrelationId   = UUID.randomUUID()
           val expectedTfcResponseBody = Json.obj(
             "tfc_account_status" -> "ACTIVE",
@@ -272,10 +272,11 @@ class ControllerWithPayeeTypeEppDisabledISpec
             "clearedFunds"   -> 0
           )
 
+          stubAuthRetrievalOf(randomNinos.sample.get)
           stubNsiCheckBalance200(expectedNsiResponseBody)
 
           val res = wsClient
-            .url(s"$baseUrl/balance")
+            .url(BALANCE_URL)
             .withHttpHeaders(
               AUTHORIZATION  -> "Bearer qwertyuiop",
               CORRELATION_ID -> expectedCorrelationId.toString
@@ -289,7 +290,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
           resCorrelationId shouldBe expectedCorrelationId
           res.json         shouldBe expectedTfcResponseBody
         }
-      }
     }
 
     "respond 400 with errorCode E0001 and expected errorDescription" when {
@@ -301,7 +301,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
             stubAuthRetrievalOf(nino)
 
             val response = wsClient
-              .url(s"$baseUrl/balance")
+              .url(BALANCE_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
@@ -319,7 +319,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
             stubAuthRetrievalOf(nino)
 
             val response = wsClient
-              .url(s"$baseUrl/balance")
+              .url(BALANCE_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
@@ -342,7 +342,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
           withClient { wsClient =>
             val response = wsClient
-              .url(s"$baseUrl/balance")
+              .url(BALANCE_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
@@ -365,7 +365,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
           withClient { wsClient =>
             val response = wsClient
-              .url(s"$baseUrl/balance")
+              .url(BALANCE_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
@@ -382,35 +382,34 @@ class ControllerWithPayeeTypeEppDisabledISpec
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK with unknown account status" in
         withClient { wsClient =>
           withCaptureOfLoggingFrom(NSI_CONNECTOR_LOGGER) { logs =>
-            withAuthNinoRetrieval {
-              val expectedCorrelationId   = UUID.randomUUID()
-              val expectedNsiResponseBody = Json.obj(
-                "accountStatus"  -> "UNKNOWN",
-                "topUpAvailable" -> 0,
-                "topUpRemaining" -> 0,
-                "paidIn"         -> 0,
-                "totalBalance"   -> 0,
-                "clearedFunds"   -> 0
+            val expectedCorrelationId   = UUID.randomUUID()
+            val expectedNsiResponseBody = Json.obj(
+              "accountStatus"  -> "UNKNOWN",
+              "topUpAvailable" -> 0,
+              "topUpRemaining" -> 0,
+              "paidIn"         -> 0,
+              "totalBalance"   -> 0,
+              "clearedFunds"   -> 0
+            )
+
+            stubAuthRetrievalOf(randomNinos.sample.get)
+            stubNsiCheckBalance200(expectedNsiResponseBody)
+
+            val response = wsClient
+              .url(BALANCE_URL)
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
               )
+              .post(validCheckBalanceRequestPayloads.sample.get)
+              .futureValue
 
-              stubNsiCheckBalance200(expectedNsiResponseBody)
+            val expectedJsonErrors     = List(JsPath(List(KeyPathNode("accountStatus"))) -> List(JsonValidationError("error.invalid.account_status")))
+            val expectedPartialMessage = s"NSI responded 200. Resulted in JSON validation errors - $expectedJsonErrors - triggering ETFC3"
+            val expectedLogMessage     = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
+            checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
-              val response = wsClient
-                .url(s"$baseUrl/balance")
-                .withHttpHeaders(
-                  AUTHORIZATION  -> "Bearer qwertyuiop",
-                  CORRELATION_ID -> expectedCorrelationId.toString
-                )
-                .post(validCheckBalanceRequestPayloads.sample.get)
-                .futureValue
-
-              val expectedJsonErrors     = List(JsPath(List(KeyPathNode("accountStatus"))) -> List(JsonValidationError("error.invalid.account_status")))
-              val expectedPartialMessage = s"NSI responded 200. Resulted in JSON validation errors - $expectedJsonErrors - triggering ETFC3"
-              val expectedLogMessage     = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
-              checkLoneLog(Level.WARN, expectedLogMessage)(logs)
-
-              checkErrorResponse(response, BAD_GATEWAY, "ETFC3", "Bad Gateway")
-            }
+            checkErrorResponse(response, BAD_GATEWAY, "ETFC3", "Bad Gateway")
           }
         }
     }
@@ -425,7 +424,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
             val expectedCorrelationId = UUID.randomUUID()
 
             val response = wsClient
-              .url(s"$baseUrl/balance")
+              .url(BALANCE_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
