@@ -802,7 +802,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
       "respond 500 with errorCode ETFC2 and expected errorDescription" when {
         "correlation ID is missing" in withClient { ws =>
-          stubFor(post("/auth/authorise") willReturn okJson("{}"))
+          stubAuthEmptyRetrieval
 
           val response = ws
             .url(s"$baseUrl$tfc_url")

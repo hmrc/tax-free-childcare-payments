@@ -26,4 +26,8 @@ trait AuthStubs {
   protected def stubAuthRetrievalOf(nino: String): StubMapping = stubFor {
     WireMock.post("/auth/authorise") willReturn okJson(Json.obj("nino" -> nino).toString)
   }
+
+  protected def stubAuthEmptyRetrieval: StubMapping = stubFor {
+    WireMock.post("/auth/authorise") willReturn okJson("{}")
+  }
 }
