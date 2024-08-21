@@ -444,9 +444,11 @@ class ControllerWithPayeeTypeEppDisabledISpec
   }
 
   "POST /" should {
+    val PAYMENT_URL = s"$baseUrl/"
+
     "respond 200" when {
       "request is valid with payee type set to CCP" in
-        forAll (
+        forAll(
           randomIdentifierRequest(randomPaymentRequestWithOnlyCCP),
           arbitrary[PaymentResponse]
         ) { (request, expectedResponse) =>
@@ -458,7 +460,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
             val expectedTfcResponseBody = Json.toJson(expectedResponse)
 
             val response = ws
-              .url(s"$baseUrl/")
+              .url(PAYMENT_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId
@@ -482,7 +484,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
             stubAuthRetrievalOf(nino)
 
             val response = wsClient
-              .url(s"$baseUrl/")
+              .url(PAYMENT_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
@@ -518,27 +520,29 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
       "payee type is missing" in
         forAll(Gen.uuid, randomPaymentJsonWithMissingPayeeType) { (expectedCorrelationId, payload) =>
-          withClient { ws =>
-            withAuthNinoRetrieval {
-              val response = ws
-                .url(s"$baseUrl/")
-                .withHttpHeaders(
-                  AUTHORIZATION  -> "Bearer qwertyuiop",
-                  CORRELATION_ID -> expectedCorrelationId.toString
-                )
-                .post(payload)
-                .futureValue
+          stubAuthRetrievalOf(randomNinos.sample.get)
 
-              checkErrorResponse(response, BAD_REQUEST, "E0007", expectedErrorDesc)
-            }
+          withClient { ws =>
+            val response = ws
+              .url(PAYMENT_URL)
+              .withHttpHeaders(
+                AUTHORIZATION  -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId.toString
+              )
+              .post(payload)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0007", expectedErrorDesc)
           }
         }
+
       "payee type is invalid" in
         forAll(Gen.uuid, randomPaymentJsonWithPayeeTypeNotCCP) { (expectedCorrelationId, payload) =>
+          stubAuthRetrievalOf(randomNinos.sample.get)
+
           withClient { ws =>
-            withAuthNinoRetrieval {
               val response = ws
-                .url(s"$baseUrl/")
+                .url(PAYMENT_URL)
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> expectedCorrelationId.toString
@@ -548,7 +552,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
               checkErrorResponse(response, BAD_REQUEST, "E0007", expectedErrorDesc)
             }
-          }
         }
     }
 
@@ -563,7 +566,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
           withClient { ws =>
             expectLoneLog("payment", expectedCorrelationID) {
               val res = ws
-                .url(s"$baseUrl/")
+                .url(PAYMENT_URL)
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> expectedCorrelationID
@@ -584,7 +587,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
           withClient { ws =>
             expectLoneLog("payment", expectedCorrelationID) {
               val res = ws
-                .url(s"$baseUrl/")
+                .url(PAYMENT_URL)
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> expectedCorrelationID
@@ -605,7 +608,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
           withClient { ws =>
             expectLoneLog("payment", expectedCorrelationID) {
               val res = ws
-                .url(s"$baseUrl/")
+                .url(PAYMENT_URL)
                 .withHttpHeaders(
                   AUTHORIZATION  -> "Bearer qwertyuiop",
                   CORRELATION_ID -> expectedCorrelationID
@@ -629,7 +632,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
           withClient { wsClient =>
             val response = wsClient
-              .url(s"$baseUrl/")
+              .url(PAYMENT_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
@@ -653,7 +656,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
           withClient { wsClient =>
             val response = wsClient
-              .url(s"$baseUrl/")
+              .url(PAYMENT_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
@@ -676,7 +679,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
           withClient { wsClient =>
             val response = wsClient
-              .url(s"$baseUrl/")
+              .url(PAYMENT_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
@@ -703,7 +706,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
             stubNsiMakePaymentError(randomHttpErrorCodes.sample.get, "E0009", nsiErrorDesc)
 
             val response = ws
-              .url(s"$baseUrl/")
+              .url(PAYMENT_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId.toString
