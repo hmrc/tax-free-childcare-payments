@@ -32,30 +32,22 @@ Then, if the parent has an invoice to pay, then they can select the amount and t
 ./run_local.sh
 ```
 
-## Logging
+## Feature Flags
 
-### Implicit
+Feature flags are found in `application.conf` under the property `features`.
 
-| Scenario        | Level   | Logger Name                                               | Message Pattern                                                                      | Source              |
-|-----------------|---------|-----------------------------------------------------------|--------------------------------------------------------------------------------------|---------------------|
-| Inbound Request | `INFO`  | `uk.gov.hmrc.play.bootstrap.filters.DefaultLoggingFilter` | `[A-Z]+ \S+ \d{3} \d+ms`                                                             | [Bootstrap][BS]     |
-| Outbound 200    | `DEBUG` | `connector`                                               | `\S*:[A-Z]+:\d+:\d+\.\d{3}[mnu]?s:\d+:\d+\.\d{3}[mnu]?s:[0-9a-f]{1,4}:\S+:ok`        | [HTTP Verbs][HV200] |
-| Outbound 404    | `INFO`  | `connector`                                               | `\S*:[A-Z]+:\d+:\d+\.\d{3}[mnu]?s:\d+:\d+\.\d{3}[mnu]?s:[0-9a-f]{1,4}:\S+:failed .*` | [HTTP Verbs][HV404] |
-| Outbound Error  | `WARN`  | `connector`                                               | `\S*:[A-Z]+:\d+:\d+\.\d{3}[mnu]?s:\d+:\d+\.\d{3}[mnu]?s:[0-9a-f]{1,4}:\S+:failed .*` | [HTTP Verbs][HVE]   |
+### enablePayeeTypeEPP
 
-### Explicit
+#### Background
 
-| Scenario               | Level  | Logger Name                      | Message Pattern                                                                                |
-|------------------------|--------|----------------------------------|------------------------------------------------------------------------------------------------|
-| Missing Correlation ID | `INFO` | `controllers.actions.AuthAction` | `<null> Missing Correlation-ID header.`                                                        |
-| Invalid Correlation ID | `INFO` | `controllers.actions.AuthAction` | `<(.{37,}> UUID string too large\|.{0,36}> Invalid UUID string: .*)`                           |
-| Empty Nino Retrieval   | `INFO` | `controllers.actions.AuthAction` | `<[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}> Unable to retrieve NI number.` |
-| Bad Request Payload    | `INFO` | `config.customJsonErrorHandler`  | `Json validation error.*`                                                                      |
+The original solution was designed to allow EPPs to send payments either directly to their CCP clients or to themselves.
+The EPPs subsequently raised concerns on reconciling the 2 kinds of payments in their ledger. Further user research is
+expected to address this.
 
-[BS]: https://github.com/hmrc/bootstrap-play/blob/7a8a302b63cda07119f13ec21ad7ae82a45c966f/bootstrap-common-play-30/src/main/scala/uk/gov/hmrc/play/bootstrap/filters/LoggingFilter.scala#L61-L69
+#### Detail
 
-[HV200]: https://github.com/hmrc/http-verbs/blob/6af33f916da3d82297409ddacd7b18a4d454bdb4/http-verbs-play-30/src/main/scala/uk/gov/hmrc/http/logging/ConnectionTracing.scala#L39
+In anticipation of resolution of these concerns, the capability to send payment to EPPs has been locked behind the
+feature flag `features.enablePayeeTypeEPP`, which when set to:
 
-[HV404]: https://github.com/hmrc/http-verbs/blob/6af33f916da3d82297409ddacd7b18a4d454bdb4/http-verbs-play-30/src/main/scala/uk/gov/hmrc/http/logging/ConnectionTracing.scala#L40-L43
-
-[HVE]: https://github.com/hmrc/http-verbs/blob/6af33f916da3d82297409ddacd7b18a4d454bdb4/http-verbs-play-30/src/main/scala/uk/gov/hmrc/http/logging/ConnectionTracing.scala#L44
+- `false`, only allows payment to CCP.
+- `true`, allows payment to either CCP or EPP.
