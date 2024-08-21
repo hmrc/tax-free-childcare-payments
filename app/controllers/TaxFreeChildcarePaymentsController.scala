@@ -67,11 +67,6 @@ class TaxFreeChildcarePaymentsController @Inject() (
 
 object TaxFreeChildcarePaymentsController {
 
-  private implicit val writesLinkResponse: Writes[LinkResponse] = lr =>
-    Json.obj(
-      "child_full_name" -> lr.childFullName
-    )
-
   private implicit val writesBalanceResponse: Writes[BalanceResponse] = br =>
     Json.obj(
       "tfc_account_status" -> br.accountStatus,

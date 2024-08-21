@@ -52,6 +52,11 @@ trait Generators extends base.Generators with RandomPayeeJson {
     )
   )
 
+  protected def getJsonFrom(linkRequest: LinkRequest): JsObject =
+    getJsonFrom(linkRequest.sharedRequestData) ++ Json.obj(
+      "child_date_of_birth" -> linkRequest.child_date_of_birth
+    )
+
   protected val validLinkPayloads: Gen[JsObject] = linkPayloadsWith(validSharedJson)
 
   protected lazy val linkPayloadsWithMissingTfcAccountRef: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)
