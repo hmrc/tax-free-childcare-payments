@@ -25,6 +25,7 @@ object Payee extends ConstraintReads {
   case object ExternalPaymentProvider                               extends Payee
   final case class ChildCareProvider(urn: String, postcode: String) extends Payee
 
+
   object ChildCareProvider {
 
     val reads: Reads[Payee] = (
@@ -54,7 +55,7 @@ object Payee extends ConstraintReads {
     JsError(JsPath(List(KeyPathNode(PAYEE_TYPE_KEY))), "error.payee_type")
   }
 
-  lazy private val POST_CODE = pattern("[a-zA-Z0-9]{2,4}\\s+[a-zA-Z0-9]{3}".r)
+  lazy private val POST_CODE = pattern("\\s*[a-zA-Z0-9]{2,4}\\s*\\d[a-zA-Z]{2}\\s*$".r)
   lazy private val CCP_REG   = pattern(s".{1,$CCP_REG_MAX_LEN}".r)
   lazy val CCP_REG_MAX_LEN   = 20
 
