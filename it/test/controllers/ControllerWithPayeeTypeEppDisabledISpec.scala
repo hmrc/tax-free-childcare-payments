@@ -24,6 +24,7 @@ import models.request.LinkRequest.CHILD_DOB_KEY
 import models.request.Payee.PAYEE_TYPE_KEY
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.SharedRequestData.TFC_ACCOUNT_REF_KEY
+import models.request.data.Generators
 import models.request.{IdentifierRequest, LinkRequest}
 import models.response.{LinkResponse, PaymentResponse}
 import org.scalatest.Assertion
@@ -38,7 +39,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
     extends BaseISpec
     with AuthStubs
     with NsiStubs
-    with models.request.Generators
+    with Generators
     with models.response.Generators {
   import org.scalacheck.{Arbitrary, Gen}
   import Arbitrary.arbitrary

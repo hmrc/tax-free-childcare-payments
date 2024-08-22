@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package models.request
+package models.request.data
 
 import models.request.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
+import models.request._
 import play.api.libs.json._
 import play.api.mvc.Headers
 import play.api.test.FakeRequest

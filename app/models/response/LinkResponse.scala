@@ -16,7 +16,7 @@
 
 package models.response
 
-import play.api.libs.json.{Json, OWrites, Writes}
+import play.api.libs.json.{Json, OWrites}
 
 final case class LinkResponse(childFullName: String)
 

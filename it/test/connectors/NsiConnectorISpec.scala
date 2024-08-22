@@ -21,6 +21,7 @@ import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.scenarios._
+import models.request.data.Generators
 import models.request.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse._
 import org.scalacheck.Arbitrary.arbitrary
@@ -31,7 +32,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
 
-class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with models.request.Generators {
+class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with Generators {
   private val connector = app.injector.instanceOf[NsiConnector]
 
   "method linkAccounts" should {
