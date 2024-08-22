@@ -293,7 +293,7 @@ paths:
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
-                  description:  The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first three initials of the child's last name, 5 numbers, and ending in 'TFC'. 
+                  description:  The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first 3 initials of the child's last name, 5 numbers, and ending in 'TFC'. 
                   type: string
                   example: ABCD12345TFC
       responses:
@@ -528,7 +528,7 @@ components:
           description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0006, E0024, E0025, E0026, E0030, E0040, E0041, E0043"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error-mapping) for the corresponding error message.
+          description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
           type: string
 
     400errorResponseBalance:
@@ -539,7 +539,7 @@ components:
           description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0024, E0026, E0030, E0040, E0041, E0043"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error-mapping) for the corresponding error message.
+          description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
           type: string
 
     400errorResponsePayment:
@@ -550,7 +550,7 @@ components:
           description: "One of the following error codes: ETFC1, E0001, E0002, E0003, E0007, E0008, E0009, E0024, E0026, E0027, E0030, E0031, E0033, E0035, E0036, E0040, E0041, E0042, E0043"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error-mapping) for the corresponding error message.
+          description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
           type: string
 
     500errorResponseLink:
