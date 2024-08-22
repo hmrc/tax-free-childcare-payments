@@ -10,7 +10,7 @@ info:
 
 - Checking the balance on the child's TFC account.
 
-- Making a payment from the child's TFC account to the childcare provider.
+- Making one-off payments from the child's TFC account to the childcare provider.
 
 ## Error mapping
 
@@ -332,7 +332,7 @@ paths:
                       example: 100000
                     cleared_funds:
                       type: integer
-                      description: The total amount of money available to the parent or guardian to use to make payments to childcare providers. This is equal to total_balance minus any uncleared funds from paid_in_by_you. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      description: The total amount of money available to the parent or guardian to use to make payments to childcare providers. This is equal to total_balance minus any uncleared funds from paid_in_by_you. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00. Requested payments can not exceed this amount.
                       example: 100000
                     top_up_allowance:
                       type: integer
