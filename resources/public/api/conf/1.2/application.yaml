@@ -313,7 +313,7 @@ paths:
                       enum:
                        - ACTIVE
                        - INACTIVE
-                      example: Active
+                      example: ACTIVE
                     paid_in_by_you:
                       type: integer
                       description: The amount of money paid in to the child's TFC account by the parent or guardian. Supplied as 1/100 of the currency, therefore sterling pence. For example, 20000 = £200.00.
