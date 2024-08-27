@@ -154,19 +154,6 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" align="left">EEZZ00000TFC</td>
-    </tr>
-    <tr>
-        <td>outbound_child_payment_ref not found</td>
-        <td>400<br>
-           <pre class="code--block">
-{
- "errorCode": "E0040",
- "errorDescription": "The outbound_child_payment_ref could not be found in the TFC system - please ensure parent checks their details and tries again.",
-}
-           </pre></td>
-    </tr>
-    <tr>
         <th colspan="2" align="left">EEBA00000TFC</td>
     </tr>
     <tr>
