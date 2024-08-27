@@ -521,8 +521,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0006, E0024, E0025, E0026, E0030, E0041, E0043"
-          type: string
+          enum: "ETFC1", "E0001", "E0002", "E0004", "E0006", "E0024", "E0025", "E0026", "E0030", "E0041", "E0043"
         errorMessage:
           description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
           type: string
@@ -532,8 +531,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0024, E0026, E0030, E0041, E0043"
-          type: string
+          enum: "ETFC1", "E0001", "E0002", "E0004", "E0024", "E0026", "E0030", "E0041", "E0043"
         errorMessage:
           description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
           type: string
@@ -543,8 +541,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC1, E0001, E0002, E0003, E0007, E0008, E0009, E0024, E0026, E0027, E0030, E0031, E0033, E0035, E0036, E0041, E0042, E0043"
-          type: string
+          enum: "ETFC1", "E0001", "E0002", "E0003", "E0007", "E0008", "E0009", "E0024", "E0026", "E0027", "E0030", "E0031", "E0033", "E0035", "E0036", "E0041", "E0042", "E0043"
         errorMessage:
           description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
           type: string
@@ -554,8 +551,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC2, E0000, E0002, E0004, E0005, E0006, E0021, E0022, E0023, E0401, E0001"
-          type: string
+          enum: "ETFC2", "E0000", "E0002", "E0004", "E0005", "E0006", "E0021", "E0022", "E0023", "E0401", "E0001"
         errorMessage:
           description: We encountered an error on our servers and did not process your request, please try again later.	
           type: string
@@ -565,8 +561,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC2, E0000, E0002, E0004, E0005, E0401, E0001"
-          type: string
+          enum: "ETFC2", "E0000", "E0002", "E0004", "E0005", "E0401", "E0001"
         errorMessage:
           description: We encountered an error on our servers and did not process your request, please try again later.	
           type: string
@@ -576,8 +571,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC2, E0000, E0002, E0003, E0004, E0005, E0007, E0008, E0009, E0022, E0023, E0401, E0001"
-          type: string
+          enum: "ETFC2", "E0000", "E0002", "E0003", "E0004", "E0005", "E0007", "E0008", "E0009", "E0022", "E0023", "E0401", "E0001"
         errorMessage:
           description: We encountered an error on our servers and did not process your request, please try again later.	
           type: string
@@ -588,8 +582,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC3, E0020"
-          type: string
+          enum: "ETFC3", "E0020"
         errorMessage:
           description: Bad Gateway.
           type: string
@@ -599,8 +592,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: E0034,E9000, E9999, E8000, E8001"
-          type: string
+          enum: "E0034", "E9000", "E9999", "E8000", "E8001"
         errorMessage:
           description: The service is currently unavailable.
           type: string
