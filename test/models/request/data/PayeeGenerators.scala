@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package models.request
+package models.request.data
 
+import models.request.Payee
 import models.request.Payee.CCP_REG_MAX_LEN
 import org.scalacheck.Gen
 import play.api.libs.json.{JsObject, JsString, Json}
 
-trait RandomPayeeJson extends base.Generators {
+trait PayeeGenerators extends base.Generators {
 
   protected val randomPayeeJsonWithPayeeTypeError: Gen[JsObject] = Gen.oneOf(
-    randomPayeeJsonWithMissingPayeeType, randomPayeeJsonWithInvalidPayeeType
+    randomPayeeJsonWithMissingPayeeType,
+    randomPayeeJsonWithInvalidPayeeType
   )
 
   protected val randomCcpJsonWithPayeeTypeError: Gen[JsObject] = Gen.oneOf(
@@ -33,14 +35,16 @@ trait RandomPayeeJson extends base.Generators {
   )
 
   protected val randomCcpJsonWithUrnError: Gen[JsObject] = Gen.oneOf(
-    randomCcpJsonWithMissingUrn, randomCcpJsonWithInvalidUrn
+    randomCcpJsonWithMissingUrn,
+    randomCcpJsonWithInvalidUrn
   )
 
   protected val randomCcpJsonWithPostcodeError: Gen[JsObject] = Gen.oneOf(
-    randomCcpJsonWithMissingPostcode, randomCcpJsonWithInvalidPostcode
+    randomCcpJsonWithMissingPostcode,
+    randomCcpJsonWithInvalidPostcode
   )
 
-  private lazy  val randomPayeeJsonWithMissingPayeeType = validPayeeJson.map(_ - "payee_type")
+  private lazy val randomPayeeJsonWithMissingPayeeType = validPayeeJson.map(_ - "payee_type")
 
   private lazy val randomPayeeJsonWithInvalidPayeeType = for {
     payeeJson <- validPayeeJson
@@ -51,30 +55,28 @@ trait RandomPayeeJson extends base.Generators {
 
   private lazy val randomCcpJsonWithInvalidUrn = for {
     ccpJson <- validCcpJson
-    ccpUrn <- invalidCcpUrns
+    ccpUrn  <- invalidCcpUrns
   } yield ccpJson + ("ccp_reg_reference" -> ccpUrn)
 
   private lazy val randomCcpJsonWithMissingPostcode = validCcpJson.map(_ - "ccp_postcode")
 
   private lazy val randomCcpJsonWithInvalidPostcode = for {
-    ccpJson <- validCcpJson
+    ccpJson  <- validCcpJson
     postcode <- invalidPostcodes
   } yield ccpJson + ("ccp_postcode" -> postcode)
 
   protected lazy val validPayeeJson: Gen[JsObject] = Gen.oneOf(validCcpJson, validEppJson)
-  protected lazy val validCcpJson: Gen[JsObject] = childCareProviders map getJsonFrom
-  protected lazy val validEppJson: Gen[JsObject] = Gen const Json.obj("payee_type" -> "EPP")
+  protected lazy val validCcpJson: Gen[JsObject]   = randomChildCareProviders map getJsonFrom
+  protected lazy val validEppJson: Gen[JsObject]   = Gen const Json.obj("payee_type" -> "EPP")
 
   protected def getJsonFrom(payee: Payee): JsObject = payee match {
-    case Payee.ExternalPaymentProvider => Json.obj("payee_type" -> "EPP")
-    case ccp: Payee.ChildCareProvider => getJsonFrom(ccp)
+    case Payee.ExternalPaymentProvider          => Json.obj("payee_type" -> "EPP")
+    case Payee.ChildCareProvider(urn, postcode) => Json.obj(
+        "payee_type"        -> "CCP",
+        "ccp_reg_reference" -> urn,
+        "ccp_postcode"      -> postcode
+      )
   }
-
-  protected def getJsonFrom(ccp: Payee.ChildCareProvider): JsObject = Json.obj(
-    "payee_type"        -> "CCP",
-    "ccp_reg_reference" -> ccp.urn,
-    "ccp_postcode"      -> ccp.postcode
-  )
 
   protected lazy val invalidPayeeTypes: Gen[JsString] = Gen.oneOf(
     Gen.oneOf("ccp", "epp"),

@@ -21,9 +21,17 @@ import play.api.libs.json.{JsObject, Json}
 
 import java.time.ZoneId
 
-trait Generators {
+trait Generators extends base.Generators {
 
-  implicit val arbPaymentResponse: Arbitrary[PaymentResponse] = Arbitrary(
+  implicit protected val arbLinkResponse: Arbitrary[LinkResponse] = Arbitrary(
+    fullNames map LinkResponse.apply
+  )
+
+  protected def getNsiJsonFrom(response: LinkResponse): JsObject = Json.obj(
+    "childFullName" -> response.childFullName
+  )
+
+  implicit protected val arbPaymentResponse: Arbitrary[PaymentResponse] = Arbitrary(
     for {
       reference <- Gen.asciiPrintableStr
       calendar  <- Gen.calendar
@@ -31,8 +39,8 @@ trait Generators {
     } yield PaymentResponse(reference, date)
   )
 
-  protected def getNsiJsonFrom(paymentResponse: PaymentResponse): JsObject = Json.obj(
-    "paymentReference" -> paymentResponse.payment_reference,
-    "paymentDate"      -> paymentResponse.estimated_payment_date
+  protected def getNsiJsonFrom(response: PaymentResponse): JsObject = Json.obj(
+    "paymentReference" -> response.payment_reference,
+    "paymentDate"      -> response.estimated_payment_date
   )
 }

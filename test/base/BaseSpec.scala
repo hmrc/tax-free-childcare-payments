@@ -22,43 +22,22 @@ import models.request.IdentifierRequest
 import org.scalactic.Prettifier
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.{Assertion, LoneElement, OptionValues}
+import org.scalatest.{Assertion, EitherValues, LoneElement, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.libs.json._
-
-import java.time.LocalDate
-import scala.util.Random
 
 class BaseSpec
     extends AnyWordSpec
     with should.Matchers
     with OptionValues
+    with EitherValues
     with ScalaCheckPropertyChecks
     with LoneElement {
 
   implicit val prettifier: Prettifier = {
-    case request: IdentifierRequest[_] => s"IdentifierRequest( ${request.request.body} )"
-    case other                         => Prettifier.default(other)
+    case IdentifierRequest(_, _, underlying) => s"IdentifierRequest( ${underlying.body} )"
+    case other                               => Prettifier.default(other)
   }
-
-  protected def randomOutboundChildPaymentRef: String = {
-    val letters = randomStringOf(EXPECTED_PAYMENT_REF_LETTERS, 'A' to 'Z')
-    val digits  = randomStringOf(EXPECTED_PAYMENT_REF_DIGITS, '0' to '9')
-
-    letters + digits + "TFC"
-  }
-
-  private def randomStringOf(n: Int, chars: Seq[Char]) = {
-    def randomChar = chars(Random.nextInt(chars.length))
-    Array.fill(n)(randomChar).mkString
-  }
-
-  protected def randomPaymentDate: LocalDate = LocalDate.now() plusDays Random.nextInt(MAX_PAYMENT_DELAY_DAYS)
-
-  private val EXPECTED_PAYMENT_REF_LETTERS = 4
-  private val EXPECTED_PAYMENT_REF_DIGITS  = 5
-
-  private val MAX_PAYMENT_DELAY_DAYS = 30
 
   protected def checkErrorJson(
       actualJson: => JsValue,
@@ -67,6 +46,18 @@ class BaseSpec
     ): Assertion = {
     actualJson \ "errorCode"        shouldBe JsDefined(JsString(expectedErrorCode))
     actualJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
+  }
+
+  protected def checkJsonError[A: Reads](expectedJsonPath: String, expectedMessage: String)(json: JsValue): Assertion =
+    checkJsonError { (jsPath, jsError) =>
+      jsPath.path.loneElement shouldBe KeyPathNode(expectedJsonPath)
+      jsError.message         shouldBe expectedMessage
+    }(json)
+
+  protected def checkJsonError[A: Reads](check: (JsPath, JsonValidationError) => Assertion)(json: JsValue): Assertion = {
+    val (jsPath, jsErrors) = json.validate[A].asEither.left.value.loneElement
+
+    check(jsPath, jsErrors.loneElement)
   }
 
   protected def checkLoneLog(expectedLevel: Level, expectedMessage: String)(logs: List[ILoggingEvent]): Unit = {

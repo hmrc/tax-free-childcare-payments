@@ -41,7 +41,6 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
     with ScalaCheckPropertyChecks
     with LogCapturing
     with LoneElement {
-  import com.github.tomakehurst.wiremock.client.WireMock.{okJson, post, stubFor}
   import org.scalatest.Assertion
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
@@ -55,13 +54,6 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
     ).build()
 
   protected lazy val baseUrl = s"http://localhost:$port"
-
-  protected def withAuthNinoRetrieval(check: => Assertion): Assertion = {
-    stubFor(
-      post("/auth/authorise") willReturn okJson(Json.obj("nino" -> "QW123456A").toString)
-    )
-    check
-  }
 
   protected lazy val CORRELATION_ID = "Correlation-ID"
 

@@ -16,9 +16,7 @@
 
 package controllers.actions
 
-import base.BaseISpec
-import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.{okJson, stubFor}
+import base.{AuthStubs, BaseISpec}
 import models.request.IdentifierRequest
 import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.JsString
@@ -28,14 +26,16 @@ import play.api.test.FakeRequest
 import java.util.UUID
 import scala.concurrent.Future
 
-class AuthActionISpec extends BaseISpec with Results {
+class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Generators {
   lazy private implicit val as: ActorSystem = app.actorSystem
 
   private val authAction = app.injector.instanceOf[AuthAction]
 
   "method invokeBlock" should {
     "return a 400 Response with errorCode ETFC1 and expected errorDescription" when {
-      "correlation ID is missing" in withAuthNinoRetrieval {
+      "correlation ID is missing" in {
+        stubAuthRetrievalOf(randomNinos.sample.get)
+
         val requestSansCorrelationId = FakeRequest().withHeaders(AUTHORIZATION -> "Bearer a-totally-random-token")
 
         val actualResult = authAction.invokeBlock(requestSansCorrelationId, successBlock).futureValue
@@ -43,7 +43,9 @@ class AuthActionISpec extends BaseISpec with Results {
         checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
       }
 
-      "correlation ID is invalid" in withAuthNinoRetrieval {
+      "correlation ID is invalid" in {
+        stubAuthRetrievalOf(randomNinos.sample.get)
+
         val requestWithBadCorrelationId = FakeRequest().withHeaders(
           AUTHORIZATION  -> "Bearer a-totally-random-token",
           CORRELATION_ID -> "an-invalid-uuid"
@@ -57,7 +59,7 @@ class AuthActionISpec extends BaseISpec with Results {
 
     "return a 500 response with errorCode ETFC2 and expected errorDescription" when {
       "Auth doesn't return a NI number" in {
-        stubFor(WireMock.post("/auth/authorise") willReturn okJson("{}"))
+        stubAuthEmptyRetrieval
 
         val requestWithCorrelationId = FakeRequest().withHeaders(
           AUTHORIZATION  -> "Bearer a-totally-random-token",

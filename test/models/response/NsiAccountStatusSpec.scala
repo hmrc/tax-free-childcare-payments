@@ -16,10 +16,9 @@
 
 package models.response
 
-import models.request.BaseSpec
+import base.BaseSpec
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
-
 import play.api.libs.json._
 
 class NsiAccountStatusSpec extends BaseSpec {

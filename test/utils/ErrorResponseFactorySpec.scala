@@ -17,6 +17,7 @@
 package utils
 
 import base.BaseSpec
+import models.request.data.Generators
 import models.request.{LinkRequest, Payee, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse._
 import org.apache.pekko.actor.ActorSystem
@@ -27,7 +28,7 @@ import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 class ErrorResponseFactorySpec extends BaseSpec
-    with models.request.Generators
+    with Generators
     with EitherValues
     with LogCapturing
     with Status

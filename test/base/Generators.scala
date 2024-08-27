@@ -22,6 +22,8 @@ import org.scalacheck.Gen
 
 trait Generators {
 
+  protected lazy val nonAlphaNumStrings: Gen[String] = Gen.asciiPrintableStr.map(_.filterNot(_.isLetterOrDigit))
+
   protected lazy val fullNames: Gen[String] = for {
     firstName <- names
     lastName  <- names
@@ -49,10 +51,10 @@ trait Generators {
 
   protected lazy val randomPayees: Gen[Payee] = Gen.oneOf(
     Gen const Payee.ExternalPaymentProvider,
-    childCareProviders
+    randomChildCareProviders
   )
 
-  protected lazy val childCareProviders: Gen[ChildCareProvider] = for {
+  protected lazy val randomChildCareProviders: Gen[ChildCareProvider] = for {
     urn      <- nonEmptyAlphaNumStrings
     postcode <- postcodes
   } yield ChildCareProvider(urn, postcode)

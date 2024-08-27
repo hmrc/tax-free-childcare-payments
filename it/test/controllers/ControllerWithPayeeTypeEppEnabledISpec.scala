@@ -17,6 +17,7 @@
 package controllers
 
 import base.{AuthStubs, BaseISpec, NsiStubs}
+import models.request.data.Generators
 import models.request.{IdentifierRequest, PaymentRequest}
 import models.response.PaymentResponse
 import play.api.libs.json.Json
@@ -25,7 +26,7 @@ class ControllerWithPayeeTypeEppEnabledISpec
     extends BaseISpec(enablePayeeTypeEPP = true)
     with AuthStubs
     with NsiStubs
-    with models.request.Generators
+    with Generators
     with models.response.Generators {
   "POST /" should {
     "respond 200 with expected body" when {

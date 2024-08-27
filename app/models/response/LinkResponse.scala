@@ -16,4 +16,14 @@
 
 package models.response
 
+import play.api.libs.json.{Json, OWrites}
+
 final case class LinkResponse(childFullName: String)
+
+object LinkResponse {
+
+  implicit val writesToAPI: OWrites[LinkResponse] = lr =>
+    Json.obj(
+      "child_full_name" -> lr.childFullName
+    )
+}
