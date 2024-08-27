@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 info:
-  title: Tax-free childcare payment integration API
-  description: "An API which allows online cashless payment providers to give parents the option of paying for their childcare with funds from their Tax-free Childcare (TFC) account.
+  title: Tax-Free Childcare payment integration API
+  description: "An API which allows online cashless payment providers to give parents the option of paying for their childcare with funds from their Tax-Free Childcare (TFC) account.
   
   
   There are 3 different operations involved in this process:
@@ -10,7 +10,7 @@ info:
 
 - Checking the balance on the child's TFC account.
 
-- Making a payment from the child's TFC account to the childcare provider.
+- Making one-off payments from the child's TFC account to the childcare provider.
 
 ## Error mapping
 
@@ -168,7 +168,7 @@ paths:
               type: object
               properties:
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. For guidance from NS&I on how to register with them, see [here](https://www.childcarechoices.gov.uk/guidance-and-resources/information-childcare-providers/tax-free-childcare).
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. For guidance from NS&I on how to register with them, refer to [How do I sign up as a provider?](https://www.childcarechoices.gov.uk/guidance-and-resources/information-childcare-providers/tax-free-childcare).
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
@@ -176,7 +176,7 @@ paths:
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
-                  description: The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first three initials of the child's last name, 5 numbers, and ending in 'TFC'.
+                  description: The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first 3 initials of the child's last name, 5 numbers, and ending in 'TFC'.
                   type: string
                   example: ABCD12345TFC
                 child_date_of_birth:
@@ -251,11 +251,11 @@ paths:
       description: 
         "This endpoint fetches the balance of the associated child's TFC account. The balance of the TFC account consists of the following three different elements:
         
-        - Paid in by you - The amount of money the parent or guardian has paid into the child's account.
+        - Paid in by you - the amount of money the parent or guardian has paid into the child's account.
         
-        - Government top-up - The amount of top-up funds paid in by the government.
+        - Government top-up - the amount of top-up funds paid in by the government.
         
-        - Total balance - The sum of the two previous amounts."
+        - Total balance - the sum of the two previous amounts."
       parameters:
        - name: Accept
          in: header
@@ -285,7 +285,7 @@ paths:
               type: object
               properties:
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. For guidance from NS&I on how to register with them, see [here](https://www.childcarechoices.gov.uk/guidance-and-resources/information-childcare-providers/tax-free-childcare).
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. For guidance from NS&I on how to register with them, refer to [How do I sign up as a provider?](https://www.childcarechoices.gov.uk/guidance-and-resources/information-childcare-providers/tax-free-childcare).
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
@@ -293,7 +293,7 @@ paths:
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
-                  description:  The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first three initials of the child's last name, 5 numbers, and ending in 'TFC'. 
+                  description:  The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first 3 initials of the child's last name, 5 numbers, and ending in 'TFC'. 
                   type: string
                   example: ABCD12345TFC
       responses:
@@ -320,23 +320,23 @@ paths:
                       example: Active
                     paid_in_by_you:
                       type: integer
-                      description: The amount of money paid in to the child's TFC account by the parent or guardian. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      description: The amount of money paid in to the child's TFC account by the parent or guardian. Supplied as 1/100 of the currency, therefore sterling pence. For example, 20000 = £200.00.
                       example: 80000
                     government_top_up:
                       type: integer
-                      description: The amount paid in by the government, this amount has cleared and is available to the parent or guardian. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      description: The amount paid in by the government, this amount has cleared and is available to the parent or guardian. Supplied as 1/100 of the currency, therefore sterling pence. For example, 20000 = £200.00.
                       example: 20000
                     total_balance:
                       type: integer
-                      description: The sum of paid_in_by_you and government_top_up, this is the total amount paid into the account. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      description: The sum of paid_in_by_you and government_top_up, this is the total amount paid into the account. Supplied as 1/100 of the currency, therefore sterling pence. For example, 20000 = £200.00.
                       example: 100000
                     cleared_funds:
                       type: integer
-                      description: The total amount of money available to the parent or guardian to use to make payments to childcare providers. This is equal to total_balance minus any uncleared funds from paid_in_by_you. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      description: The total amount of money available to the parent or guardian to use to make payments to childcare providers. This is equal to total_balance minus any uncleared funds from paid_in_by_you. Supplied as 1/100 of the currency, therefore sterling pence. For example, 20000 = £200.00. Requested payments can not exceed this amount.
                       example: 100000
                     top_up_allowance:
                       type: integer
-                      description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in. Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                      description: The remaining amount of government top-up that is available to the parent or guardian for the current quarter. The amount that is paid in to the account by the government depends on what the parent or guardian pays in. Supplied as 1/100 of the currency, therefore sterling pence. For example, 20000 = £200.00.
                       example: 15000
           "400":
             description: Bad request
@@ -415,11 +415,11 @@ paths:
               type: object
               properties:
                 outbound_child_payment_ref:
-                  description:  The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first three initials of the child's last name, 5 numbers, and ending in 'TFC'. 
+                  description:  The 12 character alphanumeric reference number the parent uses when making payments to the CCP. This number is displayed on the TFC portal, and is used by the CCP to allocate incoming funds to the correct child's account. The format is 4 letters, representing the first initial of the child's first name and the first 3 initials of the child's last name, 5 numbers, and ending in 'TFC'. 
                   type: string
                   example: ABCD12345TFC
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. For guidance from NS&I on how to register with them, see [here](https://www.childcarechoices.gov.uk/guidance-and-resources/information-childcare-providers/tax-free-childcare).
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. For guidance from NS&I on how to register with them, refer to [How do I sign up as a provider?](https://www.childcarechoices.gov.uk/guidance-and-resources/information-childcare-providers/tax-free-childcare).
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
@@ -427,11 +427,11 @@ paths:
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 payment_amount:
-                  description: The amount of money the parent or guardian wants to pay the childcare provider from their TFC balance.  Supplied as 1/100 of the currency, i.e. Sterling pence. e.g. 20000 = £200.00.
+                  description: The amount of money the parent or guardian wants to pay the childcare provider from their TFC balance. Supplied as 1/100 of the currency, therefore sterling pence. For example, 20000 = £200.00. Requested payments can not exceed this amount.
                   type: integer
                   example: 20000
                 ccp_reg_reference:
-                  description: The unique reference number given to the childcare provider by the childcare regulator (e.g. Ofsted). The online payment provider needs to provide this to HMRC. 
+                  description: The unique reference number given to the childcare provider by the childcare regulator (such as Ofsted). The online payment provider needs to provide this to HMRC. 
                   type: string
                   example: EY456798
                 ccp_postcode:
@@ -528,7 +528,7 @@ components:
           description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0006, E0024, E0025, E0026, E0030, E0040, E0041, E0043"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error-mapping) for the corresponding error message.
+          description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
           type: string
 
     400errorResponseBalance:
@@ -539,7 +539,7 @@ components:
           description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0024, E0026, E0030, E0040, E0041, E0043"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error-mapping) for the corresponding error message.
+          description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
           type: string
 
     400errorResponsePayment:
@@ -550,7 +550,7 @@ components:
           description: "One of the following error codes: ETFC1, E0001, E0002, E0003, E0007, E0008, E0009, E0024, E0026, E0027, E0030, E0031, E0033, E0035, E0036, E0040, E0041, E0042, E0043"
           type: string
         errorMessage:
-          description: Refer to the [Error mapping table](Error-mapping) for the corresponding error message.
+          description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
           type: string
 
     500errorResponseLink:
@@ -608,5 +608,3 @@ components:
         errorMessage:
           description: The service is currently unavailable.
           type: string
-
-
