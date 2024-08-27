@@ -17,8 +17,9 @@
 package models.request
 
 import base.BaseSpec
+import models.request.data.RandomSharedRequestData
 
-class SharedRequestDataSpec extends BaseSpec with data.Generators {
+class SharedRequestDataSpec extends BaseSpec with RandomSharedRequestData {
 
   "API JSON reader" should {
     "return JsSuccess" when {

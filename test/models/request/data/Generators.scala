@@ -25,7 +25,7 @@ import play.api.test.FakeRequest
 
 import java.time.{LocalDate, ZoneId}
 
-trait Generators extends base.Generators with RandomPayeeJson {
+trait Generators extends RandomSharedRequestData with RandomPayeeJson {
   import org.scalacheck.{Arbitrary, Gen}
   import Arbitrary.arbitrary
 
@@ -93,14 +93,6 @@ trait Generators extends base.Generators with RandomPayeeJson {
     )
 
   /** END Link Accounts generators
-    *
-    * BEGIN Check Balance generators
-    */
-  protected implicit val arbSharedRequestData: Arbitrary[SharedRequestData] = Arbitrary(validSharedDataModels)
-
-  protected val validCheckBalanceRequestPayloads: Gen[JsObject] = validSharedJson
-
-  /** END Check Balance generators
     *
     * BEGIN Make Payment generators
     */
@@ -237,107 +229,5 @@ trait Generators extends base.Generators with RandomPayeeJson {
       "payment_amount" -> paymentAmountPence
     )
 
-  /** END Make Payment generators
-    *
-    * BEGIN Shared generators
-    */
-  protected lazy val validSharedDataModels: Gen[SharedRequestData] =
-    for {
-      epp_account     <- nonEmptyAlphaNumStrings
-      epp_urn         <- nonEmptyAlphaNumStrings
-      childAccountRef <- validChildAccountRefs
-    } yield SharedRequestData(
-      epp_unique_customer_id = epp_account,
-      epp_reg_reference = epp_urn,
-      outbound_child_payment_ref = childAccountRef
-    )
-
-  protected def getJsonFrom(model: SharedRequestData): JsObject = Json.obj(
-    "outbound_child_payment_ref" -> model.outbound_child_payment_ref,
-    "epp_reg_reference"          -> model.epp_reg_reference,
-    "epp_unique_customer_id"     -> model.epp_unique_customer_id
-  )
-
-  protected lazy val sharedPayloadsWithMissingTfcAccountRef: Gen[JsObject] =
-    for {
-      epp_urn     <- nonEmptyAlphaNumStrings
-      epp_account <- nonEmptyAlphaNumStrings
-    } yield Json.obj(
-      "epp_reg_reference"      -> epp_urn,
-      "epp_unique_customer_id" -> epp_account
-    )
-
-  protected lazy val sharedPayloadsWithInvalidTfcAccountRef: Gen[JsObject] =
-    for {
-      childAccountRef <- invalidChildAccountRefs
-      epp_urn         <- nonEmptyAlphaNumStrings
-      epp_account     <- nonEmptyAlphaNumStrings
-    } yield Json.obj(
-      "outbound_child_payment_ref" -> childAccountRef,
-      "epp_reg_reference"          -> epp_urn,
-      "epp_unique_customer_id"     -> epp_account
-    )
-
-  protected lazy val sharedPayloadsWithMissingEppUrn: Gen[JsObject] =
-    for {
-      childAccountRef <- validChildAccountRefs
-      epp_account     <- nonEmptyAlphaNumStrings
-    } yield Json.obj(
-      "outbound_child_payment_ref" -> childAccountRef,
-      "epp_unique_customer_id"     -> epp_account
-    )
-
-  protected lazy val sharedPayloadsWithInvalidEppUrn: Gen[JsObject] =
-    for {
-      childAccountRef <- validChildAccountRefs
-      epp_urn         <- nonAlphaNumStrings
-      epp_account     <- nonEmptyAlphaNumStrings
-    } yield Json.obj(
-      "outbound_child_payment_ref" -> childAccountRef,
-      "epp_reg_reference"          -> epp_urn,
-      "epp_unique_customer_id"     -> epp_account
-    )
-
-  protected lazy val sharedPayloadsWithMissingEppAccountId: Gen[JsObject] =
-    for {
-      childAccountRef <- validChildAccountRefs
-      epp_urn         <- nonEmptyAlphaNumStrings
-    } yield Json.obj(
-      "outbound_child_payment_ref" -> childAccountRef,
-      "epp_reg_reference"          -> epp_urn
-    )
-
-  protected lazy val sharedPayloadsWithInvalidEppAccountId: Gen[JsObject] =
-    for {
-      childAccountRef <- validChildAccountRefs
-      epp_urn         <- nonEmptyAlphaNumStrings
-      epp_account     <- nonAlphaNumStrings
-    } yield Json.obj(
-      "outbound_child_payment_ref" -> childAccountRef,
-      "epp_reg_reference"          -> epp_urn,
-      "epp_unique_customer_id"     -> epp_account
-    )
-
-  protected lazy val validSharedJson: Gen[JsObject] =
-    for {
-      epp_urn     <- nonEmptyAlphaNumStrings
-      epp_account <- nonEmptyAlphaNumStrings
-    } yield Json.obj(
-      "outbound_child_payment_ref" -> "AbCd12345TFC",
-      "epp_reg_reference"          -> epp_urn,
-      "epp_unique_customer_id"     -> epp_account
-    )
-
-  private lazy val validChildAccountRefs = for {
-    letters <- Gen.stringOfN(CHILD_ACCOUNT_REF_LETTERS, Gen.alphaChar)
-    digits  <- Gen.stringOfN(CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
-  } yield s"$letters${digits}TFC"
-
-  private lazy val invalidChildAccountRefs            = Gen.asciiPrintableStr.filterNot(_ matches EXPECTED_CHILD_ACCOUNT_REF_PATTERN)
-  private lazy val EXPECTED_CHILD_ACCOUNT_REF_PATTERN = s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
-
-  private lazy val CHILD_ACCOUNT_REF_LETTERS = 4
-  private lazy val CHILD_ACCOUNT_REF_DIGITS  = 5
-
-  private lazy val nonAlphaNumStrings = Gen.asciiPrintableStr.map(_.filterNot(_.isLetterOrDigit))
+  /** END Make Payment generators */
 }

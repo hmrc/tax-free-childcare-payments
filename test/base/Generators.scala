@@ -22,6 +22,8 @@ import org.scalacheck.Gen
 
 trait Generators {
 
+  protected lazy val nonAlphaNumStrings: Gen[String] = Gen.asciiPrintableStr.map(_.filterNot(_.isLetterOrDigit))
+
   protected lazy val fullNames: Gen[String] = for {
     firstName <- names
     lastName  <- names
