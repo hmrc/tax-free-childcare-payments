@@ -103,10 +103,6 @@ The following table gives the detailed description for each error code you recei
 			<td>Error processing payment due to Payee bank details</td>
 		</tr>
 		<tr>
-			<td>E0040</td>
-			<td>The outbound_child_payment_ref could not be found in the TFC system - please ensure parent checks their details and tries again.</td>
-		</tr>
-		<tr>
 			<td>E0041</td>
 			<td>The epp_reg_reference could not be found in the TFC system. Please check the details and try again.	</td>
 		</tr>
@@ -525,7 +521,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0006, E0024, E0025, E0026, E0030, E0040, E0041, E0043"
+          description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0006, E0024, E0025, E0026, E0030, E0041, E0043"
           type: string
         errorMessage:
           description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
@@ -536,7 +532,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0024, E0026, E0030, E0040, E0041, E0043"
+          description: "One of the following error codes: ETFC1, E0001, E0002, E0004, E0024, E0026, E0030, E0041, E0043"
           type: string
         errorMessage:
           description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
@@ -547,7 +543,7 @@ components:
       type: object
       properties:
         errorCode:
-          description: "One of the following error codes: ETFC1, E0001, E0002, E0003, E0007, E0008, E0009, E0024, E0026, E0027, E0030, E0031, E0033, E0035, E0036, E0040, E0041, E0042, E0043"
+          description: "One of the following error codes: ETFC1, E0001, E0002, E0003, E0007, E0008, E0009, E0024, E0026, E0027, E0030, E0031, E0033, E0035, E0036, E0041, E0042, E0043"
           type: string
         errorMessage:
           description: Refer to the [Error mapping table](https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/tax-free-childcare-payments/1.2/oas/page#section/Error-mapping) for the corresponding error message.
