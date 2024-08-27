@@ -17,10 +17,10 @@
 package models.request
 
 import base.BaseSpec
-import models.request.data.RandomPayeeJson
+import models.request.data.RandomPayeeData
 import play.api.libs.json.{KeyPathNode, Reads}
 
-class PayeeSpec extends BaseSpec with RandomPayeeJson {
+class PayeeSpec extends BaseSpec with RandomPayeeData {
   "val readsPayeeFromApi" should {
     implicit val reads: Reads[Payee] = Payee.readsPayeeFromApi
 
