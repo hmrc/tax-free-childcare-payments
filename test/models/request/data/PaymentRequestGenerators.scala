@@ -23,7 +23,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsNumber, JsObject, JsString, Json}
 
-trait RandomPaymentRequestData extends RandomSharedRequestData with RandomPayeeData {
+trait PaymentRequestGenerators extends SharedRequestGenerators with PayeeGenerators {
 
   protected implicit val arbPaymentRequest: Arbitrary[PaymentRequest] = Arbitrary(
     randomPaymentRequestWith(arbitrary[SharedRequestData], randomPayees)

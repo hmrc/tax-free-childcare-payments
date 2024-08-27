@@ -20,10 +20,10 @@ import base.BaseSpec
 import models.request.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
-import models.request.data.RandomPaymentRequestData
+import models.request.data.PaymentRequestGenerators
 import play.api.libs.json.Reads
 
-class PaymentRequestSpec extends BaseSpec with RandomPaymentRequestData {
+class PaymentRequestSpec extends BaseSpec with PaymentRequestGenerators {
 
   "With implicit Payee Reads in scope, API Reads" should {
     implicit val readsPayee: Reads[Payee] = Payee.readsPayeeFromApi

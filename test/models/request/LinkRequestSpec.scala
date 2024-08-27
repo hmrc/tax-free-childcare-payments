@@ -19,9 +19,10 @@ package models.request
 import base.BaseSpec
 import models.request.LinkRequest.CHILD_DOB_KEY
 import models.request.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
+import models.request.data.LinkRequestGenerators
 import play.api.libs.json.{JsPath, JsonValidationError, KeyPathNode}
 
-class LinkRequestSpec extends BaseSpec with data.Generators {
+class LinkRequestSpec extends BaseSpec with LinkRequestGenerators {
   "API JSON reader" should {
 
     "return JsError" when {

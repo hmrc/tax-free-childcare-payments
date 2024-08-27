@@ -20,7 +20,7 @@ import models.request.SharedRequestData
 import org.scalacheck.{Arbitrary, Gen}
 import play.api.libs.json.{JsObject, Json}
 
-trait RandomSharedRequestData extends base.Generators {
+trait SharedRequestGenerators extends base.Generators {
 
   protected implicit val arbSharedRequestData: Arbitrary[SharedRequestData] = Arbitrary(validSharedDataModels)
 
