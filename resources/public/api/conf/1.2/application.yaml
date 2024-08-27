@@ -164,11 +164,11 @@ paths:
               type: object
               properties:
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. Once the EPP is registered to use the production APIs, they will recieve a letter containing this ID. For the sandbox environment, use any 11 character number.
+                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. Once the EPP is registered to use the production APIs, they will receive a letter containing this ID. For the sandbox environment, use any 11 character number.
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
-                  description: This alphanumeric unique ID (max. 20 characters) is assigned to the online payment provider when they register with HMRC. Once the EPP is registered to use the production APIs, they will recieve a letter containing this ID. For the sandbox environment, use any alphanumeric value with a maximum of 20 characters.
+                  description: This alphanumeric unique ID (max. 20 characters) is assigned to the online payment provider when they register with HMRC. Once the EPP is registered to use the production APIs, they will receive a letter containing this ID. For the sandbox environment, use any alphanumeric value with a maximum of 20 characters.
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
