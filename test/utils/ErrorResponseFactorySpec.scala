@@ -172,7 +172,6 @@ class ErrorResponseFactorySpec extends BaseSpec
     (E0034,        SERVICE_UNAVAILABLE,   "E0034",               "The service is currently unavailable."),
     (E0035,        BAD_REQUEST,           "E0035",               "There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services"),
     (E0036,        BAD_REQUEST,           "E0036",               "Error processing payment due to Payee bank details"),
-    (E0040,        BAD_REQUEST,           "E0040",               "The outbound_child_payment_ref could not be found in the TFC system - please ensure parent checks their details and tries again."),
     (E0041,        BAD_REQUEST,           "E0041",               "The epp_reg_reference could not be found in the TFC system. Please check the details and try again."),
     (E0042,        BAD_REQUEST,           "E0042",               "The ccp_reg_reference could not be found in the TFC system or does not correlate with the ccp_postcode. Please check the details and try again."),
     (E0043,        BAD_REQUEST,           "E0043",               "Parent associated with the bearer token does not have a TFC account. Please ask the parent to create a TFC account first."),

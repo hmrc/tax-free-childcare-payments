@@ -43,4 +43,11 @@ trait Generators extends base.Generators {
     "paymentReference" -> response.payment_reference,
     "paymentDate"      -> response.estimated_payment_date
   )
+
+  protected val randomUnknownErrorCodes: Gen[String] = Gen.oneOf(
+    Gen.alphaStr,
+    Gen.numStr,
+    Gen const "UNKNOWN",
+    Gen const "E0040"
+  )
 }
