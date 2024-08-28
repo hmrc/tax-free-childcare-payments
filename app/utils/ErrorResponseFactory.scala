@@ -21,6 +21,7 @@ import models.request.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
 import models.response.NsiErrorResponse
+
 import play.api.libs.json._
 import play.api.mvc.Result
 import play.api.mvc.Results.Status
@@ -29,7 +30,7 @@ object ErrorResponseFactory {
 
   def getJson(errors: collection.Seq[(JsPath, collection.Seq[JsonValidationError])]): JsValue = {
     val (JsPath(KeyPathNode(key) :: Nil), _) = errors.head
-    val errorCode = JSON_VALIDATION_ERROR_CODES(key)
+    val errorCode                            = JSON_VALIDATION_ERROR_CODES(key)
     getJson(errorCode, s"$key is in invalid format or missing")
   }
 

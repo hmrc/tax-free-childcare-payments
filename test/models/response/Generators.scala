@@ -16,10 +16,11 @@
 
 package models.response
 
-import org.scalacheck.{Arbitrary, Gen}
-import play.api.libs.json.{JsObject, Json}
-
 import java.time.ZoneId
+
+import org.scalacheck.{Arbitrary, Gen}
+
+import play.api.libs.json.{JsObject, Json}
 
 trait Generators extends base.Generators {
 
@@ -42,5 +43,12 @@ trait Generators extends base.Generators {
   protected def getNsiJsonFrom(response: PaymentResponse): JsObject = Json.obj(
     "paymentReference" -> response.payment_reference,
     "paymentDate"      -> response.estimated_payment_date
+  )
+
+  protected val randomUnknownErrorCodes: Gen[String] = Gen.oneOf(
+    Gen.alphaStr,
+    Gen.numStr,
+    Gen const "UNKNOWN",
+    Gen const "E0040"
   )
 }

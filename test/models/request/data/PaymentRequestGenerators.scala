@@ -21,6 +21,7 @@ import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.{Payee, PaymentRequest, SharedRequestData}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
+
 import play.api.libs.json.{JsNumber, JsObject, JsString, Json}
 
 trait PaymentRequestGenerators extends SharedRequestGenerators with PayeeGenerators {
@@ -33,9 +34,9 @@ trait PaymentRequestGenerators extends SharedRequestGenerators with PayeeGenerat
     randomPaymentRequestWith(randomPayees = randomChildCareProviders)
 
   protected def randomPaymentRequestWith(
-                                          randomSharedData: Gen[SharedRequestData] = arbitrary[SharedRequestData],
-                                          randomPayees: Gen[Payee]
-                                        ): Gen[PaymentRequest] = for {
+      randomSharedData: Gen[SharedRequestData] = arbitrary[SharedRequestData],
+      randomPayees: Gen[Payee]
+    ): Gen[PaymentRequest] = for {
     sharedRequestData  <- randomSharedData
     payee              <- randomPayees
     paymentAmountPence <- Gen.posNum[Int]
@@ -96,9 +97,9 @@ trait PaymentRequestGenerators extends SharedRequestGenerators with PayeeGenerat
     )
 
   /** END Random Payment JSON with Any Payee.
-   *
-   * BEGIN Random Payment JSON with CCP Only.
-   */
+    *
+    * BEGIN Random Payment JSON with CCP Only.
+    */
   protected val validPaymentRequestWithPayeeTypeSetToCCP: Gen[JsObject] = randomPaymentJsonWithCcpOnlyAnd(validSharedJson)
 
   protected val randomPaymentJsonWithCcpOnlyAndMissingTfcAccountRef: Gen[JsObject] = randomPaymentJsonWithCcpOnlyAnd(sharedPayloadsWithMissingTfcAccountRef)

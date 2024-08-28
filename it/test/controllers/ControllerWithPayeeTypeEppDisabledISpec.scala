@@ -754,7 +754,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
     (FORBIDDEN,             "E0033",          BAD_REQUEST),
     (FORBIDDEN,             "E0034",          SERVICE_UNAVAILABLE),
     (FORBIDDEN,             "E0035",          BAD_REQUEST),
-    (NOT_FOUND,             "E0040",          BAD_REQUEST),
     (NOT_FOUND,             "E0041",          BAD_REQUEST),
     (NOT_FOUND,             "E0042",          BAD_REQUEST),
     (NOT_FOUND,             "E0043",          BAD_REQUEST),

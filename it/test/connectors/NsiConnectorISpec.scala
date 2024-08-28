@@ -32,7 +32,12 @@ import play.api.libs.json.Json
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
 
-class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with Generators {
+class NsiConnectorISpec
+  extends BaseISpec
+    with NsiStubs
+    with EitherValues
+    with Generators
+    with models.response.Generators {
   private val connector = app.injector.instanceOf[NsiConnector]
 
   "method linkAccounts" should {
@@ -102,10 +107,13 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with G
 
     "return Left ETFC4" when {
       "NSI responds with unknown errorCode" in
-        forAll { implicit req: IdentifierRequest[LinkRequest] =>
-          stubNsiLinkAccountsError(BAD_REQUEST, "UNKNOWN", "An error occurred")
+        forAll(
+          arbitrary[IdentifierRequest[LinkRequest]],
+          randomUnknownErrorCodes
+        ) { (request, unknownErrorCode) =>
+          stubNsiLinkAccountsError(BAD_REQUEST, unknownErrorCode, "An error occurred")
 
-          val actualNsiErrorResponse = connector.linkAccounts.futureValue.left.value
+          val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
 
           actualNsiErrorResponse shouldBe ETFC4
         }
@@ -158,10 +166,13 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with G
 
     "return Left ETFC4" when {
       "NSI responds with unknown errorCode" in
-        forAll { implicit req: IdentifierRequest[SharedRequestData] =>
-          stubNsiCheckBalanceError(BAD_REQUEST, "UNKNOWN", "An error occurred")
+        forAll(
+          arbitrary[IdentifierRequest[SharedRequestData]],
+          randomUnknownErrorCodes
+        ) { (request, unknownErrorCode) =>
+          stubNsiCheckBalanceError(BAD_REQUEST, unknownErrorCode, "An error occurred")
 
-          val actualNsiErrorResponse = connector.checkBalance.futureValue.left.value
+          val actualNsiErrorResponse = connector.checkBalance(request).futureValue.left.value
 
           actualNsiErrorResponse shouldBe ETFC4
         }
@@ -235,10 +246,13 @@ class NsiConnectorISpec extends BaseISpec with NsiStubs with EitherValues with G
 
     "return Left ETFC4" when {
       "NSI responds with unknown errorCode" in
-        forAll { implicit req: IdentifierRequest[PaymentRequest] =>
-          stubNsiMakePaymentError(BAD_REQUEST, "UNKNOWN", "An error occurred")
+        forAll(
+          arbitrary[IdentifierRequest[PaymentRequest]],
+          randomUnknownErrorCodes
+        ) { (request, unknownErrorCode) =>
+          stubNsiMakePaymentError(BAD_REQUEST, unknownErrorCode, "An error occurred")
 
-          val actualNsiErrorResponse = connector.makePayment.futureValue.left.value
+          val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
 
           actualNsiErrorResponse shouldBe ETFC4
         }

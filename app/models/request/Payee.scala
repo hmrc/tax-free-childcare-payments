@@ -25,7 +25,6 @@ object Payee extends ConstraintReads {
   case object ExternalPaymentProvider                               extends Payee
   final case class ChildCareProvider(urn: String, postcode: String) extends Payee
 
-
   object ChildCareProvider {
 
     val reads: Reads[Payee] = (

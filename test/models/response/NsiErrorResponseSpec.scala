@@ -17,6 +17,7 @@
 package models.response
 
 import base.BaseSpec
+
 import play.api.libs.json.Json
 
 class NsiErrorResponseSpec extends BaseSpec {

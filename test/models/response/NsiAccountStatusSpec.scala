@@ -19,6 +19,7 @@ package models.response
 import base.BaseSpec
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
+
 import play.api.libs.json._
 
 class NsiAccountStatusSpec extends BaseSpec {
@@ -63,8 +64,8 @@ class NsiAccountStatusSpec extends BaseSpec {
   }
 
   private lazy val accountStatusScenarios = Table[JsValue, NsiAccountStatus, JsValue](
-    ("Expected NSI JSON", "NSI Account Status", "Expected API JSON"),
-    (JsString("ACTIVE"), NsiAccountStatus.ACTIVE, JsString("ACTIVE")),
+    ("Expected NSI JSON", "NSI Account Status",     "Expected API JSON"),
+    (JsString("ACTIVE"),  NsiAccountStatus.ACTIVE,  JsString("ACTIVE")),
     (JsString("BLOCKED"), NsiAccountStatus.BLOCKED, JsString("INACTIVE"))
   )
 

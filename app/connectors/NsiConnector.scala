@@ -16,25 +16,26 @@
 
 package connectors
 
-import models.request.Payee.{ChildCareProvider, ExternalPaymentProvider}
-import models.request._
-import models.response.NsiErrorResponse.{ETFC3, Maybe}
-import models.response._
-import play.api.http.Status
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
-import play.api.mvc.RequestHeader
-import sttp.model.HeaderNames
-import uk.gov.hmrc.http.HttpReads
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import utils.FormattedLogging
-
 import java.net.URL
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+
+import models.request.Payee.{ChildCareProvider, ExternalPaymentProvider}
+import models.request._
+import models.response.NsiErrorResponse.{ETFC3, Maybe}
+import models.response._
+import sttp.model.HeaderNames
+import utils.FormattedLogging
+
+import play.api.http.Status
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json._
+import play.api.mvc.RequestHeader
+import uk.gov.hmrc.http.HttpReads
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
 class NsiConnector @Inject() (
@@ -89,15 +90,15 @@ class NsiConnector @Inject() (
       .execute[Maybe[PaymentResponse]]
 
   private def resource(endpoint: String, params: String*) = {
-    val domain = servicesConfig.baseUrl(serviceName)
-    val rootPath = servicesConfig.getString(s"microservice.services.$serviceName.rootPath")
+    val domain       = servicesConfig.baseUrl(serviceName)
+    val rootPath     = servicesConfig.getString(s"microservice.services.$serviceName.rootPath")
     val resourcePath = servicesConfig.getString(s"microservice.services.$serviceName.$endpoint")
-    val pathParams = params.map("/" + _).mkString
+    val pathParams   = params.map("/" + _).mkString
 
     s"$domain$rootPath$resourcePath$pathParams"
   }
 
-  private val CORRELATION_ID = servicesConfig.getString(s"microservice.services.$serviceName.correlationIdHeader")
+  private val CORRELATION_ID   = servicesConfig.getString(s"microservice.services.$serviceName.correlationIdHeader")
   private val NSI_HEADER_TOKEN = servicesConfig.getString(s"microservice.services.$serviceName.token")
 }
 

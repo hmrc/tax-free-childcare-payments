@@ -60,13 +60,13 @@ trait Generators {
   } yield ChildCareProvider(urn, postcode)
 
   lazy private val postcodes = for {
-    leadingSpaces <- randomSpaces
-    n        <- Gen.chooseNum(1, 2)
-    letters1 <- Gen.stringOfN(n, Gen.alphaUpperChar)
-    num1     <- Gen.chooseNum(1, 99)
-    midSpaces <- randomSpaces
-    num2     <- Gen.chooseNum(1, 9)
-    letters2 <- Gen.stringOfN(2, Gen.alphaUpperChar)
+    leadingSpaces  <- randomSpaces
+    n              <- Gen.chooseNum(1, 2)
+    letters1       <- Gen.stringOfN(n, Gen.alphaUpperChar)
+    num1           <- Gen.chooseNum(1, 99)
+    midSpaces      <- randomSpaces
+    num2           <- Gen.chooseNum(1, 9)
+    letters2       <- Gen.stringOfN(2, Gen.alphaUpperChar)
     trailingSpaces <- randomSpaces
   } yield s"$leadingSpaces$letters1$num1$midSpaces$num2$letters2$trailingSpaces"
 

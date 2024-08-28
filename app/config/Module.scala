@@ -18,6 +18,7 @@ package config
 
 import com.google.inject.{AbstractModule, Provides, Singleton}
 import models.request.Payee
+
 import play.api.libs.json.Reads
 import play.api.{Configuration, Environment}
 
