@@ -34,7 +34,6 @@ lazy val it = project
   .settings(libraryDependencies ++= AppDependencies.it)
 
 commands ++= Seq(
-  Command.command("run-all-tests") { state => "test" :: state },
-  Command.command("clean-and-test") { state => "clean" :: "compile" :: "run-all-tests" :: state },
-  Command.command("pre-commit") { state => "clean" :: "scalafmtAll" :: "scalafixAll" :: "coverage" :: "run-all-tests" :: "coverageOff" :: "coverageAggregate" :: state }
+  Command.command("run-all-tests") { state => "test" :: "it/test" :: state },
+  Command.command("pre-commit") { state => "clean" :: "scalafmtAll" :: "scalafixAll" :: "coverage" :: "run-all-tests" :: "coverageReport" :: state }
 )
