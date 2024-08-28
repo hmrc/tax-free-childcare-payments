@@ -16,18 +16,19 @@
 
 package controllers
 
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.request._
 import models.response.NsiErrorResponse.Maybe
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
+import utils.{ErrorResponseFactory, FormattedLogging}
+
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.{ErrorResponseFactory, FormattedLogging}
-
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (

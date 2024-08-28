@@ -18,6 +18,7 @@ package models.request
 
 import base.BaseSpec
 import models.request.data.PayeeGenerators
+
 import play.api.libs.json.{KeyPathNode, Reads}
 
 class PayeeSpec extends BaseSpec with PayeeGenerators {

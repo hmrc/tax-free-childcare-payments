@@ -23,6 +23,7 @@ import models.response.NsiErrorResponse._
 import org.apache.pekko.actor.ActorSystem
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
+
 import play.api.http.Status
 import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing

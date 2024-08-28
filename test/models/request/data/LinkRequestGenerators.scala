@@ -16,11 +16,12 @@
 
 package models.request.data
 
+import java.time.{LocalDate, ZoneId}
+
 import models.request.LinkRequest
 import org.scalacheck.{Arbitrary, Gen}
-import play.api.libs.json.{JsNumber, JsObject, JsString, JsValue, Json}
 
-import java.time.{LocalDate, ZoneId}
+import play.api.libs.json.{JsNumber, JsObject, JsString, JsValue, Json}
 
 trait LinkRequestGenerators extends SharedRequestGenerators {
 

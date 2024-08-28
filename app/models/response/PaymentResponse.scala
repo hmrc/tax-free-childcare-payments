@@ -16,9 +16,9 @@
 
 package models.response
 
-import play.api.libs.json.{Json, Writes}
-
 import java.time.LocalDate
+
+import play.api.libs.json.{Json, Writes}
 
 final case class PaymentResponse(
     payment_reference: String,

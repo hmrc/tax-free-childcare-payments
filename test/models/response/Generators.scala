@@ -16,10 +16,11 @@
 
 package models.response
 
-import org.scalacheck.{Arbitrary, Gen}
-import play.api.libs.json.{JsObject, Json}
-
 import java.time.ZoneId
+
+import org.scalacheck.{Arbitrary, Gen}
+
+import play.api.libs.json.{JsObject, Json}
 
 trait Generators extends base.Generators {
 

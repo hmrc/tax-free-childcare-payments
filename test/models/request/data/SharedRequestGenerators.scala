@@ -18,6 +18,7 @@ package models.request.data
 
 import models.request.SharedRequestData
 import org.scalacheck.{Arbitrary, Gen}
+
 import play.api.libs.json.{JsObject, Json}
 
 trait SharedRequestGenerators extends base.Generators {

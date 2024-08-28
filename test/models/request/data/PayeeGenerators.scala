@@ -19,6 +19,7 @@ package models.request.data
 import models.request.Payee
 import models.request.Payee.CCP_REG_MAX_LEN
 import org.scalacheck.Gen
+
 import play.api.libs.json.{JsObject, JsString, Json}
 
 trait PayeeGenerators extends base.Generators {
