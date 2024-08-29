@@ -67,4 +67,13 @@ class BaseSpec
     log.getLevel   shouldBe expectedLevel
     log.getMessage shouldBe expectedMessage
   }
+
+  protected val EXPECTED_E0024_DESC = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
+
+  protected val EXPECTED_E0027_DESC =
+    "The Childcare Provider (CCP) you have specified is not linked to the TFC Account. The parent must go into their TFC Portal and add the CCP to their account first before attempting payment again later."
+
+  protected val EXPECTED_E0032_DESC = "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref"
+
+  protected val EXPECTED_500_DESC = "We encountered an error on our servers and did not process your request, please try again later."
 }

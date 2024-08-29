@@ -625,8 +625,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
     }
 
     "respond 400 with E0024 and expected errorDescription" when {
-      val expectedErrorDesc = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
-
       "NSI responds 400 with errorCode E0024" in
         forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
           stubAuthRetrievalOf(randomNinos.sample.get)
@@ -642,15 +640,12 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(payload)
               .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0024", expectedErrorDesc)
+            checkErrorResponse(response, BAD_REQUEST, "E0024", EXPECTED_E0024_DESC)
           }
         }
     }
 
     "response 400 with errorCode E0027 and expected errorDescription" when {
-      val expectedErrorDesc =
-        "The CCP you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later."
-
       "NSI responds 400 with errorCode E0027" in
         forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
           stubAuthRetrievalOf(randomNinos.sample.get)
@@ -666,14 +661,12 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(payload)
               .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0027", expectedErrorDesc)
+            checkErrorResponse(response, BAD_REQUEST, "E0027", EXPECTED_E0027_DESC)
           }
         }
     }
 
     "response 400 with errorCode E0032 and expected errorDescription" when {
-      val expectedErrorDesc = "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref"
-
       "NSI responds 403 with errorCode E0032" in
         forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
           stubAuthRetrievalOf(randomNinos.sample.get)
@@ -689,14 +682,12 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(payload)
               .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0032", expectedErrorDesc)
+            checkErrorResponse(response, BAD_REQUEST, "E0032", EXPECTED_E0032_DESC)
           }
         }
     }
 
     "respond 500 with E0009 and expected errorDescription" when {
-      val expectedErrorDesc = "We encountered an error on our servers and did not process your request, please try again later."
-
       "NSI responds with HTTP error status and JSON errorCode E0009" in
         forAll(
           Gen.uuid,
@@ -716,7 +707,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(payload)
               .futureValue
 
-            checkErrorResponse(response, INTERNAL_SERVER_ERROR, "E0009", expectedErrorDesc)
+            checkErrorResponse(response, INTERNAL_SERVER_ERROR, "E0009", EXPECTED_500_DESC)
           }
         }
     }
