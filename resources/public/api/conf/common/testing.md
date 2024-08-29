@@ -149,7 +149,7 @@ The following scenarios relate to all endpoints:
            <pre class="code--block">
 {
  "errorCode": "E0030",
- "errorDescription": "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information.",
+ "errorDescription": "The External Payment Provider (EPP) record is inactive on the TFC system. The EPP must complete the sign up process on the TFC Portal or contact their HMRC POC for further information.",
 }
            </pre></td>
     </tr>
@@ -175,7 +175,7 @@ The following scenarios relate to all endpoints:
            <pre class="code--block">
 {
  "errorCode": "E0043",
- "errorDescription": "Parent associated with the bearer token does not have a TFC account. Please ask the parent to create a TFC account first.",
+ "errorDescription": "Parent associated with the bearer token does not have a TFC account. The parent must create a TFC account.",
 }
            </pre></td>
     </tr>
@@ -268,7 +268,7 @@ The following scenarios relate to all endpoints:
            <pre class="code--block">
 {
  "errorCode": "E0027",
- "errorDescription": "The CCP you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later.",
+ "errorDescription": "The Childcare Provider (CCP) you have specified is not linked to the TFC Account. The parent must go into their TFC Portal and add the CCP to their account first before attempting payment again later.",
 }
            </pre></td>
     </tr>
