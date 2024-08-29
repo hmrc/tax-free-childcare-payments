@@ -48,14 +48,14 @@ object NsiErrorResponse extends Enum[NsiErrorResponse] with Status with Logging 
 
   case object E0027 extends NsiErrorResponse(
         BAD_REQUEST,
-        "The CCP you have specified is not linked to the TFC Account. Please ensure that the parent goes into their TFC Portal and adds the CCP to their account first before attempting payment again later."
+        "The Childcare Provider (CCP) you have specified is not linked to the TFC Account. The parent must go into their TFC Portal and add the CCP to their account first before attempting payment again later."
       )
 
   case object E0401 extends NsiErrorResponse(INTERNAL_SERVER_ERROR, "We encountered an error on our servers and did not process your request, please try again later.")
 
   case object E0030 extends NsiErrorResponse(
         BAD_REQUEST,
-        "The External Payment Provider (EPP) record is inactive on the TFC system. Please ensure EPP completes sign up process on TFC Portal or contact HMRC POC for further information"
+        "The External Payment Provider (EPP) record is inactive on the TFC system. The EPP must complete the sign up process on the TFC Portal or contact their HMRC POC for further information."
       )
 
   case object E0031 extends NsiErrorResponse(
@@ -75,8 +75,7 @@ object NsiErrorResponse extends Enum[NsiErrorResponse] with Status with Logging 
         "The ccp_reg_reference could not be found in the TFC system or does not correlate with the ccp_postcode. Please check the details and try again."
       )
 
-  case object E0043
-      extends NsiErrorResponse(BAD_REQUEST, "Parent associated with the bearer token does not have a TFC account. Please ask the parent to create a TFC account first.")
+  case object E0043 extends NsiErrorResponse(BAD_REQUEST, "Parent associated with the bearer token does not have a TFC account. The parent must create a TFC account.")
 
   case object E9000 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "The service is currently unavailable.")
   case object E9999 extends NsiErrorResponse(SERVICE_UNAVAILABLE, "The service is currently unavailable.")
