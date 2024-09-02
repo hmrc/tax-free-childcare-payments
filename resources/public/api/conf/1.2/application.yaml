@@ -103,10 +103,6 @@ The following table gives the detailed description for each error code you recei
 			<td>Error processing payment due to Payee bank details</td>
 		</tr>
 		<tr>
-			<td>E0041</td>
-			<td>The epp_reg_reference could not be found in the TFC system. Please check the details and try again.	</td>
-		</tr>
-		<tr>
 			<td>E0042</td>
 			<td>The ccp_reg_reference could not be found in the TFC system or does not correlate with the ccp_postcode. Please check the details and try again.	</td>
 		</tr>
