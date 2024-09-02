@@ -48,19 +48,16 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
     <th>Scenario</th>
   </tr>
   <tr>
-    <td>AAAA00000TFC <br>
-      <br>AACC00000TFC <br>
-      <br>AADD00000TFC
-    </td>
+    <td>AAAA00000TFC</td>
     <td>Returns the following: <br>
       <br><pre class="code--block">
 {
  "tfc_account_status": "ACTIVE",
- "government_top_up": 14159,
- "top_up_allowance": 26535,
- "paid_in_by_you": 89793,
- "total_balance": 23846
- "cleared_funds": 26433
+ "government_top_up": 31415,
+ "top_up_allowance": 65,
+ "paid_in_by_you": 66,
+ "total_balance": 67,
+ "cleared_funds": 68
 }
         </pre>
       </td>
@@ -72,11 +69,41 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
       <br><pre class="code--block">
 {
  "tfc_account_status": "INACTIVE",
- "government_top_up": 14159,
- "top_up_allowance": 26535,
- "paid_in_by_you": 89793,
- "total_balance": 23846
- "cleared_funds": 26433
+ "government_top_up": 92653,
+ "top_up_allowance": 69,
+ "paid_in_by_you": 70,
+ "total_balance": 71
+ "cleared_funds": 72
+}
+        </pre>
+      </td>
+  </tr>
+  <tr>
+    <td>AACC00000TFC</td>
+    <td>Returns the following: <br>
+      <br><pre class="code--block">
+{
+ "tfc_account_status": "ACTIVE",
+ "government_top_up": 58979,
+ "top_up_allowance": 73,
+ "paid_in_by_you": 74,
+ "total_balance": 75,
+ "cleared_funds": 76
+}
+        </pre>
+      </td>
+  </tr>
+  <tr>
+    <td>AADD00000TFC</td>
+    <td>Returns the following: <br>
+      <br><pre class="code--block">
+{
+ "tfc_account_status": "ACTIVE",
+ "government_top_up": 32384,
+ "top_up_allowance": 77,
+ "paid_in_by_you": 78,
+ "total_balance": 79
+ "cleared_funds": 80
 }
         </pre>
       </td>
@@ -92,21 +119,49 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
     <th></th>
   </tr>
   <tr>
-    <td>AAAA00000TFC <br>
-      <br>AABB00000TFC <br>
-      <br>AACC00000TFC <br>
-      <br>AADD00000TFC
-    </td>
+    <td>AAAA00000TFC</td>
     <td>Return the following: <br>
       <br><pre class="code--block">
 {
- "payment_reference": "8427950288419716",
+ "payment_reference": "1234567887654321",
  "estimated_payment_date": "2024-10-01",
 }
         </pre>
     </td>
   </tr>
-  <tr></tr>
+  <tr>
+    <td>AABB00000TFC</td>
+    <td>Return the following: <br>
+      <br><pre class="code--block">
+{
+ "payment_reference": "1234567887654322",
+ "estimated_payment_date": "2024-10-02",
+}
+        </pre>
+    </td>
+  </tr>
+  <tr>
+    <td>AACC00000TFC</td>
+    <td>Return the following: <br>
+      <br><pre class="code--block">
+{
+ "payment_reference": "1234567887654323",
+ "estimated_payment_date": "2024-10-03",
+}
+        </pre>
+    </td>
+  </tr>
+  <tr>
+    <td>AADD00000TFC</td>
+    <td>Return the following: <br>
+      <br><pre class="code--block">
+{
+ "payment_reference": "1234567887654324",
+ "estimated_payment_date": "2024-10-04",
+}
+        </pre>
+    </td>
+  </tr>
 </table>
 
 #### Error scenarios
