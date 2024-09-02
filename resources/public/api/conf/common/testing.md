@@ -209,19 +209,6 @@ The following scenarios relate to all endpoints:
            </pre></td>
     </tr>
     <tr>
-        <th colspan="2" align="left">EEBA00000TFC</td>
-    </tr>
-    <tr>
-        <td>epp_reg_reference not found</td>
-        <td>400<br>
-           <pre class="code--block">
-{
- "errorCode": "E0041",
- "errorDescription": "The epp_reg_reference could not be found in the TFC system. Please check the details and try again.",
-}
-           </pre></td>
-    </tr>
-    <tr>
         <th colspan="2" align="left">EEBD00000TFC</td>
     </tr>
     <tr>
