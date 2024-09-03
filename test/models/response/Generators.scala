@@ -49,6 +49,8 @@ trait Generators extends base.Generators {
     Gen.alphaStr,
     Gen.numStr,
     Gen const "UNKNOWN",
-    Gen const "E0040"
+    randomObsoleteErrorCodes
   )
+
+  private lazy val randomObsoleteErrorCodes = Gen.oneOf("E0040", "E0041")
 }
