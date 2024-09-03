@@ -68,8 +68,6 @@ object NsiErrorResponse extends Enum[NsiErrorResponse] with Status with Logging 
   case object E0035 extends NsiErrorResponse(BAD_REQUEST, "There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services")
   case object E0036 extends NsiErrorResponse(BAD_REQUEST, "Error processing payment due to Payee bank details")
 
-  case object E0041 extends NsiErrorResponse(BAD_REQUEST, "The epp_reg_reference could not be found in the TFC system. Please check the details and try again.")
-
   case object E0042 extends NsiErrorResponse(
         BAD_REQUEST,
         "The ccp_reg_reference could not be found in the TFC system or does not correlate with the ccp_postcode. Please check the details and try again."
