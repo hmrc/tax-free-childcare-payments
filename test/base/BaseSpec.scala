@@ -27,7 +27,7 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 import play.api.libs.json._
 
-class BaseSpec
+abstract class BaseSpec
     extends AnyWordSpec
     with should.Matchers
     with OptionValues
@@ -68,7 +68,7 @@ class BaseSpec
     log.getMessage shouldBe expectedMessage
   }
 
-  protected val EXPECTED_E0024_DESC = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
+  protected val EXPECTED_E0024_DESC = "EPP details are invalid"
 
   protected val EXPECTED_E0027_DESC =
     "The Childcare Provider (CCP) you have specified is not linked to the TFC Account. The parent must go into their TFC Portal and add the CCP to their account first before attempting payment again later."

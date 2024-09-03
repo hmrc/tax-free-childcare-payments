@@ -187,8 +187,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
     }
 
     "respond 400 with errorCode E0024 and expected errorDescription" when {
-      val expectedErrorDesc = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
-
       "NSI responds 400 with errorCode E0024" in
         forAll { (request: IdentifierRequest[LinkRequest], nsiErrorDesc: String) =>
           stubAuthRetrievalOf(request.nino)
@@ -204,7 +202,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(getJsonFrom(request.body))
               .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0024", expectedErrorDesc)
+            checkErrorResponse(response, BAD_REQUEST, "E0024", EXPECTED_E0024_DESC)
           }
         }
     }
@@ -336,8 +334,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
     }
 
     "response 400 with errorCode E0024 and expected errorDescription" when {
-      val expectedErrorDesc = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
-
       "NSI responds 400 with errorCode E0024" in
         forAll(Gen.uuid, validCheckBalanceRequestPayloads, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
           stubAuthRetrievalOf(randomNinos.sample.get)
@@ -353,7 +349,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(payload)
               .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0024", expectedErrorDesc)
+            checkErrorResponse(response, BAD_REQUEST, "E0024", EXPECTED_E0024_DESC)
           }
         }
     }

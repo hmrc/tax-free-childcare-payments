@@ -29,7 +29,6 @@ import play.api.libs.json.{JsValue, Json}
 import java.util
 import scala.jdk.CollectionConverters.MapHasAsJava
 
-/** The specs below should follow the NSI documentation at <https://drive.google.com/drive/folders/1ES36CjJpVumXXCM8VC5VQQa7J3xIIqoW>. */
 trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
 
   /** NSI Link Accounts spec */
