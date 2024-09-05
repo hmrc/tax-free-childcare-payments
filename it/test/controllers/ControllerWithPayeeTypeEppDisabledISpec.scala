@@ -18,7 +18,6 @@ package controllers
 
 import base.{AuthStubs, BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
-import com.github.tomakehurst.wiremock.client.WireMock._
 import connectors.NsiConnector
 import models.request.LinkRequest.CHILD_DOB_KEY
 import models.request.Payee.PAYEE_TYPE_KEY
@@ -186,11 +185,13 @@ class ControllerWithPayeeTypeEppDisabledISpec
         }
     }
 
-    "respond 400 with errorCode E0024 and expected errorDescription" when {
-      "NSI responds 400 with errorCode E0024" in
-        forAll { (request: IdentifierRequest[LinkRequest], nsiErrorDesc: String) =>
+    "response with expected status, errorCode, & errorDesc" when {
+      "NSI responds with given error" in forAll(nsiErrorScenarios) {
+        (nsiStatus, nsiErrorCode, expectedApiStatus, expectedApiErrorDesc) =>
+          val request = arbitrary[IdentifierRequest[LinkRequest]].sample.get
+
           stubAuthRetrievalOf(request.nino)
-          stubNsiLinkAccountsError(BAD_REQUEST, "E0024", nsiErrorDesc)
+          stubNsiLinkAccountsError(nsiStatus, nsiErrorCode, arbitrary[String].sample.get)
 
           withClient { wsClient =>
             val response = wsClient
@@ -202,51 +203,9 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(getJsonFrom(request.body))
               .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0024", EXPECTED_E0024_DESC)
+            checkErrorResponse(response, expectedApiStatus, nsiErrorCode, expectedApiErrorDesc)
           }
-        }
-    }
-
-    "respond 400 with errorCode E0025 and expected errorDescription" when {
-      "NSI responds 400 with errorCode E0025" in
-        forAll { (request: IdentifierRequest[LinkRequest], nsiErrorDesc: String) =>
-          stubAuthRetrievalOf(request.nino)
-          stubNsiLinkAccountsError(BAD_REQUEST, "E0025", nsiErrorDesc)
-
-          withClient { wsClient =>
-            val response = wsClient
-              .url(LINK_URL)
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> request.correlation_id.toString
-              )
-              .post(getJsonFrom(request.body))
-              .futureValue
-
-            checkErrorResponse(response, BAD_REQUEST, "E0025", "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct")
-          }
-        }
-    }
-
-    "respond 400 with errorCode E0026 and expected errorDescription" when {
-      "NSI responds 400 with errorCode E0026" in
-        forAll { (request: IdentifierRequest[LinkRequest], nsiErrorDesc: String) =>
-          stubAuthRetrievalOf(request.nino)
-          stubNsiLinkAccountsError(BAD_REQUEST, "E0026", nsiErrorDesc)
-
-          withClient { wsClient =>
-            val response = wsClient
-              .url(LINK_URL)
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> request.correlation_id.toString
-              )
-              .post(getJsonFrom(request.body))
-              .futureValue
-
-            checkErrorResponse(response, BAD_REQUEST, "E0026", "Please check the outbound_child_payment_ref supplied")
-          }
-        }
+      }
     }
   }
 
@@ -710,46 +669,48 @@ class ControllerWithPayeeTypeEppDisabledISpec
   }
 
   private val endpoints = Table(
-    ("Name",    "TFC URL",  "NSI Mapping",           "Valid Payload"),
-    ("link",    "/link",    nsiLinkAccountsEndpoint, validLinkPayloads.sample.get),
-    ("balance", "/balance", nsiCheckBalanceEndpoint, validSharedJson.sample.get),
-    ("payment", "/",        nsiMakePaymentEndpoint,  validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
+    ("Name",    "TFC URL",  "Valid Payload"),
+    ("link",    "/link",    validLinkPayloads.sample.get),
+    ("balance", "/balance", validSharedJson.sample.get),
+    ("payment", "/",        validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
   )
 
-  private val nsiErrorScenarios = Table(
-    ("NSI Status Code",     "NSI Error Code", "Expected Status Code"),
-    (BAD_REQUEST,           "E0000",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0001",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0002",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0003",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0004",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0005",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0006",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0007",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0008",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0020",          BAD_GATEWAY),
-    (BAD_REQUEST,           "E0021",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0022",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0023",          INTERNAL_SERVER_ERROR),
-    (BAD_REQUEST,           "E0024",          BAD_REQUEST),
-    (BAD_REQUEST,           "E0025",          BAD_REQUEST),
-    (BAD_REQUEST,           "E0026",          BAD_REQUEST),
-    (UNAUTHORIZED,          "E0401",          INTERNAL_SERVER_ERROR),
-    (FORBIDDEN,             "E0030",          BAD_REQUEST),
-    (FORBIDDEN,             "E0031",          BAD_REQUEST),
-    (FORBIDDEN,             "E0032",          BAD_REQUEST),
-    (FORBIDDEN,             "E0033",          BAD_REQUEST),
-    (FORBIDDEN,             "E0034",          SERVICE_UNAVAILABLE),
-    (FORBIDDEN,             "E0035",          BAD_REQUEST),
-    (NOT_FOUND,             "E0042",          BAD_REQUEST),
-    (NOT_FOUND,             "E0043",          BAD_REQUEST),
-    (INTERNAL_SERVER_ERROR, "E9000",          SERVICE_UNAVAILABLE),
-    (INTERNAL_SERVER_ERROR, "E9999",          SERVICE_UNAVAILABLE),
-    (SERVICE_UNAVAILABLE,   "E8000",          SERVICE_UNAVAILABLE),
-    (SERVICE_UNAVAILABLE,   "E8001",          SERVICE_UNAVAILABLE)
+  private lazy val nsiErrorScenarios = Table(
+    ("NSI Status Code",     "NSI Error Code", "Expected Status Code", "Expected Error Description"),
+    (BAD_REQUEST,           "E0000",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0001",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0002",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0003",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0004",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0005",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0006",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0007",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0008",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0020",          BAD_GATEWAY,            EXPECTED_502_DESC),
+    (BAD_REQUEST,           "E0021",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0022",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0023",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (BAD_REQUEST,           "E0024",          BAD_REQUEST,            EXPECTED_E0024_DESC),
+    (BAD_REQUEST,           "E0025",          BAD_REQUEST,            EXPECTED_E0025_DESC),
+    (BAD_REQUEST,           "E0026",          BAD_REQUEST,            EXPECTED_E0026_DESC),
+    (BAD_REQUEST,           "E0027",          BAD_REQUEST,            EXPECTED_E0027_DESC),
+    (UNAUTHORIZED,          "E0401",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
+    (FORBIDDEN,             "E0030",          BAD_REQUEST,            EXPECTED_E0030_DESC),
+    (FORBIDDEN,             "E0031",          BAD_REQUEST,            EXPECTED_E0031_DESC),
+    (FORBIDDEN,             "E0032",          BAD_REQUEST,            EXPECTED_E0032_DESC),
+    (FORBIDDEN,             "E0033",          BAD_REQUEST,            EXPECTED_E0033_DESC),
+    (FORBIDDEN,             "E0034",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC),
+    (FORBIDDEN,             "E0035",          BAD_REQUEST,            EXPECTED_E0035_DESC),
+    (FORBIDDEN,             "E0036",          BAD_REQUEST,            EXPECTED_E0036_DESC),
+    (NOT_FOUND,             "E0042",          BAD_REQUEST,            EXPECTED_E0042_DESC),
+    (NOT_FOUND,             "E0043",          BAD_REQUEST,            EXPECTED_E0043_DESC),
+    (INTERNAL_SERVER_ERROR, "E9000",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC),
+    (INTERNAL_SERVER_ERROR, "E9999",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC),
+    (SERVICE_UNAVAILABLE,   "E8000",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC),
+    (SERVICE_UNAVAILABLE,   "E8001",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC)
   )
 
-  forAll(endpoints) { (_, tfc_url, nsiMapping, validPayload) =>
+  forAll(endpoints) { (_, tfc_url, validPayload) =>
     s"POST $tfc_url" should {
       "respond 400 with errorCode ETFC1 and expected errorDescription" when {
         "correlation ID is missing" in
@@ -801,31 +762,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
           checkErrorResponse(response, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC)
         }
-      }
-
-      forAll(nsiErrorScenarios) {
-        (nsiStatusCode, nsiErrorCode, expectedStatusCode) =>
-          s"respond with status $expectedStatusCode" when {
-            s"NSI responds status code $nsiStatusCode and errorCode $nsiErrorCode" in
-              withClient { ws =>
-                val nsiResponseBody = Json.obj("errorCode" -> nsiErrorCode)
-                val nsiResponse     = aResponse().withStatus(nsiStatusCode).withBody(nsiResponseBody.toString)
-
-                stubAuthRetrievalOf(randomNinos.sample.get)
-                stubFor(nsiMapping willReturn nsiResponse)
-
-                val response = ws
-                  .url(s"$baseUrl$tfc_url")
-                  .withHttpHeaders(
-                    AUTHORIZATION  -> "Bearer qwertyuiop",
-                    CORRELATION_ID -> UUID.randomUUID().toString
-                  )
-                  .post(validPayload)
-                  .futureValue
-
-                response.status shouldBe expectedStatusCode
-              }
-          }
       }
     }
   }
