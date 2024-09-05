@@ -48,6 +48,8 @@ class ControllerWithPayeeTypeEppEnabledISpec
               .post(getJsonFrom(request.body))
               .futureValue
 
+            checkSecurityPolicy(response)
+
             response.status                       shouldBe OK
             response.header(CORRELATION_ID).value shouldBe expectedCorrelationId
             response.json                         shouldBe expectedTfcResponseBody

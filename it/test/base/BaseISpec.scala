@@ -16,14 +16,13 @@
 
 package base
 
-import org.apache.pekko.actor.ActorSystem
-import org.scalatest.LoneElement
+import org.scalatest.{Assertion, LoneElement}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.http.{HeaderNames, Status}
-import play.api.mvc.Result
+import play.api.libs.ws.WSResponse
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
@@ -41,10 +40,8 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
     with ScalaCheckPropertyChecks
     with LogCapturing
     with LoneElement {
-  import org.scalatest.Assertion
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
-  import play.api.libs.json.Json
 
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder().configure(
@@ -53,23 +50,13 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
       "features.enablePayeeTypeEPP"     -> enablePayeeTypeEPP
     ).build()
 
+  protected def checkSecurityPolicy(response: WSResponse): Assertion = {
+    response.header(REFERRER_POLICY).value shouldBe "no-referrer"
+  }
+
   protected lazy val baseUrl = s"http://localhost:$port"
 
   protected lazy val CORRELATION_ID = "Correlation-ID"
-
-  protected def checkErrorResult(
-      actualResult: => Result,
-      expectedStatus: Int,
-      expectedErrorCode: String,
-      expectedErrorDescription: String
-    )(implicit as: ActorSystem
-    ): Assertion = {
-    actualResult.header.status shouldBe expectedStatus
-
-    val actualResultStream = actualResult.body.consumeData.futureValue.toArray
-
-    checkErrorJson(Json parse actualResultStream, expectedErrorCode, expectedErrorDescription)
-  }
 
   protected lazy val EXPECTED_CORRELATION_ID_ERROR_DESC      = "Correlation ID is in an invalid format or is missing"
   protected lazy val EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC = "Bearer Token did not return a valid record"

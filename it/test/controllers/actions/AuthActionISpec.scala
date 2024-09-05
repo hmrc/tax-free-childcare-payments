@@ -19,8 +19,8 @@ package controllers.actions
 import base.{AuthStubs, BaseISpec}
 import models.request.IdentifierRequest
 import org.apache.pekko.actor.ActorSystem
-import play.api.libs.json.JsString
-import play.api.mvc.Results
+import play.api.libs.json.{JsString, Json}
+import play.api.mvc.{Result, Results}
 import play.api.test.FakeRequest
 
 import java.util.UUID
@@ -73,5 +73,19 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
     }
 
     lazy val successBlock = (_: IdentifierRequest[_]) => Future.successful(Ok(JsString("success")))
+  }
+
+  private def checkErrorResult(
+      actualResult: => Result,
+      expectedStatus: Int,
+      expectedErrorCode: String,
+      expectedErrorDescription: String
+    )(implicit as: ActorSystem
+    ) = {
+    actualResult.header.status shouldBe expectedStatus
+
+    val actualResultStream = actualResult.body.consumeData.futureValue.toArray
+
+    checkErrorJson(Json parse actualResultStream, expectedErrorCode, expectedErrorDescription)
   }
 }

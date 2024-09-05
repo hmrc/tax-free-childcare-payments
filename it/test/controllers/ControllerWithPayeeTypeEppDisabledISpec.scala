@@ -68,6 +68,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(getJsonFrom(request.body))
               .futureValue
 
+            checkSecurityPolicy(wsResponse)
+
             wsResponse.status                       shouldBe OK
             wsResponse.header(CORRELATION_ID).value shouldBe expectedCorrelationId
             wsResponse.json                         shouldBe expectedTfcResponseBody
@@ -214,7 +216,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
     s"respond with status 200 and correct JSON body" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in
         withClient { wsClient =>
-          val expectedCorrelationId   = UUID.randomUUID()
+          val expectedCorrelationId   = UUID.randomUUID().toString
           val expectedTfcResponseBody = Json.obj(
             "tfc_account_status" -> "ACTIVE",
             "paid_in_by_you"     -> 0,
@@ -235,20 +237,20 @@ class ControllerWithPayeeTypeEppDisabledISpec
           stubAuthRetrievalOf(randomNinos.sample.get)
           stubNsiCheckBalance200(expectedNsiResponseBody)
 
-          val res = wsClient
+          val response = wsClient
             .url(BALANCE_URL)
             .withHttpHeaders(
               AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
+              CORRELATION_ID -> expectedCorrelationId
             )
             .post(validCheckBalanceRequestPayloads.sample.get)
             .futureValue
 
-          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
+          checkSecurityPolicy(response)
 
-          res.status       shouldBe OK
-          resCorrelationId shouldBe expectedCorrelationId
-          res.json         shouldBe expectedTfcResponseBody
+          response.status                       shouldBe OK
+          response.header(CORRELATION_ID).value shouldBe expectedCorrelationId
+          response.json                         shouldBe expectedTfcResponseBody
         }
     }
 
@@ -403,6 +405,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
               )
               .post(getJsonFrom(request.body))
               .futureValue
+
+            checkSecurityPolicy(response)
 
             response.status                       shouldBe OK
             response.header(CORRELATION_ID).value shouldBe expectedCorrelationId
@@ -682,6 +686,9 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
   private def checkErrorResponse(actualResponse: WSResponse, expectedStatus: Int, expectedErrorCode: String, expectedErrorDescription: String) = {
     actualResponse.status shouldBe expectedStatus
+
+    checkSecurityPolicy(actualResponse)
+
     checkErrorJson(actualResponse.json, expectedErrorCode, expectedErrorDescription)
   }
 
