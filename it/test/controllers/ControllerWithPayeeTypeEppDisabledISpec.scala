@@ -24,7 +24,7 @@ import models.request.Payee.PAYEE_TYPE_KEY
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.SharedRequestData.TFC_ACCOUNT_REF_KEY
 import models.request.data.Generators
-import models.request.{IdentifierRequest, LinkRequest}
+import models.request.{IdentifierRequest, LinkRequest, SharedRequestData}
 import models.response.{LinkResponse, PaymentResponse}
 import org.scalatest.Assertion
 import play.api.Logger
@@ -292,48 +292,27 @@ class ControllerWithPayeeTypeEppDisabledISpec
         }
     }
 
-    "response 400 with errorCode E0024 and expected errorDescription" when {
-      "NSI responds 400 with errorCode E0024" in
-        forAll(Gen.uuid, validCheckBalanceRequestPayloads, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
-          stubAuthRetrievalOf(randomNinos.sample.get)
-          stubNsiCheckBalanceError(BAD_REQUEST, "E0024", errorDesc)
+    "response with expected status, errorCode, & errorDesc" when {
+      "NSI responds with given error" in forAll(nsiErrorScenarios) {
+        (nsiStatus, nsiErrorCode, expectedApiStatus, expectedApiErrorDesc) =>
+          val request = arbitrary[IdentifierRequest[SharedRequestData]].sample.get
+
+          stubAuthRetrievalOf(request.nino)
+          stubNsiCheckBalanceError(nsiStatus, nsiErrorCode, arbitrary[String].sample.get)
 
           withClient { wsClient =>
             val response = wsClient
               .url(BALANCE_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
+                CORRELATION_ID -> request.correlation_id.toString
               )
-              .post(payload)
+              .post(getJsonFrom(request.body))
               .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0024", EXPECTED_E0024_DESC)
+            checkErrorResponse(response, expectedApiStatus, nsiErrorCode, expectedApiErrorDesc)
           }
-        }
-    }
-
-    "response 400 with errorCode E0032 and expected errorDescription" when {
-      val expectedErrorDesc = "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref"
-
-      "NSI responds 403 with errorCode E0032" in
-        forAll(Gen.uuid, validCheckBalanceRequestPayloads, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
-          stubAuthRetrievalOf(randomNinos.sample.get)
-          stubNsiCheckBalanceError(FORBIDDEN, "E0032", errorDesc)
-
-          withClient { wsClient =>
-            val response = wsClient
-              .url(BALANCE_URL)
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
-              )
-              .post(payload)
-              .futureValue
-
-            checkErrorResponse(response, BAD_REQUEST, "E0032", expectedErrorDesc)
-          }
-        }
+      }
     }
 
     "respond with status 502, errorCode ETFC3" when {
@@ -579,92 +558,27 @@ class ControllerWithPayeeTypeEppDisabledISpec
         }
     }
 
-    "respond 400 with E0024 and expected errorDescription" when {
-      "NSI responds 400 with errorCode E0024" in
-        forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
-          stubAuthRetrievalOf(randomNinos.sample.get)
-          stubNsiMakePaymentError(BAD_REQUEST, "E0024", errorDesc)
+    "response with expected status, errorCode, & errorDesc" when {
+      "NSI responds with given error" in forAll(nsiErrorScenarios) {
+        (nsiStatus, nsiErrorCode, expectedApiStatus, expectedApiErrorDesc) =>
+          val request = randomIdentifierRequest(randomPaymentRequestWithOnlyCCP).sample.get
+
+          stubAuthRetrievalOf(request.nino)
+          stubNsiMakePaymentError(nsiStatus, nsiErrorCode, arbitrary[String].sample.get)
 
           withClient { wsClient =>
             val response = wsClient
               .url(PAYMENT_URL)
               .withHttpHeaders(
                 AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
+                CORRELATION_ID -> request.correlation_id.toString
               )
-              .post(payload)
+              .post(getJsonFrom(request.body))
               .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0024", EXPECTED_E0024_DESC)
+            checkErrorResponse(response, expectedApiStatus, nsiErrorCode, expectedApiErrorDesc)
           }
-        }
-    }
-
-    "response 400 with errorCode E0027 and expected errorDescription" when {
-      "NSI responds 400 with errorCode E0027" in
-        forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
-          stubAuthRetrievalOf(randomNinos.sample.get)
-          stubNsiMakePaymentError(BAD_REQUEST, "E0027", errorDesc)
-
-          withClient { wsClient =>
-            val response = wsClient
-              .url(PAYMENT_URL)
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
-              )
-              .post(payload)
-              .futureValue
-
-            checkErrorResponse(response, BAD_REQUEST, "E0027", EXPECTED_E0027_DESC)
-          }
-        }
-    }
-
-    "response 400 with errorCode E0032 and expected errorDescription" when {
-      "NSI responds 403 with errorCode E0032" in
-        forAll(Gen.uuid, validPaymentRequestWithPayeeTypeSetToCCP, Gen.asciiPrintableStr) { (expectedCorrelationId, payload, errorDesc) =>
-          stubAuthRetrievalOf(randomNinos.sample.get)
-          stubNsiMakePaymentError(FORBIDDEN, "E0032", errorDesc)
-
-          withClient { wsClient =>
-            val response = wsClient
-              .url(PAYMENT_URL)
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
-              )
-              .post(payload)
-              .futureValue
-
-            checkErrorResponse(response, BAD_REQUEST, "E0032", EXPECTED_E0032_DESC)
-          }
-        }
-    }
-
-    "respond 500 with E0009 and expected errorDescription" when {
-      "NSI responds with HTTP error status and JSON errorCode E0009" in
-        forAll(
-          Gen.uuid,
-          validPaymentRequestWithPayeeTypeSetToCCP,
-          Gen.asciiPrintableStr
-        ) { (expectedCorrelationId, payload, nsiErrorDesc) =>
-          withClient { ws =>
-            stubAuthRetrievalOf(randomNinos.sample.get)
-            stubNsiMakePaymentError(randomHttpErrorCodes.sample.get, "E0009", nsiErrorDesc)
-
-            val response = ws
-              .url(PAYMENT_URL)
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
-              )
-              .post(payload)
-              .futureValue
-
-            checkErrorResponse(response, INTERNAL_SERVER_ERROR, "E0009", EXPECTED_500_DESC)
-          }
-        }
+      }
     }
   }
 
