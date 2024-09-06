@@ -35,6 +35,6 @@ class PermissionsPolicyFilter @Inject() (conf: Configuration)(implicit ec: Execu
 
   private val permissionsPolicy = conf
     .get[Map[String, String]]("config.permissionsPolicy")
-    .map { case (directive, allowlist) => s"$directive=$allowlist" }
+    .map { case (feature, allowlist) => s"$feature=$allowlist" }
     .mkString(", ")
 }

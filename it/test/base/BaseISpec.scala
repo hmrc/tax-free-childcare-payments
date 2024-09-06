@@ -51,12 +51,21 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
     ).build()
 
   protected def checkSecurityPolicy(response: WSResponse): Assertion = {
-    response.header(REFERRER_POLICY).value    shouldBe expectedReferrerPolicy
-    response.header(PERMISSIONS_POLICY).value shouldBe expectedPermissionsPolicy
+    val actualReferrerPolicy    = response.header(REFERRER_POLICY).value
+    val actualPermissionsPolicy = response
+      .header(PERMISSIONS_POLICY)
+      .value
+      .split(", ")
+      .collect { case directive(feature, allowlist) => feature -> allowlist }
+      .toMap
+
+    actualReferrerPolicy    shouldBe expectedReferrerPolicy
+    actualPermissionsPolicy shouldBe expectedPermissionsPolicy
   }
 
-  private val expectedReferrerPolicy = "no-referrer"
+  private val directive = "^([a-z-]+)=([^=]+)$".r
 
+  private val expectedReferrerPolicy = "no-referrer"
   private val expectedPermissionsPolicy = Map(
     "camera"                    -> "()",
     "fullscreen"                -> "()",
@@ -67,8 +76,6 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
     "screen-wake-lock"          -> "()",
     "web-share"                 -> "()"
   )
-    .map { case (directive, allowlist) => s"$directive=$allowlist" }
-    .mkString(", ")
 
   protected lazy val baseUrl = s"http://localhost:$port"
 
