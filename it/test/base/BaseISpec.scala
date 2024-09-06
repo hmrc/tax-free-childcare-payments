@@ -16,12 +16,12 @@
 
 package base
 
-import org.scalatest.{Assertion, LoneElement}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.prop.TableDrivenPropertyChecks
+import org.scalatest.{Assertion, LoneElement}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import play.api.http.{HeaderNames, Status}
+import play.api.http.Status
 import play.api.libs.ws.WSResponse
 import play.api.test.WsTestClient
 import uk.gov.hmrc.http.test.WireMockSupport
@@ -34,7 +34,7 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
     with IntegrationPatience
     with GuiceOneServerPerSuite
     with WsTestClient
-    with HeaderNames
+    with utils.HeaderNames
     with Status
     with TableDrivenPropertyChecks
     with ScalaCheckPropertyChecks
@@ -51,12 +51,26 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
     ).build()
 
   protected def checkSecurityPolicy(response: WSResponse): Assertion = {
-    response.header(REFERRER_POLICY).value shouldBe "no-referrer"
+    response.header(REFERRER_POLICY).value    shouldBe expectedReferrerPolicy
+    response.header(PERMISSIONS_POLICY).value shouldBe expectedPermissionsPolicy
   }
 
-  protected lazy val baseUrl = s"http://localhost:$port"
+  private val expectedReferrerPolicy = "no-referrer"
 
-  protected lazy val CORRELATION_ID = "Correlation-ID"
+  private val expectedPermissionsPolicy = Map(
+    "camera"                    -> "()",
+    "fullscreen"                -> "()",
+    "geolocation"               -> "()",
+    "hid"                       -> "()",
+    "microphone"                -> "()",
+    "publickey-credentials-get" -> "()",
+    "screen-wake-lock"          -> "()",
+    "web-share"                 -> "()"
+  )
+    .map { case (directive, allowlist) => s"$directive=$allowlist" }
+    .mkString(", ")
+
+  protected lazy val baseUrl = s"http://localhost:$port"
 
   protected lazy val EXPECTED_CORRELATION_ID_ERROR_DESC      = "Correlation ID is in an invalid format or is missing"
   protected lazy val EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC = "Bearer Token did not return a valid record"

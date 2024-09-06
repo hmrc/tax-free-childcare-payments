@@ -16,18 +16,10 @@
 
 package connectors
 
-import java.net.URL
-import java.time.LocalDate
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-
 import models.request.Payee.{ChildCareProvider, ExternalPaymentProvider}
 import models.request._
 import models.response.NsiErrorResponse.{ETFC3, Maybe}
 import models.response._
-import sttp.model.HeaderNames
-import utils.FormattedLogging
-
 import play.api.http.Status
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
@@ -36,13 +28,19 @@ import uk.gov.hmrc.http.HttpReads
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import utils.FormattedLogging
+
+import java.net.URL
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NsiConnector @Inject() (
     httpClient: HttpClientV2,
     servicesConfig: ServicesConfig
   )(implicit ec: ExecutionContext
-  ) extends BackendHeaderCarrierProvider with FormattedLogging with HeaderNames {
+  ) extends BackendHeaderCarrierProvider with FormattedLogging {
   import NsiConnector._
 
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] = {
@@ -57,8 +55,8 @@ class NsiConnector @Inject() (
 
     httpClient
       .get(url)
-      .setHeader(CORRELATION_ID -> req.correlation_id.toString)
-      .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
+      .setHeader(NSI_CORRELATION_ID -> req.correlation_id.toString)
+      .setHeader(AUTHORIZATION -> s"Basic $NSI_HEADER_TOKEN")
       .withProxy
       .execute[Maybe[LinkResponse]]
   }
@@ -74,8 +72,8 @@ class NsiConnector @Inject() (
 
     httpClient
       .get(url)
-      .setHeader(CORRELATION_ID -> req.correlation_id.toString)
-      .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
+      .setHeader(NSI_CORRELATION_ID -> req.correlation_id.toString)
+      .setHeader(AUTHORIZATION -> s"Basic $NSI_HEADER_TOKEN")
       .withProxy
       .execute[Maybe[BalanceResponse]]
   }
@@ -83,8 +81,8 @@ class NsiConnector @Inject() (
   def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[Maybe[PaymentResponse]] =
     httpClient
       .post(new URL(resource("makePayment")))
-      .setHeader(CORRELATION_ID -> req.correlation_id.toString)
-      .setHeader(Authorization -> s"Basic $NSI_HEADER_TOKEN")
+      .setHeader(NSI_CORRELATION_ID -> req.correlation_id.toString)
+      .setHeader(AUTHORIZATION -> s"Basic $NSI_HEADER_TOKEN")
       .withBody(enrichedWithNino[PaymentRequest])
       .withProxy
       .execute[Maybe[PaymentResponse]]
@@ -98,8 +96,8 @@ class NsiConnector @Inject() (
     s"$domain$rootPath$resourcePath$pathParams"
   }
 
-  private val CORRELATION_ID   = servicesConfig.getString(s"microservice.services.$serviceName.correlationIdHeader")
-  private val NSI_HEADER_TOKEN = servicesConfig.getString(s"microservice.services.$serviceName.token")
+  private val NSI_CORRELATION_ID = servicesConfig.getString(s"microservice.services.$serviceName.correlationIdHeader")
+  private val NSI_HEADER_TOKEN   = servicesConfig.getString(s"microservice.services.$serviceName.token")
 }
 
 object NsiConnector extends FormattedLogging with Status {

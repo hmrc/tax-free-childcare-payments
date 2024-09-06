@@ -16,19 +16,17 @@
 
 package controllers.actions
 
-import java.util.UUID
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
-
 import models.request.IdentifierRequest
-import utils.FormattedLogging.CORRELATION_ID
-import utils.{ErrorResponseFactory, FormattedLogging}
-
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions, ConfidenceLevel}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
+import utils.{ErrorResponseFactory, FormattedLogging}
+
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 @Singleton
 class AuthAction @Inject() (

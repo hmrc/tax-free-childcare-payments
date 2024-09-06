@@ -16,22 +16,8 @@
 
 package utils
 
-import play.api.Logging
-import play.api.mvc.RequestHeader
+trait HeaderNames extends play.api.http.HeaderNames {
+  val PERMISSIONS_POLICY = "Permissions-Policy"
 
-trait FormattedLogging extends Logging with HeaderNames {
-
-  def formattedLog(msg: String)(implicit req: RequestHeader): String = {
-
-    val endpoint      = endpoints.getOrElse(req.uri, s"${req.method} ${req.uri}")
-    val correlationId = req.headers.get(CORRELATION_ID).orNull
-
-    s"[Error] - [$endpoint] - [$correlationId: $msg]"
-  }
-
-  private lazy val endpoints = Map(
-    s"/link"    -> "link",
-    s"/balance" -> "balance",
-    s"/"        -> "payment"
-  )
+  val CORRELATION_ID = "Correlation-ID"
 }
