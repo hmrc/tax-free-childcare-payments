@@ -160,11 +160,11 @@ paths:
               type: object
               properties:
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. Once the EPP is registered to use the production APIs, they will receive a letter containing this ID. For the sandbox environment, use any 11 character number.
+                  description: This is a numeric, unique ID assigned to the online payment provider by NS&I and starts with 1. Once the online payment provider is registered to use the production APIs, and they have gone through the sign-up process on the TFC Portal website, HMRC will tell the provider what their ID is. For the sandbox environment, use any 11-digit number.
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
-                  description: This alphanumeric unique ID (max. 20 characters) is assigned to the online payment provider when they register with HMRC. Once the EPP is registered to use the production APIs, they will receive a letter containing this ID. For the sandbox environment, use any alphanumeric value with a maximum of 20 characters.
+                  description: This is an alphanumeric,  unique ID assigned to the online payment provider by HMRC and it starts with 'HMRC' followed by 6 digits, and ends with 'A'. Once the provider is registered to use the production APIs, HMRC will tell the provider what their ID is.  For the sandbox environment, use any alphanumeric value to a maximum of 20 characters.
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
@@ -277,11 +277,11 @@ paths:
               type: object
               properties:
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. Once the EPP is registered to use the production APIs, they will receive a letter containing this ID. For the sandbox environment, use any 11 character number.
+                  description: This is a numeric, unique ID assigned to the online payment provider by NS&I and starts with 1. Once the online payment provider is registered to use the production APIs, and they have gone through the sign-up process on the TFC Portal website, HMRC will tell the provider what their ID is. For the sandbox environment, use any 11-digit number.
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
-                  description: This alphanumeric unique ID (max. 20 characters) is assigned to the online payment provider when they register with HMRC. Once the EPP is registered to use the production APIs, they will receive a letter containing this ID. For the sandbox environment, use any alphanumeric value with a maximum of 20 characters.
+                  description: This is an alphanumeric, unique ID assigned to the online payment provider by HMRC and it starts with 'HMRC' followed by 6 digits, and ends with 'A'. Once the provider is registered to use the production APIs, HMRC will tell the provider what their ID is. For the sandbox environment, use any alphanumeric value to a maximum of 20 characters.
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 outbound_child_payment_ref:
@@ -411,11 +411,11 @@ paths:
                   type: string
                   example: ABCD12345TFC
                 epp_unique_customer_id:
-                  description: This 11 character, numeric, unique ID is assigned to the online payment provider by NS&I. Once the EPP is registered to use the production APIs, they will receive a letter containing this ID. For the sandbox environment, use any 11 character number.
+                  description: This is a numeric, unique ID assigned to the online payment provider by NS&I and starts with 1. Once the online payment provider is registered to use the production APIs, and they have gone through the sign-up process on the TFC Portal website, HMRC will tell the provider what their ID is. For the sandbox environment, use any 11-digit number.
                   type: string
                   example: "12345678901"
                 epp_reg_reference:
-                  description: This alphanumeric unique ID (max. 20 characters) is assigned to the online payment provider when they register with HMRC. Once the EPP is registered to use the production APIs, they will receive a letter containing this ID. For the sandbox environment, use any alphanumeric value with a maximum of 20 characters.
+                  description: This is an alphanumeric, unique ID assigned to the online payment provider by HMRC and it starts with 'HMRC' followed by 6 digits, and ends with 'A'. Once the provider is registered to use the production APIs, HMRC will tell the provider what their ID is. For the sandbox environment, use any alphanumeric value to a maximum of 20 characters.
                   type: string
                   example: 1a2b3c4d5e6f7g8h
                 payment_amount:
@@ -427,7 +427,7 @@ paths:
                   type: string
                   example: EY456798
                 ccp_postcode:
-                  description: The postcode associated with the childcare provider, this enables further verification.
+                  description: The postcode of the Childcare Provider, connected to the `ccp_reg_reference` parameter. To identify the correct CCP, this must be the same postcode that the CCP has registered with their regulator and must be in a UK Postcode format. It is possible that this might be a BFPO (British Forces Post Office) number.
                   type: string
                   example: AB12 3CD
                 payee_type:
