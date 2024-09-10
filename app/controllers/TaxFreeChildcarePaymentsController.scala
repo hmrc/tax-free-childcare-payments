@@ -39,7 +39,6 @@ class TaxFreeChildcarePaymentsController @Inject() (
     ec: ExecutionContext,
     readsPayee: Reads[Payee]
   ) extends BackendController(cc) with FormattedLogging {
-  import TaxFreeChildcarePaymentsController._
 
   def link(): Action[JsValue] = nsiAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
 
@@ -64,17 +63,4 @@ class TaxFreeChildcarePaymentsController @Inject() (
           }
       }
     }
-}
-
-object TaxFreeChildcarePaymentsController {
-
-  private implicit val writesBalanceResponse: Writes[BalanceResponse] = br =>
-    Json.obj(
-      "tfc_account_status" -> br.accountStatus,
-      "government_top_up"  -> br.topUpAvailable,
-      "top_up_allowance"   -> br.topUpRemaining,
-      "paid_in_by_you"     -> br.paidIn,
-      "total_balance"      -> br.totalBalance,
-      "cleared_funds"      -> br.clearedFunds
-    )
 }

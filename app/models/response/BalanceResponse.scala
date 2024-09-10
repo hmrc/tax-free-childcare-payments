@@ -16,6 +16,8 @@
 
 package models.response
 
+import play.api.libs.json.{Json, Writes}
+
 /** All currency quantities are in pence. For example, £250.00 is given as 25000. */
 final case class BalanceResponse(
     accountStatus: NsiAccountStatus,
@@ -25,3 +27,16 @@ final case class BalanceResponse(
     totalBalance: Int,
     clearedFunds: Int
   )
+
+object BalanceResponse {
+
+  implicit val writesToAPI: Writes[BalanceResponse] = br =>
+    Json.obj(
+      "tfc_account_status" -> br.accountStatus,
+      "government_top_up"  -> br.topUpAvailable,
+      "top_up_allowance"   -> br.topUpRemaining,
+      "paid_in_by_you"     -> br.paidIn,
+      "total_balance"      -> br.totalBalance,
+      "cleared_funds"      -> br.clearedFunds
+    )
+}

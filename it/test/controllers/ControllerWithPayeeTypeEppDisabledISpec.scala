@@ -25,7 +25,7 @@ import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.SharedRequestData.TFC_ACCOUNT_REF_KEY
 import models.request.data.Generators
 import models.request.{IdentifierRequest, LinkRequest, SharedRequestData}
-import models.response.{LinkResponse, PaymentResponse}
+import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import org.scalatest.Assertion
 import play.api.Logger
 import play.api.libs.json.{JsPath, Json, JsonValidationError, KeyPathNode}
@@ -213,42 +213,26 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
     s"respond with status 200 and correct JSON body" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK" in
-        withClient { wsClient =>
-          val expectedCorrelationId   = UUID.randomUUID()
-          val expectedTfcResponseBody = Json.obj(
-            "tfc_account_status" -> "ACTIVE",
-            "paid_in_by_you"     -> 0,
-            "government_top_up"  -> 0,
-            "total_balance"      -> 0,
-            "cleared_funds"      -> 0,
-            "top_up_allowance"   -> 0
-          )
-          val expectedNsiResponseBody = Json.obj(
-            "accountStatus"  -> "ACTIVE",
-            "topUpAvailable" -> 0,
-            "topUpRemaining" -> 0,
-            "paidIn"         -> 0,
-            "totalBalance"   -> 0,
-            "clearedFunds"   -> 0
-          )
+        forAll { (request: IdentifierRequest[SharedRequestData], response: BalanceResponse) =>
+          withClient { wsClient =>
+            val expectedCorrelationId = request.correlation_id.toString
 
-          stubAuthRetrievalOf(randomNinos.sample.get)
-          stubNsiCheckBalance200(expectedNsiResponseBody)
+            stubAuthRetrievalOf(request.nino)
+            stubNsiCheckBalance200(getNsiJsonFrom(response))
 
-          val res = wsClient
-            .url(BALANCE_URL)
-            .withHttpHeaders(
-              AUTHORIZATION  -> "Bearer qwertyuiop",
-              CORRELATION_ID -> expectedCorrelationId.toString
-            )
-            .post(validCheckBalanceRequestPayloads.sample.get)
-            .futureValue
+            val res = wsClient
+              .url(BALANCE_URL)
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> expectedCorrelationId
+              )
+              .post(getJsonFrom(request.body))
+              .futureValue
 
-          val resCorrelationId = UUID fromString res.header(CORRELATION_ID).value
-
-          res.status       shouldBe OK
-          resCorrelationId shouldBe expectedCorrelationId
-          res.json         shouldBe expectedTfcResponseBody
+            res.status shouldBe OK
+            res.header(CORRELATION_ID).value shouldBe expectedCorrelationId
+            res.json shouldBe Json.toJson(response)
+          }
         }
     }
 

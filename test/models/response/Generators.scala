@@ -32,6 +32,26 @@ trait Generators extends base.Generators {
     "childFullName" -> response.childFullName
   )
 
+  implicit protected val arbBalanceResponse: Arbitrary[BalanceResponse] = Arbitrary(
+    for {
+      accountStatus  <- Gen.oneOf(NsiAccountStatus.values)
+      topUpAvailable <- Gen.posNum[Int]
+      topUpRemaining <- Gen.posNum[Int]
+      paidIn         <- Gen.posNum[Int]
+      totalBalance   <- Gen.posNum[Int]
+      clearedFunds   <- Gen.posNum[Int]
+    } yield BalanceResponse(accountStatus, topUpAvailable, topUpRemaining, paidIn, totalBalance, clearedFunds)
+  )
+
+  protected def getNsiJsonFrom(response: BalanceResponse): JsObject = Json.obj(
+    "accountStatus"  -> response.accountStatus.toString,
+    "topUpAvailable" -> response.topUpAvailable,
+    "topUpRemaining" -> response.topUpRemaining,
+    "paidIn"         -> response.paidIn,
+    "totalBalance"   -> response.totalBalance,
+    "clearedFunds"   -> response.clearedFunds
+  )
+
   implicit protected val arbPaymentResponse: Arbitrary[PaymentResponse] = Arbitrary(
     for {
       reference <- Gen.asciiPrintableStr

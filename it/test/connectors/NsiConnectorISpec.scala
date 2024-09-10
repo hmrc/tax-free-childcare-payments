@@ -20,10 +20,10 @@ import base.{BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
-import connectors.scenarios._
 import models.request.data.Generators
 import models.request.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse._
+import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Gen, Shrink}
 import org.scalatest.EitherValues
@@ -43,15 +43,15 @@ class NsiConnectorISpec
   "method linkAccounts" should {
     "return Right LinkResponse" when {
       "NSI responds 201 with expected JSON format" in
-        forAll { scenario: NsiLinkAccounts201Scenario =>
-          stubNsiLinkAccounts201(scenario.expectedRequestJson)
+        forAll { (request: IdentifierRequest[LinkRequest], expectedResponse: LinkResponse) =>
+          stubNsiLinkAccounts201(getNsiJsonFrom(expectedResponse))
 
-          implicit val req: IdentifierRequest[LinkRequest] = scenario.identifierRequest
+          val actualResponse = connector.linkAccounts(request).futureValue.value
 
-          val actualResponse = connector.linkAccounts.futureValue.value
-
-          actualResponse shouldBe scenario.expectedResponse
-          WireMock.verify(getRequestedFor(nsiLinkAccountsUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
+          actualResponse shouldBe expectedResponse
+          WireMock.verify(
+            getRequestedFor(nsiLinkAccountsUrlPattern).withHeader(AUTHORIZATION, equalTo("Basic nsi-basic-token"))
+          )
         }
     }
 
@@ -123,15 +123,15 @@ class NsiConnectorISpec
   "method checkBalance" should {
     "return Right(BalanceResponse)" when {
       s"NSI responds $OK with expected JSON format" in
-        forAll { scenario: NsiCheckBalance200Scenario =>
-          stubNsiCheckBalance200(scenario.expectedRequestJson)
+        forAll { (request: IdentifierRequest[SharedRequestData], expectedResponse: BalanceResponse) =>
+          stubNsiCheckBalance200(getNsiJsonFrom(expectedResponse))
 
-          implicit val req: IdentifierRequest[SharedRequestData] = scenario.identifierRequest
+          val actualResponse = connector.checkBalance(request).futureValue.value
 
-          val actualResponse = connector.checkBalance.futureValue.value
-
-          actualResponse shouldBe scenario.expectedResponse
-          WireMock.verify(getRequestedFor(nsiBalanceUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
+          actualResponse shouldBe expectedResponse
+          WireMock.verify(
+            getRequestedFor(nsiBalanceUrlPattern).withHeader(AUTHORIZATION, equalTo("Basic nsi-basic-token"))
+          )
         }
     }
 
@@ -182,15 +182,15 @@ class NsiConnectorISpec
   "method makePayment" should {
     "return Right PaymentResponse" when {
       s"NSI responds $CREATED with expected JSON format" in
-        forAll { scenario: NsiMakePayment201Scenario =>
-          stubNsiMakePayment201(scenario.expectedRequestJson)
+        forAll { (request: IdentifierRequest[PaymentRequest], expectedResponse: PaymentResponse) =>
+          stubNsiMakePayment201(getNsiJsonFrom(expectedResponse))
 
-          implicit val req: IdentifierRequest[PaymentRequest] = scenario.identifierRequest
+          val actualResponse = connector.makePayment(request).futureValue.value
 
-          val actualResponse = connector.makePayment.futureValue.value
-
-          actualResponse shouldBe scenario.expectedResponse
-          WireMock.verify(postRequestedFor(nsiPaymentUrlPattern).withHeader("Authorization", equalTo("Basic nsi-basic-token")))
+          actualResponse shouldBe expectedResponse
+          WireMock.verify(
+            postRequestedFor(nsiPaymentUrlPattern).withHeader(AUTHORIZATION, equalTo("Basic nsi-basic-token"))
+          )
         }
     }
 
