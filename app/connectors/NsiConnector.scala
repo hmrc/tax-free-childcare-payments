@@ -16,10 +16,17 @@
 
 package connectors
 
+import java.net.URL
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
+
 import models.request.Payee.{ChildCareProvider, ExternalPaymentProvider}
 import models.request._
 import models.response.NsiErrorResponse.{ETFC3, Maybe}
 import models.response._
+import utils.FormattedLogging
+
 import play.api.http.Status
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json._
@@ -28,12 +35,6 @@ import uk.gov.hmrc.http.HttpReads
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import utils.FormattedLogging
-
-import java.net.URL
-import java.time.LocalDate
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NsiConnector @Inject() (

@@ -16,12 +16,13 @@
 
 package config
 
-import play.api.Configuration
-import play.api.mvc.{EssentialAction, EssentialFilter}
+import scala.concurrent.ExecutionContext
+
 import com.google.inject.{Inject, Singleton}
 import utils.HeaderNames
 
-import scala.concurrent.ExecutionContext
+import play.api.Configuration
+import play.api.mvc.{EssentialAction, EssentialFilter}
 
 @Singleton
 class PermissionsPolicyFilter @Inject() (conf: Configuration)(implicit ec: ExecutionContext)
