@@ -124,8 +124,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
           val expectedCorrelationID = request.correlation_id.toString
 
-          withClient { wsClient =>
-            expectLoneLog("link", expectedCorrelationID) {
+          expectLoneLog("link", expectedCorrelationID) {
+            withClient { wsClient =>
               val response = wsClient
                 .url(LINK_URL)
                 .withHttpHeaders(
@@ -146,8 +146,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
           val expectedCorrelationID = request.correlation_id.toString
 
-          withClient { wsClient =>
-            expectLoneLog("link", expectedCorrelationID) {
+          expectLoneLog("link", expectedCorrelationID) {
+            withClient { wsClient =>
               val response = wsClient
                 .url(LINK_URL)
                 .withHttpHeaders(
@@ -168,8 +168,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
           val expectedCorrelationID = request.correlation_id.toString
 
-          withClient { wsClient =>
-            expectLoneLog("link", expectedCorrelationID) {
+          expectLoneLog("link", expectedCorrelationID) {
+            withClient { wsClient =>
               val response = wsClient
                 .url(LINK_URL)
                 .withHttpHeaders(
@@ -317,8 +317,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
     "respond with status 502, errorCode ETFC3" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK with unknown account status" in
-        withClient { wsClient =>
-          withCaptureOfLoggingFrom(NSI_CONNECTOR_LOGGER) { logs =>
+        withCaptureOfLoggingFrom(NSI_CONNECTOR_LOGGER) { logs =>
+          withClient { wsClient =>
             val expectedCorrelationId   = UUID.randomUUID()
             val expectedNsiResponseBody = Json.obj(
               "accountStatus"  -> "UNKNOWN",
@@ -353,8 +353,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
     "respond with status 502, errorCode ETFC4" when {
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds with unknown errorCode" in
-        withClient { wsClient =>
-          withCaptureOfLoggingFrom(NSI_CONNECTOR_LOGGER) { logs =>
+        withCaptureOfLoggingFrom(NSI_CONNECTOR_LOGGER) { logs =>
+          withClient { wsClient =>
             stubAuthRetrievalOf(randomNinos.sample.get)
             stubNsiCheckBalanceError(INTERNAL_SERVER_ERROR, "Unknown", "A server error occurred")
 
@@ -499,8 +499,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
           stubAuthRetrievalOf(request.nino)
           val expectedCorrelationID = request.correlation_id.toString
 
-          withClient { ws =>
-            expectLoneLog("payment", expectedCorrelationID) {
+          expectLoneLog("payment", expectedCorrelationID) {
+            withClient { ws =>
               val res = ws
                 .url(PAYMENT_URL)
                 .withHttpHeaders(
@@ -520,8 +520,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
           stubAuthRetrievalOf(request.nino)
           val expectedCorrelationID = request.correlation_id.toString
 
-          withClient { ws =>
-            expectLoneLog("payment", expectedCorrelationID) {
+          expectLoneLog("payment", expectedCorrelationID) {
+            withClient { ws =>
               val res = ws
                 .url(PAYMENT_URL)
                 .withHttpHeaders(
@@ -541,8 +541,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
           stubAuthRetrievalOf(request.nino)
           val expectedCorrelationID = request.correlation_id.toString
 
-          withClient { ws =>
-            expectLoneLog("payment", expectedCorrelationID) {
+          expectLoneLog("payment", expectedCorrelationID) {
+            withClient { ws =>
               val res = ws
                 .url(PAYMENT_URL)
                 .withHttpHeaders(
