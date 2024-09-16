@@ -28,6 +28,7 @@ import models.request.{IdentifierRequest, LinkRequest, SharedRequestData}
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import org.scalatest.Assertion
 import play.api.Logger
+import play.api.http.ContentTypes
 import play.api.libs.json.{JsPath, Json, JsonValidationError, KeyPathNode}
 import play.api.libs.ws.WSResponse
 
@@ -38,6 +39,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
     extends BaseISpec
     with AuthStubs
     with NsiStubs
+    with ContentTypes
     with Generators
     with models.response.Generators {
   import org.scalacheck.{Arbitrary, Gen}
@@ -223,15 +225,15 @@ class ControllerWithPayeeTypeEppDisabledISpec
             val res = wsClient
               .url(BALANCE_URL)
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId
               )
               .post(getJsonFrom(request.body))
               .futureValue
 
-            res.status shouldBe OK
+            res.status                       shouldBe OK
             res.header(CORRELATION_ID).value shouldBe expectedCorrelationId
-            res.json shouldBe Json.toJson(response)
+            res.json                         shouldBe Json.toJson(response)
           }
         }
     }
@@ -610,6 +612,24 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
   forAll(endpoints) { (_, tfc_url, validPayload) =>
     s"POST $tfc_url" should {
+
+      "respond 400 with errorCode E0000 and expected errorDescription" when {
+        "request body can't be parsed to JSON" in
+          withClient { ws =>
+            val invalidJSON = "!@£$"
+
+            val response = ws
+              .url(s"$baseUrl$tfc_url")
+              .withHttpHeaders(
+                CONTENT_TYPE  -> JSON
+              )
+              .post(invalidJSON)
+              .futureValue
+
+            checkErrorResponse(response, BAD_REQUEST, "E0000", "Invalid JSON")
+          }
+      }
+
       "respond 400 with errorCode ETFC1 and expected errorDescription" when {
         "correlation ID is missing" in
           withClient { ws =>
