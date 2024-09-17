@@ -19,7 +19,7 @@ package config
 import scala.concurrent.{ExecutionContext, Future}
 
 import com.google.inject.{Inject, Singleton}
-import utils.ErrorResponseFactory
+import utils.{ErrorResponseFactory, FormattedLogging}
 
 import play.api.Configuration
 import play.api.mvc.{RequestHeader, Result, Results}
@@ -35,12 +35,15 @@ class SanitisedJsonErrorHandler @Inject() (
     httpAuditEvent: HttpAuditEvent,
     configuration: Configuration
   )(implicit ec: ExecutionContext
-  ) extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) with Results {
+  ) extends JsonErrorHandler(auditConnector, httpAuditEvent, configuration) with Results with FormattedLogging {
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     message match {
-      case invalidJSON() => Future.successful(BadRequest(ErrorResponseFactory.getJson("E0000", "Invalid JSON")))
-      case _             => super.onClientError(request, statusCode, message)
+      case invalidJSON() =>
+        logger.info(formattedLog(message)(request))
+        Future.successful(BadRequest(ErrorResponseFactory.getJson("E0000", "Invalid JSON")))
+      case _             =>
+        super.onClientError(request, statusCode, message)
     }
   }
 
