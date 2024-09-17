@@ -611,7 +611,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
     (SERVICE_UNAVAILABLE,   "E8001",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC)
   )
 
-  forAll(endpoints) { (_, tfc_url, validPayload) =>
+  forAll(endpoints) { (endpointName, tfc_url, validPayload) =>
     s"POST $tfc_url" should {
 
       "respond 400 with errorCode E0000 and expected errorDescription" when {
@@ -632,7 +632,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
             }
             val log = logs.loneElement
             log.getLevel shouldBe Level.INFO
-            log.getMessage should startWith("Invalid JSON: ")
+            log.getMessage should startWith(s"[Error] - [$endpointName] - [null: Invalid JSON: ")
           }
       }
 
