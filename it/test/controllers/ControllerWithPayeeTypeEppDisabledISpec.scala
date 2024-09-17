@@ -18,6 +18,7 @@ package controllers
 
 import base.{AuthStubs, BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
+import config.SanitisedJsonErrorHandler
 import connectors.NsiConnector
 import models.request.LinkRequest.CHILD_DOB_KEY
 import models.request.Payee.PAYEE_TYPE_KEY
@@ -615,18 +616,23 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
       "respond 400 with errorCode E0000 and expected errorDescription" when {
         "request body can't be parsed to JSON" in
-          withClient { ws =>
-            val invalidJSON = "!@£$"
+          withCaptureOfLoggingFrom(Logger(classOf[SanitisedJsonErrorHandler])) { logs =>
+            withClient { ws =>
+              val invalidJSON = "!@£$"
 
-            val response = ws
-              .url(s"$baseUrl$tfc_url")
-              .withHttpHeaders(
-                CONTENT_TYPE  -> JSON
-              )
-              .post(invalidJSON)
-              .futureValue
+              val response = ws
+                .url(s"$baseUrl$tfc_url")
+                .withHttpHeaders(
+                  CONTENT_TYPE -> JSON
+                )
+                .post(invalidJSON)
+                .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0000", "Invalid JSON")
+              checkErrorResponse(response, BAD_REQUEST, "E0000", "Invalid JSON")
+            }
+            val log = logs.loneElement
+            log.getLevel shouldBe Level.INFO
+            log.getMessage should startWith("Invalid JSON: ")
           }
       }
 
