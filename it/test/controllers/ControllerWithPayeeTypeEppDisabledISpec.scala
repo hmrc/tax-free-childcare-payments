@@ -632,7 +632,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
             }
             val log = logs.loneElement
             log.getLevel shouldBe Level.INFO
-            log.getMessage should startWith(s"[Error] - [$endpointName] - [null: Invalid JSON: ")
+            log.getMessage should startWith(s"[Error] - [$endpointName] - [null: Invalid Json: ")
           }
       }
 
