@@ -8,3 +8,16 @@ There are 3 different operations involved in this process:
 
 For the technical details on how to start using our APIs, please read the [Using the Developer Hub](https://developer.service.hmrc.gov.uk/api-documentation/docs/using-the-hub) page. 
 
+### Post-Development
+
+Once you’ve completed your development, we’ll issue you 3 documents along with the Terms of Use to fill out and sign. These will be a Data Sharing agreement, a Supplier Assurance Questionnaire and Evidence of Testing Checklist. These documents will have to be filled out and signed before being onboarded.
+
+Data Sharing Agreement
+: This allows information to be shared between the parties involved.
+
+Supplier Assurance Questionnaire
+: This gives us evidence that you have the correct processes and controls in place to hold the data we share with you securely.
+
+Evidence of Testing Checklist
+: This ensures you have everything in place within your development ready to go live.
+
