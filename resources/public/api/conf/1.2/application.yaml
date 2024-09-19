@@ -55,12 +55,26 @@ The following table gives the detailed description for each error code you recei
 		<tr>
 			<td>E0003</td>
 			<td>ccp_reg_reference is in invalid format or missing</td>
-
 		</tr>
 		<tr>
 			<td>E0004</td>
 			<td>epp_unique_customer_id is in invalid format or missing</td>
-
+		</tr>
+		<tr>
+			<td>E0006
+			<td>child_date_of_birth is in invalid format or missing
+		</tr>
+		<tr>
+			<td>E0007
+			<td>payee_type is in invalid format or missing
+		</tr>
+		<tr>
+			<td>E0008
+			<td>payment_amount is in invalid format or missing
+		</tr>
+		<tr>
+			<td>E0009
+			<td>ccp_postcode is in invalid format or missing
 		</tr>
 		<tr>
 			<td>E0024</td>
