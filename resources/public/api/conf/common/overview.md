@@ -14,4 +14,4 @@ Once you’ve completed your development, we’ll issue you 3 documents along wi
 
 - ***Data Sharing Agreement*** - allows information to be shared between the parties involved.
 - ***Supplier Assurance Questionnaire*** - gives us evidence that you have the correct processes and controls in place to hold the data we share with you securely.
-- ***Evidence of Testing Checklist*** - ensures you have everything in place within your development ready to go live.
+- ***Evidence of Testing Checklist*** - a checklist to ensure you have everything in place within your development ready to go live.
