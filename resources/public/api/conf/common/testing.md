@@ -53,11 +53,11 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
       <br><pre class="code--block">
 {
  "tfc_account_status": "ACTIVE",
- "government_top_up": 31415,
- "top_up_allowance": 65,
- "paid_in_by_you": 66,
- "total_balance": 67,
- "cleared_funds": 68
+ "government_top_up": 4500,
+ "top_up_allowance": 5500,
+ "paid_in_by_you": 5000,
+ "total_balance": 9500,
+ "cleared_funds": 8000
 }
         </pre>
       </td>
@@ -69,11 +69,11 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
       <br><pre class="code--block">
 {
  "tfc_account_status": "INACTIVE",
- "government_top_up": 92653,
- "top_up_allowance": 69,
- "paid_in_by_you": 70,
- "total_balance": 71
- "cleared_funds": 72
+ "government_top_up": 5500,
+ "top_up_allowance": 4500,
+ "paid_in_by_you": 6000,
+ "total_balance": 11500,
+ "cleared_funds": 9000
 }
         </pre>
       </td>
@@ -84,11 +84,11 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
       <br><pre class="code--block">
 {
  "tfc_account_status": "ACTIVE",
- "government_top_up": 58979,
- "top_up_allowance": 73,
- "paid_in_by_you": 74,
- "total_balance": 75,
- "cleared_funds": 76
+ "government_top_up": 6500,
+ "top_up_allowance": 3500,
+ "paid_in_by_you": 7000,
+ "total_balance": 13500,
+ "cleared_funds": 10000
 }
         </pre>
       </td>
@@ -99,11 +99,11 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
       <br><pre class="code--block">
 {
  "tfc_account_status": "ACTIVE",
- "government_top_up": 32384,
- "top_up_allowance": 77,
- "paid_in_by_you": 78,
- "total_balance": 79
- "cleared_funds": 80
+ "government_top_up": 7500,
+ "top_up_allowance": 2500,
+ "paid_in_by_you": 8000,
+ "total_balance": 16500,
+ "cleared_funds": 11000
 }
         </pre>
       </td>
@@ -169,19 +169,6 @@ We use test `outbound_child_payment_ref` values to trigger predefined responses.
 The following scenarios relate to all endpoints:
 
 <table>
-    <tr>
-        <th colspan="2" align="left">EEAA00000TFC</td>
-    </tr>
-    <tr>
-        <td>Invalid input data</td>
-        <td>500<br>
-           <pre class="code--block">
-{
- "errorCode": "E0000",
- "errorDescription": "We encountered an error on our servers and did not process your request, please try again later.",
-}
-           </pre></td>
-    </tr>
    <tr>
         <th colspan="2" align="left">EERR00000TFC</td>
     </tr>
@@ -257,19 +244,6 @@ The following scenarios relate to all endpoints:
 ##### Balance endpoint errors
 
 <table>
-    <tr>
-        <th colspan="2" align="left">EESS00000TFC</td>
-    </tr>
-    <tr>
-        <td>Authentication information is missing or invalid</td>
-        <td>500<br>
-           <pre class="code--block">
-{
- "errorCode": "E0401",
- "errorDescription": "We encountered an error on our servers and did not process your request, please try again later.",
-}
-           </pre></td>
-    </tr>
     <tr>
         <th colspan="2" align="left">EEVV00000TFC</td>
     </tr>
