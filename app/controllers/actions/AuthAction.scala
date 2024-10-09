@@ -27,7 +27,7 @@ import utils.{ErrorResponseFactory, FormattedLogging}
 
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions, ConfidenceLevel}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 
 @Singleton
@@ -44,7 +44,7 @@ class AuthAction @Inject() (
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
     implicit val req: Request[A] = request
 
-    authorised(ConfidenceLevel.L250 and AffinityGroup.Individual)
+    authorised(ConfidenceLevel.L200)
       .retrieve(Retrievals.nino) {
         optNino =>
           val optCorrelationIdHeader = request.headers get CORRELATION_ID
