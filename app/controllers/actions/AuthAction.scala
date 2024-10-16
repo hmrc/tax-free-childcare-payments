@@ -44,7 +44,7 @@ class AuthAction @Inject() (
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
     implicit val req: Request[A] = request
 
-    authorised(ConfidenceLevel.L200)
+    authorised(ConfidenceLevel.L250)
       .retrieve(Retrievals.nino) {
         optNino =>
           val optCorrelationIdHeader = request.headers get CORRELATION_ID
