@@ -44,31 +44,30 @@ class AuthAction @Inject() (
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
     implicit val req: Request[A] = request
 
-    authorised(ConfidenceLevel.L250)
-      .retrieve(Retrievals.nino) {
-        optNino =>
-          val optCorrelationIdHeader = request.headers get CORRELATION_ID
-          val optIdentifierRequest   = for {
-            correlationIdHeader <- optCorrelationIdHeader toRight ETFC1                            -> "Correlation-ID header is missing"
-            correlationId       <- Try(UUID fromString correlationIdHeader).toOption toRight ETFC1 -> "Correlation-ID header is invalid"
-            nino                <- optNino toRight ETFC2                                           -> "Unable to retrieve NI number"
-          } yield IdentifierRequest(nino, correlationId, request)
+    authorised().retrieve(Retrievals.nino) {
+      optNino =>
+        val optCorrelationIdHeader = request.headers get CORRELATION_ID
+        val optIdentifierRequest   = for {
+          correlationIdHeader <- optCorrelationIdHeader toRight ETFC1                            -> "Correlation-ID header is missing"
+          correlationId       <- Try(UUID fromString correlationIdHeader).toOption toRight ETFC1 -> "Correlation-ID header is invalid"
+          nino                <- optNino toRight ETFC2                                           -> "Unable to retrieve NI number"
+        } yield IdentifierRequest(nino, correlationId, request)
 
-          optIdentifierRequest match {
-            case Right(identifierRequest) =>
-              block(identifierRequest) map { result =>
-                result.withHeaders(
-                  CORRELATION_ID -> identifierRequest.correlation_id.toString
-                )
-              }
+        optIdentifierRequest match {
+          case Right(identifierRequest) =>
+            block(identifierRequest) map { result =>
+              result.withHeaders(
+                CORRELATION_ID -> identifierRequest.correlation_id.toString
+              )
+            }
 
-            case Left((errorResponse, logMessage)) => Future.successful {
-                logger.info(formattedLog(logMessage))
+          case Left((errorResponse, logMessage)) => Future.successful {
+              logger.info(formattedLog(logMessage))
 
-                errorResponse
-              }
-          }
-      }
+              errorResponse
+            }
+        }
+    }
   }
 
   private lazy val ETFC1 = BadRequest(ErrorResponseFactory.getJson("ETFC1", "Correlation ID is in an invalid format or is missing"))
