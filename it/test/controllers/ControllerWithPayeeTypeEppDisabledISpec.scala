@@ -18,6 +18,8 @@ package controllers
 
 import base.{AuthStubs, BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlMatching, verify}
 import connectors.NsiConnector
 import models.request.LinkRequest.CHILD_DOB_KEY
 import models.request.Payee.PAYEE_TYPE_KEY
@@ -223,15 +225,15 @@ class ControllerWithPayeeTypeEppDisabledISpec
             val res = wsClient
               .url(BALANCE_URL)
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId
               )
               .post(getJsonFrom(request.body))
               .futureValue
 
-            res.status shouldBe OK
+            res.status                       shouldBe OK
             res.header(CORRELATION_ID).value shouldBe expectedCorrelationId
-            res.json shouldBe Json.toJson(response)
+            res.json                         shouldBe Json.toJson(response)
           }
         }
     }
@@ -563,6 +565,41 @@ class ControllerWithPayeeTypeEppDisabledISpec
             checkErrorResponse(response, expectedApiStatus, nsiErrorCode, expectedApiErrorDesc)
           }
       }
+    }
+  }
+
+  "Multiple API calls with the same bearer token" should {
+    "produce only 1 call to Auth" in forAll {
+      (req: IdentifierRequest[SharedRequestData], res1: BalanceResponse, res2: BalanceResponse) =>
+        val expectedCorrelationId = req.correlation_id.toString
+
+        stubAuthRetrievalOf(req.nino)
+
+        withClient { ws =>
+          val wsRequest = ws
+            .url(BALANCE_URL)
+            .withMethod("POST")
+            .withHttpHeaders(
+              AUTHORIZATION  -> "Bearer qwertyuiop",
+              CORRELATION_ID -> expectedCorrelationId
+            )
+            .withBody(getJsonFrom(req.body))
+
+          stubNsiCheckBalance200(getNsiJsonFrom(res1))
+          val wsResponse1 = wsRequest.execute().futureValue
+
+          stubNsiCheckBalance200(getNsiJsonFrom(res2))
+          val wsResponse2 = wsRequest.execute().futureValue
+
+          wsResponse1.status                       shouldBe OK
+          wsResponse1.header(CORRELATION_ID).value shouldBe expectedCorrelationId
+          wsResponse1.json                         shouldBe Json.toJson(res1)
+
+          wsResponse2.status                       shouldBe OK
+          wsResponse2.header(CORRELATION_ID).value shouldBe expectedCorrelationId
+          wsResponse2.json                         shouldBe Json.toJson(res2)
+        }
+        verify(1, postRequestedFor(urlMatching("/auth/authorise")))
     }
   }
 
