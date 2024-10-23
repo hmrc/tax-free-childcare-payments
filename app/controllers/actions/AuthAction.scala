@@ -27,7 +27,7 @@ import utils.{ErrorResponseFactory, FormattedLogging}
 
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 
 @Singleton
