@@ -27,6 +27,7 @@ import utils.{ErrorResponseFactory, FormattedLogging}
 
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 
@@ -44,8 +45,9 @@ class AuthAction @Inject() (
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
     implicit val req: Request[A] = request
 
-    authorised().retrieve(Retrievals.nino) {
-      optNino =>
+    /** Confidence level is retrieved so that it appears in implicit audit events to aid with security metrics. */
+    authorised().retrieve(Retrievals.nino and Retrievals.confidenceLevel) {
+      case optNino ~ _ =>
         val optCorrelationIdHeader = request.headers get CORRELATION_ID
         val optIdentifierRequest   = for {
           correlationIdHeader <- optCorrelationIdHeader toRight ETFC1                            -> "Correlation-ID header is missing"

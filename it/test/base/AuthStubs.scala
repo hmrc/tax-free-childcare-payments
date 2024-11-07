@@ -19,15 +19,27 @@ package base
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{okJson, stubFor}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import org.scalacheck.Gen
 import play.api.libs.json.Json
 
 trait AuthStubs {
 
   protected def stubAuthRetrievalOf(nino: String): StubMapping = stubFor {
-    WireMock.post("/auth/authorise") willReturn okJson(Json.obj("nino" -> nino).toString)
+    WireMock.post("/auth/authorise") willReturn okJson(
+      Json.obj(
+        "nino" -> nino,
+        "confidenceLevel" -> randomCL
+      ).toString
+    )
   }
 
   protected def stubAuthEmptyRetrieval: StubMapping = stubFor {
-    WireMock.post("/auth/authorise") willReturn okJson("{}")
+    WireMock.post("/auth/authorise") willReturn okJson(
+      Json.obj(
+        "confidenceLevel" -> randomCL
+      ).toString
+    )
   }
+
+  private def randomCL = Gen.oneOf(200, 250).sample.get
 }
