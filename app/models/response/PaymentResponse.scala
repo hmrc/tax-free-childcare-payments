@@ -23,7 +23,7 @@ import play.api.libs.json.{Json, Writes}
 final case class PaymentResponse(
     payment_reference: String,
     estimated_payment_date: LocalDate
-  )
+)
 
 object PaymentResponse {
 
@@ -32,4 +32,5 @@ object PaymentResponse {
       "payment_reference"      -> pr.payment_reference,
       "estimated_payment_date" -> pr.estimated_payment_date
     )
+
 }

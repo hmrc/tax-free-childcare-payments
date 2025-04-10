@@ -29,11 +29,11 @@ trait LinkRequestGenerators extends SharedRequestGenerators {
     for {
       sharedRequestData <- validSharedDataModels
       calendar          <- Gen.calendar
-      childDateOfBirth   = calendar.toInstant.atZone(ZoneId.systemDefault()).toLocalDate
-      childYearOfBirth  <- Gen.chooseNum(MIN_YEAR, MAX_YEAR)
+      childDateOfBirth = calendar.toInstant.atZone(ZoneId.systemDefault()).toLocalDate
+      childYearOfBirth <- Gen.chooseNum(MIN_YEAR, MAX_YEAR)
     } yield LinkRequest(
       sharedRequestData,
-      childDateOfBirth withYear childYearOfBirth
+      childDateOfBirth.withYear(childYearOfBirth)
     )
   )
 
@@ -44,28 +44,36 @@ trait LinkRequestGenerators extends SharedRequestGenerators {
 
   protected val validLinkPayloads: Gen[JsObject] = linkPayloadsWith(validSharedJson)
 
-  protected lazy val linkPayloadsWithMissingTfcAccountRef: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithMissingTfcAccountRef)
+  protected lazy val linkPayloadsWithMissingTfcAccountRef: Gen[JsObject] = linkPayloadsWith(
+    sharedPayloadsWithMissingTfcAccountRef
+  )
 
-  protected lazy val linkPayloadsWithInvalidTfcAccountRef: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithInvalidTfcAccountRef)
+  protected lazy val linkPayloadsWithInvalidTfcAccountRef: Gen[JsObject] = linkPayloadsWith(
+    sharedPayloadsWithInvalidTfcAccountRef
+  )
 
   protected lazy val linkPayloadsWithMissingEppUrn: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithMissingEppUrn)
 
   protected lazy val linkPayloadsWithInvalidEppUrn: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithInvalidEppUrn)
 
-  protected lazy val linkPayloadsWithMissingEppAccountId: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithMissingEppAccountId)
+  protected lazy val linkPayloadsWithMissingEppAccountId: Gen[JsObject] = linkPayloadsWith(
+    sharedPayloadsWithMissingEppAccountId
+  )
 
-  protected lazy val linkPayloadsWithInvalidEppAccountId: Gen[JsObject] = linkPayloadsWith(sharedPayloadsWithInvalidEppAccountId)
+  protected lazy val linkPayloadsWithInvalidEppAccountId: Gen[JsObject] = linkPayloadsWith(
+    sharedPayloadsWithInvalidEppAccountId
+  )
 
   protected lazy val linkPayloadsWithMissingChildDob: Gen[JsValue] = validSharedJson
 
   protected lazy val linkPayloadsWithNonStringChildDob: Gen[JsObject] = for {
     sharedPayload  <- validSharedJson
-    nonStringValue <- Gen.long map { num => JsNumber(num) }
+    nonStringValue <- Gen.long.map(num => JsNumber(num))
   } yield sharedPayload + ("child_date_of_birth" -> nonStringValue)
 
   protected lazy val linkPayloadsWithNonIso8061ChildDob: Gen[JsObject] = for {
     sharedPayload   <- validSharedJson
-    nonIso8061Value <- Gen.alphaNumStr map JsString.apply
+    nonIso8061Value <- Gen.alphaNumStr.map(JsString.apply)
   } yield sharedPayload + ("child_date_of_birth" -> nonIso8061Value)
 
   private def linkPayloadsWith(sharedPayloads: Gen[JsObject]) =
@@ -73,7 +81,7 @@ trait LinkRequestGenerators extends SharedRequestGenerators {
       sharedPayload <- sharedPayloads
       childAgeDays  <- Gen.chooseNum(0, 18 * 365)
     } yield sharedPayload ++ Json.obj(
-      "child_date_of_birth" -> (LocalDate.now() minusDays childAgeDays)
+      "child_date_of_birth" -> (LocalDate.now().minusDays(childAgeDays))
     )
 
   private lazy val MIN_YEAR = 2000

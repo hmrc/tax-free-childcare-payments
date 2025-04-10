@@ -36,11 +36,11 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
   protected def stubNsiLinkAccounts201(expectedResponseJson: JsValue): StubMapping = stubFor {
     nsiLinkAccountsEndpoint
       .withQueryParams(nsiLinkAccountsUrlQueryParams)
-      .willReturn(created() withBody expectedResponseJson.toString)
+      .willReturn(created().withBody(expectedResponseJson.toString))
   }
 
   protected def stubNsiLinkAccountsError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
-    nsiLinkAccountsEndpoint willReturn nsiErrorResponse(status, errorCode, errorDesc)
+    nsiLinkAccountsEndpoint.willReturn(nsiErrorResponse(status, errorCode, errorDesc))
   }
 
   protected lazy val nsiLinkAccountsEndpoint: MappingBuilder = get(nsiLinkAccountsUrlPattern)
@@ -59,11 +59,11 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
   protected def stubNsiCheckBalance200(expectedResponseJson: JsValue): StubMapping = stubFor {
     nsiCheckBalanceEndpoint
       .withQueryParams(nsiBalanceUrlQueryParams)
-      .willReturn(ok() withBody expectedResponseJson.toString)
+      .willReturn(ok().withBody(expectedResponseJson.toString))
   }
 
   protected def stubNsiCheckBalanceError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
-    nsiCheckBalanceEndpoint willReturn nsiErrorResponse(status, errorCode, errorDesc)
+    nsiCheckBalanceEndpoint.willReturn(nsiErrorResponse(status, errorCode, errorDesc))
   }
 
   protected lazy val nsiCheckBalanceEndpoint: MappingBuilder = get(nsiBalanceUrlPattern)
@@ -81,11 +81,11 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
   protected def stubNsiMakePayment201(expectedResponseJson: JsValue): StubMapping = stubFor {
     nsiMakePaymentEndpoint
       .withRequestBody(nsiPaymentRequestBodyPattern)
-      .willReturn(created() withBody expectedResponseJson.toString)
+      .willReturn(created().withBody(expectedResponseJson.toString))
   }
 
   protected def stubNsiMakePaymentError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
-    nsiMakePaymentEndpoint willReturn nsiErrorResponse(status, errorCode, errorDesc)
+    nsiMakePaymentEndpoint.willReturn(nsiErrorResponse(status, errorCode, errorDesc))
   }
 
   protected lazy val nsiMakePaymentEndpoint: MappingBuilder = post(nsiPaymentUrlPattern)

@@ -40,6 +40,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
     with NsiStubs
     with Generators
     with models.response.Generators {
+
   import org.scalacheck.{Arbitrary, Gen}
   import Arbitrary.arbitrary
 
@@ -68,9 +69,9 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(getJsonFrom(request.body))
               .futureValue
 
-            wsResponse.status                       shouldBe OK
+            wsResponse.status shouldBe OK
             wsResponse.header(CORRELATION_ID).value shouldBe expectedCorrelationId
-            wsResponse.json                         shouldBe expectedTfcResponseBody
+            wsResponse.json shouldBe expectedTfcResponseBody
           }
         }
     }
@@ -223,7 +224,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
             val res = wsClient
               .url(BALANCE_URL)
               .withHttpHeaders(
-                AUTHORIZATION -> "Bearer qwertyuiop",
+                AUTHORIZATION  -> "Bearer qwertyuiop",
                 CORRELATION_ID -> expectedCorrelationId
               )
               .post(getJsonFrom(request.body))
@@ -303,7 +304,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
       s"link request is valid, bearer token is present, auth responds with nino, and NS&I responds OK with unknown account status" in
         withCaptureOfLoggingFrom(NSI_CONNECTOR_LOGGER) { logs =>
           withClient { wsClient =>
-            val expectedCorrelationId   = UUID.randomUUID()
+            val expectedCorrelationId = UUID.randomUUID()
             val expectedNsiResponseBody = Json.obj(
               "accountStatus"  -> "UNKNOWN",
               "topUpAvailable" -> 0,
@@ -325,9 +326,12 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(validCheckBalanceRequestPayloads.sample.get)
               .futureValue
 
-            val expectedJsonErrors     = List(JsPath(List(KeyPathNode("accountStatus"))) -> List(JsonValidationError("error.invalid.account_status")))
-            val expectedPartialMessage = s"NSI responded 200. Resulted in JSON validation errors - $expectedJsonErrors - triggering ETFC3"
-            val expectedLogMessage     = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
+            val expectedJsonErrors = List(
+              JsPath(List(KeyPathNode("accountStatus"))) -> List(JsonValidationError("error.invalid.account_status"))
+            )
+            val expectedPartialMessage =
+              s"NSI responded 200. Resulted in JSON validation errors - $expectedJsonErrors - triggering ETFC3"
+            val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
             checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
             checkErrorResponse(response, BAD_GATEWAY, "ETFC3", "Bad Gateway")
@@ -353,7 +357,8 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(validCheckBalanceRequestPayloads.sample.get)
               .futureValue
 
-            val expectedResponseJson   = Json.obj("errorCode" -> "Unknown", "errorDescription" -> "A server error occurred")
+            val expectedResponseJson =
+              Json.obj("errorCode" -> "Unknown", "errorDescription" -> "A server error occurred")
             val expectedPartialMessage = s"NSI responded 500 with body $expectedResponseJson - triggering ETFC4"
             val expectedLogMessage     = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
             checkLoneLog(Level.WARN, expectedLogMessage)(logs)
@@ -388,9 +393,9 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(getJsonFrom(request.body))
               .futureValue
 
-            response.status                       shouldBe OK
+            response.status shouldBe OK
             response.header(CORRELATION_ID).value shouldBe expectedCorrelationId
-            response.json                         shouldBe expectedTfcResponseBody
+            response.json shouldBe expectedTfcResponseBody
           }
         }
     }
@@ -399,39 +404,41 @@ class ControllerWithPayeeTypeEppDisabledISpec
       val expectedErrorDesc = s"$TFC_ACCOUNT_REF_KEY is in invalid format or missing"
 
       "TFC account ref is missing" in
-        forAll(Gen.uuid, randomNinos, randomPaymentJsonWithCcpOnlyAndMissingTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
-          withClient { wsClient =>
-            stubAuthRetrievalOf(nino)
+        forAll(Gen.uuid, randomNinos, randomPaymentJsonWithCcpOnlyAndMissingTfcAccountRef) {
+          (expectedCorrelationId, nino, payload) =>
+            withClient { wsClient =>
+              stubAuthRetrievalOf(nino)
 
-            val response = wsClient
-              .url(PAYMENT_URL)
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
-              )
-              .post(payload)
-              .futureValue
+              val response = wsClient
+                .url(PAYMENT_URL)
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
-          }
+              checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
+            }
         }
 
       "TFC account ref is invalid" in
-        forAll(Gen.uuid, randomNinos, randomPaymentJsonWithCcpOnlyAndInvalidTfcAccountRef) { (expectedCorrelationId, nino, payload) =>
-          withClient { wsClient =>
-            stubAuthRetrievalOf(nino)
+        forAll(Gen.uuid, randomNinos, randomPaymentJsonWithCcpOnlyAndInvalidTfcAccountRef) {
+          (expectedCorrelationId, nino, payload) =>
+            withClient { wsClient =>
+              stubAuthRetrievalOf(nino)
 
-            val response = wsClient
-              .url(s"$baseUrl/")
-              .withHttpHeaders(
-                AUTHORIZATION  -> "Bearer qwertyuiop",
-                CORRELATION_ID -> expectedCorrelationId.toString
-              )
-              .post(payload)
-              .futureValue
+              val response = wsClient
+                .url(s"$baseUrl/")
+                .withHttpHeaders(
+                  AUTHORIZATION  -> "Bearer qwertyuiop",
+                  CORRELATION_ID -> expectedCorrelationId.toString
+                )
+                .post(payload)
+                .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
-          }
+              checkErrorResponse(response, BAD_REQUEST, "E0001", expectedErrorDesc)
+            }
         }
     }
 
@@ -567,45 +574,45 @@ class ControllerWithPayeeTypeEppDisabledISpec
   }
 
   private val endpoints = Table(
-    ("Name",    "TFC URL",  "Valid Payload"),
-    ("link",    "/link",    validLinkPayloads.sample.get),
+    ("Name", "TFC URL", "Valid Payload"),
+    ("link", "/link", validLinkPayloads.sample.get),
     ("balance", "/balance", validSharedJson.sample.get),
-    ("payment", "/",        validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
+    ("payment", "/", validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
   )
 
   private lazy val nsiErrorScenarios = Table(
-    ("NSI Status Code",     "NSI Error Code", "Expected Status Code", "Expected Error Description"),
-    (BAD_REQUEST,           "E0000",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0001",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0002",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0003",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0004",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0005",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0006",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0007",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0008",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0020",          BAD_GATEWAY,            EXPECTED_502_DESC),
-    (BAD_REQUEST,           "E0021",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0022",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0023",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (BAD_REQUEST,           "E0024",          BAD_REQUEST,            EXPECTED_E0024_DESC),
-    (BAD_REQUEST,           "E0025",          BAD_REQUEST,            EXPECTED_E0025_DESC),
-    (BAD_REQUEST,           "E0026",          BAD_REQUEST,            EXPECTED_E0026_DESC),
-    (BAD_REQUEST,           "E0027",          BAD_REQUEST,            EXPECTED_E0027_DESC),
-    (UNAUTHORIZED,          "E0401",          INTERNAL_SERVER_ERROR,  EXPECTED_500_DESC),
-    (FORBIDDEN,             "E0030",          BAD_REQUEST,            EXPECTED_E0030_DESC),
-    (FORBIDDEN,             "E0031",          BAD_REQUEST,            EXPECTED_E0031_DESC),
-    (FORBIDDEN,             "E0032",          BAD_REQUEST,            EXPECTED_E0032_DESC),
-    (FORBIDDEN,             "E0033",          BAD_REQUEST,            EXPECTED_E0033_DESC),
-    (FORBIDDEN,             "E0034",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC),
-    (FORBIDDEN,             "E0035",          BAD_REQUEST,            EXPECTED_E0035_DESC),
-    (FORBIDDEN,             "E0036",          BAD_REQUEST,            EXPECTED_E0036_DESC),
-    (NOT_FOUND,             "E0042",          BAD_REQUEST,            EXPECTED_E0042_DESC),
-    (NOT_FOUND,             "E0043",          BAD_REQUEST,            EXPECTED_E0043_DESC),
-    (INTERNAL_SERVER_ERROR, "E9000",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC),
-    (INTERNAL_SERVER_ERROR, "E9999",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC),
-    (SERVICE_UNAVAILABLE,   "E8000",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC),
-    (SERVICE_UNAVAILABLE,   "E8001",          SERVICE_UNAVAILABLE,    EXPECTED_503_DESC)
+    ("NSI Status Code", "NSI Error Code", "Expected Status Code", "Expected Error Description"),
+    (BAD_REQUEST, "E0000", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0001", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0002", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0003", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0004", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0005", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0006", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0007", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0008", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0020", BAD_GATEWAY, EXPECTED_502_DESC),
+    (BAD_REQUEST, "E0021", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0022", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0023", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0024", BAD_REQUEST, EXPECTED_E0024_DESC),
+    (BAD_REQUEST, "E0025", BAD_REQUEST, EXPECTED_E0025_DESC),
+    (BAD_REQUEST, "E0026", BAD_REQUEST, EXPECTED_E0026_DESC),
+    (BAD_REQUEST, "E0027", BAD_REQUEST, EXPECTED_E0027_DESC),
+    (UNAUTHORIZED, "E0401", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (FORBIDDEN, "E0030", BAD_REQUEST, EXPECTED_E0030_DESC),
+    (FORBIDDEN, "E0031", BAD_REQUEST, EXPECTED_E0031_DESC),
+    (FORBIDDEN, "E0032", BAD_REQUEST, EXPECTED_E0032_DESC),
+    (FORBIDDEN, "E0033", BAD_REQUEST, EXPECTED_E0033_DESC),
+    (FORBIDDEN, "E0034", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
+    (FORBIDDEN, "E0035", BAD_REQUEST, EXPECTED_E0035_DESC),
+    (FORBIDDEN, "E0036", BAD_REQUEST, EXPECTED_E0036_DESC),
+    (NOT_FOUND, "E0042", BAD_REQUEST, EXPECTED_E0042_DESC),
+    (NOT_FOUND, "E0043", BAD_REQUEST, EXPECTED_E0043_DESC),
+    (INTERNAL_SERVER_ERROR, "E9000", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
+    (INTERNAL_SERVER_ERROR, "E9999", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
+    (SERVICE_UNAVAILABLE, "E8000", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
+    (SERVICE_UNAVAILABLE, "E8001", SERVICE_UNAVAILABLE, EXPECTED_503_DESC)
   )
 
   forAll(endpoints) { (_, tfc_url, validPayload) =>
@@ -664,7 +671,12 @@ class ControllerWithPayeeTypeEppDisabledISpec
     }
   }
 
-  private def checkErrorResponse(actualResponse: WSResponse, expectedStatus: Int, expectedErrorCode: String, expectedErrorDescription: String) = {
+  private def checkErrorResponse(
+      actualResponse: WSResponse,
+      expectedStatus: Int,
+      expectedErrorCode: String,
+      expectedErrorDescription: String
+  ) = {
     actualResponse.status shouldBe expectedStatus
     checkErrorJson(actualResponse.json, expectedErrorCode, expectedErrorDescription)
   }
@@ -672,18 +684,18 @@ class ControllerWithPayeeTypeEppDisabledISpec
   private def expectLoneLog(
       expectedEndpoint: String,
       expectedCorrelationId: String
-    )(
+  )(
       doTest: => Assertion
-    ): Unit = withCaptureOfLoggingFrom(CONTROLLER_LOGGER) { logs =>
+  ): Unit = withCaptureOfLoggingFrom(CONTROLLER_LOGGER) { logs =>
     doTest
 
     val log = logs.loneElement
     log.getLevel shouldBe Level.INFO
     log.getMessage match {
       case EXPECTED_LOG_MESSAGE_PATTERN(loggedEndpoint, loggedCorrelationId, loggedMessage) =>
-        loggedEndpoint      shouldBe expectedEndpoint
+        loggedEndpoint shouldBe expectedEndpoint
         loggedCorrelationId shouldBe expectedCorrelationId
-        loggedMessage         should include("JsonValidationError")
+        loggedMessage should include("JsonValidationError")
 
       case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
     }
@@ -695,4 +707,5 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
   private lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
     raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
+
 }

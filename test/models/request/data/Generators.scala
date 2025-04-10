@@ -22,6 +22,7 @@ import play.api.mvc.Headers
 import play.api.test.FakeRequest
 
 trait Generators extends LinkRequestGenerators with PaymentRequestGenerators {
+
   import org.scalacheck.{Arbitrary, Gen}
   import Arbitrary.arbitrary
 
@@ -34,4 +35,5 @@ trait Generators extends LinkRequestGenerators with PaymentRequestGenerators {
     correlationId <- Gen.uuid
     body          <- randomBody
   } yield IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), body))
+
 }

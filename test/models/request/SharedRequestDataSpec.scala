@@ -83,4 +83,5 @@ class SharedRequestDataSpec extends BaseSpec with SharedRequestGenerators {
         }
     }
   }
+
 }

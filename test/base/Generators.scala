@@ -46,11 +46,11 @@ trait Generators {
     char0  <- Gen.alphaUpperChar
     char1  <- Gen.alphaUpperChar
     digits <- Gen.listOfN(6, Gen.numChar)
-    char8  <- Gen oneOf "ABCD"
+    char8  <- Gen.oneOf("ABCD")
   } yield char0 +: char1 +: digits.mkString :+ char8
 
   protected lazy val randomPayees: Gen[Payee] = Gen.oneOf(
-    Gen const Payee.ExternalPaymentProvider,
+    Gen.const(Payee.ExternalPaymentProvider),
     randomChildCareProviders
   )
 
@@ -59,7 +59,7 @@ trait Generators {
     postcode <- postcodes
   } yield ChildCareProvider(urn, postcode)
 
-  lazy private val postcodes = for {
+  private lazy val postcodes = for {
     leadingSpaces  <- randomSpaces
     n              <- Gen.chooseNum(1, 2)
     letters1       <- Gen.stringOfN(n, Gen.alphaUpperChar)
@@ -70,5 +70,5 @@ trait Generators {
     trailingSpaces <- randomSpaces
   } yield s"$leadingSpaces$letters1$num1$midSpaces$num2$letters2$trailingSpaces"
 
-  lazy private val randomSpaces = Gen.stringOf(Gen const ' ')
+  private lazy val randomSpaces = Gen.stringOf(Gen.const(' '))
 }

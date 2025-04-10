@@ -27,11 +27,12 @@ object NsiAccountStatus {
   val values: Set[NsiAccountStatus] = Set(ACTIVE, BLOCKED)
 
   implicit val readsFromNsi: Reads[NsiAccountStatus] = {
-    case JsString(value) => values.find(_.toString == value) match {
+    case JsString(value) =>
+      values.find(_.toString == value) match {
         case Some(accountStatus) => JsSuccess(accountStatus)
         case None                => JsError("error.invalid.account_status")
       }
-    case _               => JsError("error.expected.account_status.string")
+    case _ => JsError("error.expected.account_status.string")
   }
 
   implicit val writesToApi: Writes[NsiAccountStatus] = status => JsString(status.toApiString)

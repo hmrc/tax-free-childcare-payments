@@ -21,6 +21,7 @@ import base.BaseSpec
 import play.api.libs.json.Json
 
 class NsiErrorResponseSpec extends BaseSpec {
+
   "JSON reader" should {
     "not throw a NullPointerException" when {
       "given an unknown errorCode" in {
@@ -33,4 +34,5 @@ class NsiErrorResponseSpec extends BaseSpec {
       }
     }
   }
+
 }

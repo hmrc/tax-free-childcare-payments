@@ -23,7 +23,7 @@ final case class PaymentRequest(
     sharedRequestData: SharedRequestData,
     payment_amount: Int,
     payee: Payee
-  )
+)
 
 object PaymentRequest extends ConstraintReads {
 

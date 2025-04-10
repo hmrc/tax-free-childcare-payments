@@ -24,6 +24,7 @@ import models.request.data.LinkRequestGenerators
 import play.api.libs.json.{JsPath, JsonValidationError, KeyPathNode}
 
 class LinkRequestSpec extends BaseSpec with LinkRequestGenerators {
+
   "API JSON reader" should {
 
     "return JsError" when {
@@ -99,4 +100,5 @@ class LinkRequestSpec extends BaseSpec with LinkRequestGenerators {
         }
     }
   }
+
 }

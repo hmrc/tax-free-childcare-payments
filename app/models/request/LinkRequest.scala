@@ -25,7 +25,7 @@ import play.api.libs.json.{JsResult, Reads, __}
 final case class LinkRequest(
     sharedRequestData: SharedRequestData,
     child_date_of_birth: LocalDate
-  )
+)
 
 object LinkRequest {
 
@@ -33,7 +33,7 @@ object LinkRequest {
     __.read[SharedRequestData] ~
       (__ \ CHILD_DOB_KEY)
         .read[String]
-        .flatMapResult(str => JsResult fromTry Try(LocalDate parse str))
+        .flatMapResult(str => JsResult.fromTry(Try(LocalDate.parse(str))))
   )(apply _)
 
   lazy val CHILD_DOB_KEY = "child_date_of_birth"

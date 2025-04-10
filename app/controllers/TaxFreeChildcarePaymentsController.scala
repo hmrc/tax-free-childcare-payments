@@ -35,14 +35,14 @@ class TaxFreeChildcarePaymentsController @Inject() (
     cc: ControllerComponents,
     identify: AuthAction,
     nsiConnector: NsiConnector
-  )(implicit
-    ec: ExecutionContext,
-    readsPayee: Reads[Payee]
-  ) extends BackendController(cc) with FormattedLogging {
+)(implicit ec: ExecutionContext, readsPayee: Reads[Payee])
+    extends BackendController(cc)
+    with FormattedLogging {
 
   def link(): Action[JsValue] = nsiAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
 
-  def balance(): Action[JsValue] = nsiAction[SharedRequestData, BalanceResponse](implicit req => nsiConnector.checkBalance)
+  def balance(): Action[JsValue] =
+    nsiAction[SharedRequestData, BalanceResponse](implicit req => nsiConnector.checkBalance)
 
   def payment(): Action[JsValue] = nsiAction[PaymentRequest, PaymentResponse](implicit req => nsiConnector.makePayment)
 
@@ -52,15 +52,17 @@ class TaxFreeChildcarePaymentsController @Inject() (
         case JsSuccess(value, _) =>
           val requestWithValidBody = IdentifierRequest(request.nino, request.correlation_id, request.map(_ => value))
 
-          block(requestWithValidBody) map {
-            case Left(nsiError)    => ErrorResponseFactory getResult nsiError
+          block(requestWithValidBody).map {
+            case Left(nsiError)    => ErrorResponseFactory.getResult(nsiError)
             case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
           }
-        case JsError(errors)     => Future.successful {
+        case JsError(errors) =>
+          Future.successful {
             logger.info(formattedLog(errors.toString))
 
-            BadRequest(ErrorResponseFactory getJson errors)
+            BadRequest(ErrorResponseFactory.getJson(errors))
           }
       }
     }
+
 }

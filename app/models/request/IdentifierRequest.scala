@@ -24,4 +24,4 @@ final case class IdentifierRequest[A](
     nino: String,
     correlation_id: UUID,
     request: Request[A]
-  ) extends WrappedRequest[A](request)
+) extends WrappedRequest[A](request)

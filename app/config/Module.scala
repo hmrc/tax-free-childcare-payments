@@ -27,4 +27,5 @@ class Module(env: Environment, config: Configuration) extends AbstractModule {
   @Provides @Singleton
   def getReadsPayee: Reads[Payee] =
     if (config.get[Boolean]("features.enablePayeeTypeEPP")) Payee.readsPayeeFromApi else Payee.readsCcpFromApi
+
 }

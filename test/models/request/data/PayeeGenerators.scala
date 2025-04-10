@@ -67,34 +67,42 @@ trait PayeeGenerators extends base.Generators {
   } yield ccpJson + ("ccp_postcode" -> postcode)
 
   protected lazy val validPayeeJson: Gen[JsObject] = Gen.oneOf(validCcpJson, validEppJson)
-  protected lazy val validCcpJson: Gen[JsObject]   = randomChildCareProviders map getJsonFrom
-  protected lazy val validEppJson: Gen[JsObject]   = Gen const Json.obj("payee_type" -> "EPP")
+  protected lazy val validCcpJson: Gen[JsObject]   = randomChildCareProviders.map(getJsonFrom)
+  protected lazy val validEppJson: Gen[JsObject]   = Gen.const(Json.obj("payee_type" -> "EPP"))
 
   protected def getJsonFrom(payee: Payee): JsObject = payee match {
-    case Payee.ExternalPaymentProvider          => Json.obj("payee_type" -> "EPP")
-    case Payee.ChildCareProvider(urn, postcode) => Json.obj(
+    case Payee.ExternalPaymentProvider => Json.obj("payee_type" -> "EPP")
+    case Payee.ChildCareProvider(urn, postcode) =>
+      Json.obj(
         "payee_type"        -> "CCP",
         "ccp_reg_reference" -> urn,
         "ccp_postcode"      -> postcode
       )
   }
 
-  protected lazy val invalidPayeeTypes: Gen[JsString] = Gen.oneOf(
-    Gen.oneOf("ccp", "epp"),
-    Gen.numStr
-  ) map JsString.apply
+  protected lazy val invalidPayeeTypes: Gen[JsString] = Gen
+    .oneOf(
+      Gen.oneOf("ccp", "epp"),
+      Gen.numStr
+    )
+    .map(JsString.apply)
 
-  protected lazy val invalidCcpUrns: Gen[JsString] = Gen.oneOf(
-    Gen const "",
-    oversizedCcpUrns
-  ) map JsString.apply
+  protected lazy val invalidCcpUrns: Gen[JsString] = Gen
+    .oneOf(
+      Gen.const(""),
+      oversizedCcpUrns
+    )
+    .map(JsString.apply)
 
   private lazy val oversizedCcpUrns = Gen
     .chooseNum(CCP_REG_MAX_LEN + 1, Byte.MaxValue)
     .flatMap(size => Gen.stringOfN(size, Gen.asciiPrintableChar))
 
-  private lazy val invalidPostcodes = Gen.oneOf(
-    Gen.alphaStr,
-    Gen.numStr
-  ) map JsString.apply
+  private lazy val invalidPostcodes = Gen
+    .oneOf(
+      Gen.alphaStr,
+      Gen.numStr
+    )
+    .map(JsString.apply)
+
 }

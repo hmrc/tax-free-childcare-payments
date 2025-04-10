@@ -41,8 +41,10 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 class NsiConnector @Inject() (
     httpClient: HttpClientV2,
     servicesConfig: ServicesConfig
-  )(implicit ec: ExecutionContext
-  ) extends BackendHeaderCarrierProvider with FormattedLogging with HeaderNames {
+)(implicit ec: ExecutionContext)
+    extends BackendHeaderCarrierProvider
+    with FormattedLogging
+    with HeaderNames {
   import NsiConnector._
 
   def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[Maybe[LinkResponse]] = {
@@ -113,21 +115,27 @@ object NsiConnector extends FormattedLogging with Status {
     if (response.status / 100 == 2) {
       response.json.validate[A] match {
         case JsSuccess(result, _) => Right(result)
-        case JsError(errors)      =>
-          logger.warn(formattedLog(s"NSI responded ${response.status}. Resulted in JSON validation errors - $errors - triggering ETFC3"))
+        case JsError(errors) =>
+          logger.warn(
+            formattedLog(
+              s"NSI responded ${response.status}. Resulted in JSON validation errors - $errors - triggering ETFC3"
+            )
+          )
           Left(ETFC3)
       }
     } else {
       response.json.validate[NsiErrorResponse] match {
         case JsSuccess(nsiErrorResponse, _) =>
-          val message = formattedLog(s"NSI responded ${response.status} with body ${response.body} - triggering $nsiErrorResponse")
+          val message = formattedLog(
+            s"NSI responded ${response.status} with body ${response.body} - triggering $nsiErrorResponse"
+          )
           if (nsiErrorResponse.reportAs < INTERNAL_SERVER_ERROR) {
             logger.info(message)
           } else {
             logger.warn(message)
           }
           Left(nsiErrorResponse)
-        case JsError(jsonErrors)            =>
+        case JsError(jsonErrors) =>
           logger.warn(formattedLog(s"NSI error - $jsonErrors.toString - triggering ETFC3"))
           Left(ETFC3)
       }
@@ -142,8 +150,9 @@ object NsiConnector extends FormattedLogging with Status {
       )
 
   private implicit val writesPayee: OWrites[Payee] = {
-    case ExternalPaymentProvider          => Json.obj("payeeType" -> "EPP")
-    case ChildCareProvider(urn, postcode) => Json.obj(
+    case ExternalPaymentProvider => Json.obj("payeeType" -> "EPP")
+    case ChildCareProvider(urn, postcode) =>
+      Json.obj(
         "payeeType"   -> "CCP",
         "ccpURN"      -> urn,
         "ccpPostcode" -> postcode
@@ -157,7 +166,7 @@ object NsiConnector extends FormattedLogging with Status {
     )
 
   private implicit val readsLinkResponse: Reads[LinkResponse] =
-    (__ \ "childFullName").read[String] map LinkResponse.apply
+    (__ \ "childFullName").read[String].map(LinkResponse.apply)
 
   private implicit val readsBalanceResponse: Reads[BalanceResponse] = (
     (__ \ "accountStatus").read[NsiAccountStatus] ~
@@ -172,4 +181,5 @@ object NsiConnector extends FormattedLogging with Status {
     (__ \ "paymentReference").read[String] ~
       (__ \ "paymentDate").read[LocalDate]
   )(PaymentResponse.apply _)
+
 }

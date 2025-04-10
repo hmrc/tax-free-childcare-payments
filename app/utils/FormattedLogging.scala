@@ -20,7 +20,7 @@ import play.api.Logging
 import play.api.mvc.RequestHeader
 
 trait FormattedLogging extends Logging {
-  import utils.FormattedLogging.{endpoints, CORRELATION_ID}
+  import utils.FormattedLogging.{CORRELATION_ID, endpoints}
 
   def formattedLog(msg: String)(implicit req: RequestHeader): String = {
 
@@ -29,6 +29,7 @@ trait FormattedLogging extends Logging {
 
     s"[Error] - [$endpoint] - [$correlationId: $msg]"
   }
+
 }
 
 object FormattedLogging {
@@ -39,4 +40,5 @@ object FormattedLogging {
     s"/balance" -> "balance",
     s"/"        -> "payment"
   )
+
 }
