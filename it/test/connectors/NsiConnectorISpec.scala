@@ -33,7 +33,7 @@ import play.api.mvc.Headers
 import play.api.test.FakeRequest
 
 class NsiConnectorISpec
-  extends BaseISpec
+    extends BaseISpec
     with NsiStubs
     with EitherValues
     with Generators
@@ -60,23 +60,23 @@ class NsiConnectorISpec
         forAll(
           arbitrary[IdentifierRequest[LinkRequest]],
           Gen.asciiPrintableStr
-        ) {
-          (request, expectedErrorDescription) =>
-            withCaptureOfLoggingFrom(LOGGER) { logs =>
-              val expectedStatus = randomHttpErrorCodes.sample.get
-              stubNsiLinkAccountsError(expectedStatus, "E0001", expectedErrorDescription)
+        ) { (request, expectedErrorDescription) =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val expectedStatus = randomHttpErrorCodes.sample.get
+            stubNsiLinkAccountsError(expectedStatus, "E0001", expectedErrorDescription)
 
-              val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
+            val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
 
-              actualNsiErrorResponse shouldBe E0001
+            actualNsiErrorResponse shouldBe E0001
 
-              val expectedResponseJson = Json.obj("errorCode" -> "E0001", "errorDescription" -> expectedErrorDescription)
-              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0001"
-              checkLoneLog(
-                expectedLevel = Level.WARN,
-                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
-              )(logs)
-            }
+            val expectedResponseJson = Json.obj("errorCode" -> "E0001", "errorDescription" -> expectedErrorDescription)
+            val expectedPartialLogMessage =
+              s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0001"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
         }
     }
 
@@ -85,23 +85,23 @@ class NsiConnectorISpec
         forAll(
           arbitrary[IdentifierRequest[LinkRequest]],
           Gen.asciiPrintableStr
-        ) {
-          (request, expectedErrorDescription) =>
-            withCaptureOfLoggingFrom(LOGGER) { logs =>
-              val expectedStatus = randomHttpErrorCodes.sample.get
-              stubNsiLinkAccountsError(expectedStatus, "E0024", expectedErrorDescription)
+        ) { (request, expectedErrorDescription) =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val expectedStatus = randomHttpErrorCodes.sample.get
+            stubNsiLinkAccountsError(expectedStatus, "E0024", expectedErrorDescription)
 
-              val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
+            val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
 
-              actualNsiErrorResponse shouldBe E0024
+            actualNsiErrorResponse shouldBe E0024
 
-              val expectedResponseJson = Json.obj("errorCode" -> "E0024", "errorDescription" -> expectedErrorDescription)
-              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0024"
-              checkLoneLog(
-                expectedLevel = Level.INFO,
-                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
-              )(logs)
-            }
+            val expectedResponseJson = Json.obj("errorCode" -> "E0024", "errorDescription" -> expectedErrorDescription)
+            val expectedPartialLogMessage =
+              s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0024"
+            checkLoneLog(
+              expectedLevel = Level.INFO,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
         }
     }
 
@@ -155,7 +155,7 @@ class NsiConnectorISpec
           stubFor {
             nsiCheckBalanceEndpoint
               .withQueryParams(nsiBalanceUrlQueryParams)
-              .willReturn(created() withBody invalidBalanceResponse.toString)
+              .willReturn(created().withBody(invalidBalanceResponse.toString))
           }
 
           val actualNsiErrorResponse = connector.checkBalance.futureValue.left.value
@@ -199,23 +199,23 @@ class NsiConnectorISpec
         forAll(
           arbitrary[IdentifierRequest[PaymentRequest]],
           Gen.asciiPrintableStr
-        ) {
-          (request, expectedErrorDescription) =>
-            withCaptureOfLoggingFrom(LOGGER) { logs =>
-              val expectedStatus = randomHttpErrorCodes.sample.get
-              stubNsiMakePaymentError(expectedStatus, "E0009", expectedErrorDescription)
+        ) { (request, expectedErrorDescription) =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val expectedStatus = randomHttpErrorCodes.sample.get
+            stubNsiMakePaymentError(expectedStatus, "E0009", expectedErrorDescription)
 
-              val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
+            val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
 
-              actualNsiErrorResponse shouldBe E0009
+            actualNsiErrorResponse shouldBe E0009
 
-              val expectedResponseJson = Json.obj("errorCode" -> "E0009", "errorDescription" -> expectedErrorDescription)
-              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0009"
-              checkLoneLog(
-                expectedLevel = Level.WARN,
-                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
-              )(logs)
-            }
+            val expectedResponseJson = Json.obj("errorCode" -> "E0009", "errorDescription" -> expectedErrorDescription)
+            val expectedPartialLogMessage =
+              s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0009"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
         }
     }
 
@@ -224,23 +224,23 @@ class NsiConnectorISpec
         forAll(
           arbitrary[IdentifierRequest[PaymentRequest]],
           Gen.asciiPrintableStr
-        ) {
-          (request, expectedErrorDescription) =>
-            withCaptureOfLoggingFrom(LOGGER) { logs =>
-              val expectedStatus = randomHttpErrorCodes.sample.get
-              stubNsiMakePaymentError(expectedStatus, "E0027", expectedErrorDescription)
+        ) { (request, expectedErrorDescription) =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val expectedStatus = randomHttpErrorCodes.sample.get
+            stubNsiMakePaymentError(expectedStatus, "E0027", expectedErrorDescription)
 
-              val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
+            val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
 
-              actualNsiErrorResponse shouldBe E0027
+            actualNsiErrorResponse shouldBe E0027
 
-              val expectedResponseJson = Json.obj("errorCode" -> "E0027", "errorDescription" -> expectedErrorDescription)
-              val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0027"
-              checkLoneLog(
-                expectedLevel = Level.INFO,
-                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
-              )(logs)
-            }
+            val expectedResponseJson = Json.obj("errorCode" -> "E0027", "errorDescription" -> expectedErrorDescription)
+            val expectedPartialLogMessage =
+              s"NSI responded $expectedStatus with body $expectedResponseJson - triggering E0027"
+            checkLoneLog(
+              expectedLevel = Level.INFO,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
         }
     }
 

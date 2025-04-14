@@ -24,7 +24,7 @@ final case class SharedRequestData(
     epp_unique_customer_id: String,
     epp_reg_reference: String,
     outbound_child_payment_ref: String
-  )
+)
 
 object SharedRequestData extends ConstraintReads {
 

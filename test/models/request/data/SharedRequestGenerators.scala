@@ -119,8 +119,11 @@ trait SharedRequestGenerators extends base.Generators {
     digits  <- Gen.stringOfN(CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
   } yield s"$letters${digits}TFC"
 
-  private lazy val invalidChildAccountRefs            = Gen.asciiPrintableStr.filterNot(_ matches EXPECTED_CHILD_ACCOUNT_REF_PATTERN)
-  private lazy val EXPECTED_CHILD_ACCOUNT_REF_PATTERN = s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
+  private lazy val invalidChildAccountRefs =
+    Gen.asciiPrintableStr.filterNot(_.matches(EXPECTED_CHILD_ACCOUNT_REF_PATTERN))
+
+  private lazy val EXPECTED_CHILD_ACCOUNT_REF_PATTERN =
+    s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
 
   private lazy val CHILD_ACCOUNT_REF_LETTERS = 4
   private lazy val CHILD_ACCOUNT_REF_DIGITS  = 5

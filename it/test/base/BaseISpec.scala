@@ -41,17 +41,20 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
     with ScalaCheckPropertyChecks
     with LogCapturing
     with LoneElement {
+
   import org.scalatest.Assertion
   import play.api.Application
   import play.api.inject.guice.GuiceApplicationBuilder
   import play.api.libs.json.Json
 
   override def fakeApplication(): Application =
-    new GuiceApplicationBuilder().configure(
-      "microservice.services.auth.port" -> wireMockPort,
-      "microservice.services.nsi.port"  -> wireMockPort,
-      "features.enablePayeeTypeEPP"     -> enablePayeeTypeEPP
-    ).build()
+    new GuiceApplicationBuilder()
+      .configure(
+        "microservice.services.auth.port" -> wireMockPort,
+        "microservice.services.nsi.port"  -> wireMockPort,
+        "features.enablePayeeTypeEPP"     -> enablePayeeTypeEPP
+      )
+      .build()
 
   protected lazy val baseUrl = s"http://localhost:$port"
 
@@ -62,13 +65,12 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
       expectedStatus: Int,
       expectedErrorCode: String,
       expectedErrorDescription: String
-    )(implicit as: ActorSystem
-    ): Assertion = {
+  )(implicit as: ActorSystem): Assertion = {
     actualResult.header.status shouldBe expectedStatus
 
     val actualResultStream = actualResult.body.consumeData.futureValue.toArray
 
-    checkErrorJson(Json parse actualResultStream, expectedErrorCode, expectedErrorDescription)
+    checkErrorJson(Json.parse(actualResultStream), expectedErrorCode, expectedErrorDescription)
   }
 
   protected lazy val EXPECTED_CORRELATION_ID_ERROR_DESC      = "Correlation ID is in an invalid format or is missing"

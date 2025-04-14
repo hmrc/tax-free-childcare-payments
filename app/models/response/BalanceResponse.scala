@@ -26,7 +26,7 @@ final case class BalanceResponse(
     paidIn: Int,
     totalBalance: Int,
     clearedFunds: Int
-  )
+)
 
 object BalanceResponse {
 
@@ -39,4 +39,5 @@ object BalanceResponse {
       "total_balance"      -> br.totalBalance,
       "cleared_funds"      -> br.clearedFunds
     )
+
 }

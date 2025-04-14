@@ -22,6 +22,7 @@ import models.request.data.PayeeGenerators
 import play.api.libs.json.{KeyPathNode, Reads}
 
 class PayeeSpec extends BaseSpec with PayeeGenerators {
+
   "val readsPayeeFromApi" should {
     implicit val reads: Reads[Payee] = Payee.readsPayeeFromApi
 
@@ -54,7 +55,8 @@ class PayeeSpec extends BaseSpec with PayeeGenerators {
         }
     }
   }
-  "val readsCcpFromApi"   should {
+
+  "val readsCcpFromApi" should {
     implicit val reads: Reads[Payee] = Payee.readsCcpFromApi
 
     "return JsSuccess" when {
@@ -87,4 +89,5 @@ class PayeeSpec extends BaseSpec with PayeeGenerators {
         }
     }
   }
+
 }

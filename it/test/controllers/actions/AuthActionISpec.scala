@@ -27,7 +27,7 @@ import java.util.UUID
 import scala.concurrent.Future
 
 class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Generators {
-  lazy private implicit val as: ActorSystem = app.actorSystem
+  private implicit lazy val as: ActorSystem = app.actorSystem
 
   private val authAction = app.injector.instanceOf[AuthAction]
 
@@ -74,4 +74,5 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
 
     lazy val successBlock = (_: IdentifierRequest[_]) => Future.successful(Ok(JsString("success")))
   }
+
 }

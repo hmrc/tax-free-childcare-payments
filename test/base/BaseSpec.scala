@@ -44,18 +44,20 @@ abstract class BaseSpec
       actualJson: => JsValue,
       expectedErrorCode: String,
       expectedErrorDescription: String
-    ): Assertion = {
-    actualJson \ "errorCode"        shouldBe JsDefined(JsString(expectedErrorCode))
+  ): Assertion = {
+    actualJson \ "errorCode" shouldBe JsDefined(JsString(expectedErrorCode))
     actualJson \ "errorDescription" shouldBe JsDefined(JsString(expectedErrorDescription))
   }
 
   protected def checkJsonError[A: Reads](expectedJsonPath: String, expectedMessage: String)(json: JsValue): Assertion =
     checkJsonError { (jsPath, jsError) =>
       jsPath.path.loneElement shouldBe KeyPathNode(expectedJsonPath)
-      jsError.message         shouldBe expectedMessage
+      jsError.message shouldBe expectedMessage
     }(json)
 
-  protected def checkJsonError[A: Reads](check: (JsPath, JsonValidationError) => Assertion)(json: JsValue): Assertion = {
+  protected def checkJsonError[A: Reads](
+      check: (JsPath, JsonValidationError) => Assertion
+  )(json: JsValue): Assertion = {
     val (jsPath, jsErrors) = json.validate[A].asEither.left.value.loneElement
 
     check(jsPath, jsErrors.loneElement)
@@ -64,12 +66,16 @@ abstract class BaseSpec
   protected def checkLoneLog(expectedLevel: Level, expectedMessage: String)(logs: List[ILoggingEvent]): Unit = {
     val log = logs.loneElement
 
-    log.getLevel   shouldBe expectedLevel
+    log.getLevel shouldBe expectedLevel
     log.getMessage shouldBe expectedMessage
   }
 
-  protected val EXPECTED_E0024_DESC = "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
-  protected val EXPECTED_E0025_DESC = "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct"
+  protected val EXPECTED_E0024_DESC =
+    "Please check that the epp_reg_reference and epp_unique_customer_id are both correct"
+
+  protected val EXPECTED_E0025_DESC =
+    "Please check that the child_date_of_birth and outbound_child_payment_reference are both correct"
+
   protected val EXPECTED_E0026_DESC = "Please check the outbound_child_payment_ref supplied"
 
   protected val EXPECTED_E0027_DESC: String =
@@ -84,16 +90,25 @@ abstract class BaseSpec
     "The CCP is inactive, please check the CCP details and ensure that the CCP is still registered with their " +
       "childcare regulator and that they have also signed up to TFC via the TFC portal to receive TFC funds."
 
-  protected val EXPECTED_E0032_DESC = "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref"
+  protected val EXPECTED_E0032_DESC =
+    "The epp_unique_customer_id or epp_reg_reference is not associated with the outbound_child_payment_ref"
+
   protected val EXPECTED_E0033_DESC = "The TFC account used to request payment contains insufficient funds."
-  protected val EXPECTED_E0035_DESC = "There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services"
+
+  protected val EXPECTED_E0035_DESC =
+    "There is an issue with this TFC Account, please advise parent / carer to contact TFC customer Services"
+
   protected val EXPECTED_E0036_DESC = "Error processing payment due to Payee bank details"
 
   protected val EXPECTED_E0042_DESC =
     "The ccp_reg_reference could not be found in the TFC system or does not correlate with the ccp_postcode. Please check the details and try again."
-  protected val EXPECTED_E0043_DESC = "Parent associated with the bearer token does not have a TFC account. The parent must create a TFC account."
 
-  protected val EXPECTED_500_DESC = "We encountered an error on our servers and did not process your request, please try again later."
+  protected val EXPECTED_E0043_DESC =
+    "Parent associated with the bearer token does not have a TFC account. The parent must create a TFC account."
+
+  protected val EXPECTED_500_DESC =
+    "We encountered an error on our servers and did not process your request, please try again later."
+
   protected val EXPECTED_502_DESC = "Bad Gateway"
   protected val EXPECTED_503_DESC = "The service is currently unavailable."
 }

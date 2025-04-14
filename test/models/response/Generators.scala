@@ -24,15 +24,15 @@ import play.api.libs.json.{JsObject, Json}
 
 trait Generators extends base.Generators {
 
-  implicit protected val arbLinkResponse: Arbitrary[LinkResponse] = Arbitrary(
-    fullNames map LinkResponse.apply
+  protected implicit val arbLinkResponse: Arbitrary[LinkResponse] = Arbitrary(
+    fullNames.map(LinkResponse.apply)
   )
 
   protected def getNsiJsonFrom(response: LinkResponse): JsObject = Json.obj(
     "childFullName" -> response.childFullName
   )
 
-  implicit protected val arbBalanceResponse: Arbitrary[BalanceResponse] = Arbitrary(
+  protected implicit val arbBalanceResponse: Arbitrary[BalanceResponse] = Arbitrary(
     for {
       accountStatus  <- Gen.oneOf(NsiAccountStatus.values)
       topUpAvailable <- Gen.posNum[Int]
@@ -52,11 +52,11 @@ trait Generators extends base.Generators {
     "clearedFunds"   -> response.clearedFunds
   )
 
-  implicit protected val arbPaymentResponse: Arbitrary[PaymentResponse] = Arbitrary(
+  protected implicit val arbPaymentResponse: Arbitrary[PaymentResponse] = Arbitrary(
     for {
       reference <- Gen.asciiPrintableStr
       calendar  <- Gen.calendar
-      date       = calendar.toInstant.atZone(ZoneId.systemDefault()).toLocalDate
+      date = calendar.toInstant.atZone(ZoneId.systemDefault()).toLocalDate
     } yield PaymentResponse(reference, date)
   )
 
@@ -68,7 +68,7 @@ trait Generators extends base.Generators {
   protected val randomUnknownErrorCodes: Gen[String] = Gen.oneOf(
     Gen.alphaStr,
     Gen.numStr,
-    Gen const "UNKNOWN",
+    Gen.const("UNKNOWN"),
     randomObsoleteErrorCodes
   )
 

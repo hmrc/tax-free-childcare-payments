@@ -293,4 +293,5 @@ class PaymentRequestSpec extends BaseSpec with PaymentRequestGenerators {
         }
     }
   }
+
 }

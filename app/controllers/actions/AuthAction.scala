@@ -35,8 +35,8 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvide
 class AuthAction @Inject() (
     val authConnector: AuthConnector,
     val parser: BodyParsers.Default
-  )(implicit val executionContext: ExecutionContext
-  ) extends ActionBuilder[IdentifierRequest, AnyContent]
+)(implicit val executionContext: ExecutionContext)
+    extends ActionBuilder[IdentifierRequest, AnyContent]
     with BackendHeaderCarrierProvider
     with AuthorisedFunctions
     with FormattedLogging
@@ -47,32 +47,39 @@ class AuthAction @Inject() (
 
     /** Confidence level is retrieved so that it appears in implicit audit events to aid with security metrics. */
     authorised(ConfidenceLevel.L200)
-      .retrieve(Retrievals.nino and Retrievals.confidenceLevel) {
-        case optNino ~ _ =>
-          val optCorrelationIdHeader = request.headers get CORRELATION_ID
-          val optIdentifierRequest   = for {
-            correlationIdHeader <- optCorrelationIdHeader toRight ETFC1                            -> "Correlation-ID header is missing"
-            correlationId       <- Try(UUID fromString correlationIdHeader).toOption toRight ETFC1 -> "Correlation-ID header is invalid"
-            nino                <- optNino toRight ETFC2                                           -> "Unable to retrieve NI number"
-          } yield IdentifierRequest(nino, correlationId, request)
+      .retrieve(Retrievals.nino.and(Retrievals.confidenceLevel)) { case optNino ~ _ =>
+        val optCorrelationIdHeader = request.headers.get(CORRELATION_ID)
+        val optIdentifierRequest = for {
+          correlationIdHeader <- optCorrelationIdHeader.toRight(ETFC1 -> "Correlation-ID header is missing")
+          correlationId <- Try(UUID.fromString(correlationIdHeader)).toOption
+            .toRight(ETFC1 -> "Correlation-ID header is invalid")
+          nino <- optNino.toRight(ETFC2 -> "Unable to retrieve NI number")
+        } yield IdentifierRequest(nino, correlationId, request)
 
-          optIdentifierRequest match {
-            case Right(identifierRequest) =>
-              block(identifierRequest) map { result =>
-                result.withHeaders(
-                  CORRELATION_ID -> identifierRequest.correlation_id.toString
-                )
-              }
+        optIdentifierRequest match {
+          case Right(identifierRequest) =>
+            block(identifierRequest).map { result =>
+              result.withHeaders(
+                CORRELATION_ID -> identifierRequest.correlation_id.toString
+              )
+            }
 
-            case Left((errorResponse, logMessage)) => Future.successful {
-                logger.info(formattedLog(logMessage))
+          case Left((errorResponse, logMessage)) =>
+            Future.successful {
+              logger.info(formattedLog(logMessage))
 
-                errorResponse
-              }
-          }
+              errorResponse
+            }
+        }
       }
   }
 
-  private lazy val ETFC1 = BadRequest(ErrorResponseFactory.getJson("ETFC1", "Correlation ID is in an invalid format or is missing"))
-  private lazy val ETFC2 = InternalServerError(ErrorResponseFactory.getJson("ETFC2", "Bearer Token did not return a valid record"))
+  private lazy val ETFC1 = BadRequest(
+    ErrorResponseFactory.getJson("ETFC1", "Correlation ID is in an invalid format or is missing")
+  )
+
+  private lazy val ETFC2 = InternalServerError(
+    ErrorResponseFactory.getJson("ETFC2", "Bearer Token did not return a valid record")
+  )
+
 }

@@ -1,5 +1,4 @@
 .*
-
 !.gitignore
 !.scalafix.conf
 !.scalafmt.conf

@@ -28,6 +28,7 @@ class ControllerWithPayeeTypeEppEnabledISpec
     with NsiStubs
     with Generators
     with models.response.Generators {
+
   "POST /" should {
     "respond 200 with expected body" when {
       "payment request is valid with payee type either CCP or EPP" in
@@ -48,11 +49,12 @@ class ControllerWithPayeeTypeEppEnabledISpec
               .post(getJsonFrom(request.body))
               .futureValue
 
-            response.status                       shouldBe OK
+            response.status shouldBe OK
             response.header(CORRELATION_ID).value shouldBe expectedCorrelationId
-            response.json                         shouldBe expectedTfcResponseBody
+            response.json shouldBe expectedTfcResponseBody
           }
         }
     }
   }
+
 }
