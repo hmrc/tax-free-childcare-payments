@@ -32,6 +32,7 @@ trait SharedRequestGenerators extends base.Generators {
       epp_account     <- nonEmptyAlphaNumStrings
       epp_urn         <- nonEmptyAlphaNumStrings
       childAccountRef <- validChildAccountRefs
+
     } yield SharedRequestData(
       epp_unique_customer_id = epp_account,
       epp_reg_reference = epp_urn,
@@ -116,15 +117,20 @@ trait SharedRequestGenerators extends base.Generators {
 
   private lazy val validChildAccountRefs = for {
     letters <- Gen.stringOfN(CHILD_ACCOUNT_REF_LETTERS, Gen.alphaChar)
-    digits  <- Gen.stringOfN(CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
-  } yield s"$letters${digits}TFC"
+    specialCharacter <- Gen.stringOfN(
+      CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS,
+      Gen.oneOf(Gen.alphaChar, Gen.oneOf("0.&- "))
+    )
+    digits <- Gen.stringOfN(CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
+  } yield s"$letters$specialCharacter${digits}TFC"
 
   private lazy val invalidChildAccountRefs =
     Gen.asciiPrintableStr.filterNot(_.matches(EXPECTED_CHILD_ACCOUNT_REF_PATTERN))
 
   private lazy val EXPECTED_CHILD_ACCOUNT_REF_PATTERN =
-    s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
+    s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}[a-zA-Z0&'.\\- ]{$CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
 
-  private lazy val CHILD_ACCOUNT_REF_LETTERS = 4
-  private lazy val CHILD_ACCOUNT_REF_DIGITS  = 5
+  private val CHILD_ACCOUNT_REF_LETTERS                  = 2
+  private val CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS = 2
+  private val CHILD_ACCOUNT_REF_DIGITS                   = 5
 }
