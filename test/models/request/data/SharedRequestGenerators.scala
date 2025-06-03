@@ -119,7 +119,7 @@ trait SharedRequestGenerators extends base.Generators {
     letters <- Gen.stringOfN(CHILD_ACCOUNT_REF_LETTERS, Gen.alphaChar)
     specialCharacter <- Gen.stringOfN(
       CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS,
-      Gen.oneOf(Gen.alphaChar, Gen.oneOf("0.&- "))
+      Gen.oneOf(Gen.alphaChar, Gen.oneOf("0.'- "))
     )
     digits <- Gen.stringOfN(CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
   } yield s"$letters$specialCharacter${digits}TFC"
@@ -128,7 +128,7 @@ trait SharedRequestGenerators extends base.Generators {
     Gen.asciiPrintableStr.filterNot(_.matches(EXPECTED_CHILD_ACCOUNT_REF_PATTERN))
 
   private lazy val EXPECTED_CHILD_ACCOUNT_REF_PATTERN =
-    s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}[a-zA-Z0&'.\\- ]{$CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
+    s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}[a-zA-Z0'.\\- ]{$CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
 
   private val CHILD_ACCOUNT_REF_LETTERS                  = 2
   private val CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS = 2

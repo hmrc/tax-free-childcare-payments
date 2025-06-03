@@ -16,7 +16,7 @@
 
 package connectors
 
-import java.net.{URI, URL, URLEncoder}
+import java.net.{URL, URLEncoder}
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -53,7 +53,9 @@ class NsiConnector @Inject() (
       "childDoB"   -> req.body.child_date_of_birth
     ).map { case (k, v) => s"$k=$v" }.mkString("?", "&", "")
 
-    val url = new URL(resource("linkAccounts", req.body.sharedRequestData.outbound_child_payment_ref) + queryString)
+    val url = new URL(
+      resource("linkAccounts", req.body.sharedRequestData.outbound_child_payment_ref) + queryString
+    )
 
     httpClient
       .get(url)
@@ -93,10 +95,13 @@ class NsiConnector @Inject() (
     val domain       = servicesConfig.baseUrl(serviceName)
     val rootPath     = servicesConfig.getString(s"microservice.services.$serviceName.rootPath")
     val resourcePath = servicesConfig.getString(s"microservice.services.$serviceName.$endpoint")
-    val pathParams   = params.map("/" + URLEncoder.encode(_, "UTF-8")).mkString
+    val pathParams   = params.map("/" + encodeParam(_)).mkString
 
     s"$domain$rootPath$resourcePath$pathParams"
   }
+
+  private def encodeParam(outboundPaymentRef: String) =
+    URLEncoder.encode(outboundPaymentRef, "UTF-8").replaceAll("\\+", "%20")
 
   private val CORRELATION_ID   = servicesConfig.getString(s"microservice.services.$serviceName.correlationIdHeader")
   private val NSI_HEADER_TOKEN = servicesConfig.getString(s"microservice.services.$serviceName.token")
