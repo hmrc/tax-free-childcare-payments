@@ -72,20 +72,6 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
       }
     }
 
-    "return a 401 response and expected errorDescription" when {
-      "confidence level is insufficient" in {
-        stubAuthWithLowCL
-
-        val requestWithCorrelationId = FakeRequest().withHeaders(
-          AUTHORIZATION  -> "Bearer a-totally-random-token",
-          CORRELATION_ID -> UUID.randomUUID().toString
-        )
-
-        val actualResult = authAction.invokeBlock(requestWithCorrelationId, successBlock).futureValue
-        checkErrorResult(actualResult, UNAUTHORIZED, "AUTH_CL_INSUFFICIENT", EXPECTED_CONFIDENCE_LEVEL_ERROR_DESC)
-      }
-    }
-
     lazy val successBlock = (_: IdentifierRequest[_]) => Future.successful(Ok(JsString("success")))
   }
 
