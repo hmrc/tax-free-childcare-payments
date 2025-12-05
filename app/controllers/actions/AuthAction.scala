@@ -28,7 +28,7 @@ import utils.{ErrorResponseFactory, FormattedLogging}
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel, InsufficientConfidenceLevel}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 
 @Singleton
@@ -72,6 +72,10 @@ class AuthAction @Inject() (
             }
         }
       }
+      .recover { case _: InsufficientConfidenceLevel =>
+        logger.warn("Insufficient ConfidenceLevel")
+        AUTH_CL_INSUFFICIENT
+      }
   }
 
   private lazy val ETFC1 = BadRequest(
@@ -80,6 +84,10 @@ class AuthAction @Inject() (
 
   private lazy val ETFC2 = InternalServerError(
     ErrorResponseFactory.getJson("ETFC2", "Bearer Token did not return a valid record")
+  )
+
+  private lazy val AUTH_CL_INSUFFICIENT = Unauthorized(
+    ErrorResponseFactory.getJson("AUTH_CL_INSUFFICIENT", "Insufficient ConfidenceLevel")
   )
 
 }

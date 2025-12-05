@@ -17,10 +17,12 @@
 package base
 
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock.{okJson, stubFor}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, okJson, stubFor}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalacheck.Gen
 import play.api.libs.json.Json
+import play.api.test.Helpers.UNAUTHORIZED
+import uk.gov.hmrc.auth.core.AuthenticateHeaderParser
 
 trait AuthStubs {
 
@@ -50,6 +52,17 @@ trait AuthStubs {
             )
             .toString
         )
+      )
+  }
+
+  protected def stubAuthWithLowCL: StubMapping = stubFor {
+    WireMock
+      .post("/auth/authorise")
+      .willReturn(
+        aResponse()
+          .withStatus(UNAUTHORIZED)
+          .withHeader(AuthenticateHeaderParser.WWW_AUTHENTICATE, """MDTP detail="InsufficientConfidenceLevel""""
+          )
       )
   }
 
