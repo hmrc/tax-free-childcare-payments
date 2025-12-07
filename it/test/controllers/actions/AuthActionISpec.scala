@@ -19,7 +19,7 @@ package controllers.actions
 import base.{AuthStubs, BaseISpec}
 import models.request.IdentifierRequest
 import org.apache.pekko.actor.ActorSystem
-import play.api.libs.json.JsString
+import play.api.libs.json.{JsString, Json}
 import play.api.mvc.Results
 import play.api.test.FakeRequest
 
@@ -74,7 +74,7 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
 
     "return a 401 response and expected errorDescription" when {
       "confidence level is insufficient" in {
-        stubAuthWithLowCL
+        stubAuthWithLowConfidenceLevel
 
         val requestWithCorrelationId = FakeRequest().withHeaders(
           AUTHORIZATION  -> "Bearer a-totally-random-token",
@@ -82,7 +82,12 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
         )
 
         val actualResult = authAction.invokeBlock(requestWithCorrelationId, successBlock).futureValue
-        checkErrorResult(actualResult, UNAUTHORIZED, "AUTH_CL_INSUFFICIENT", EXPECTED_CONFIDENCE_LEVEL_ERROR_DESC)
+        val responseBody = actualResult.body.consumeData.futureValue.toArray
+        val responseJson = Json.parse(responseBody)
+
+        actualResult.header.status shouldBe UNAUTHORIZED
+        (responseJson \ "statusCode").as[Int] shouldBe UNAUTHORIZED
+        (responseJson \ "message").as[String] shouldBe EXPECTED_CONFIDENCE_LEVEL_ERROR_DESC
       }
     }
 

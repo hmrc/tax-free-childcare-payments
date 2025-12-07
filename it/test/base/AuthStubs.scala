@@ -55,7 +55,7 @@ trait AuthStubs {
       )
   }
 
-  protected def stubAuthWithLowCL: StubMapping = stubFor {
+  protected def stubAuthWithLowConfidenceLevel: StubMapping = stubFor {
     WireMock
       .post("/auth/authorise")
       .willReturn(

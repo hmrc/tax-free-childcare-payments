@@ -25,6 +25,8 @@ import models.request.IdentifierRequest
 import utils.FormattedLogging.CORRELATION_ID
 import utils.{ErrorResponseFactory, FormattedLogging}
 
+import play.api.http.Status.UNAUTHORIZED
+import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
@@ -72,9 +74,17 @@ class AuthAction @Inject() (
             }
         }
       }
-      .recover { case _: InsufficientConfidenceLevel =>
-        logger.warn("Insufficient ConfidenceLevel")
-        AUTH_CL_INSUFFICIENT
+      .recover { case e: InsufficientConfidenceLevel =>
+        logger.warn(
+          s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}",
+          e
+        )
+        Unauthorized(
+          Json.obj(
+            "statusCode" -> UNAUTHORIZED,
+            "message"    -> e.getMessage
+          )
+        )
       }
   }
 
@@ -84,10 +94,6 @@ class AuthAction @Inject() (
 
   private lazy val ETFC2 = InternalServerError(
     ErrorResponseFactory.getJson("ETFC2", "Bearer Token did not return a valid record")
-  )
-
-  private lazy val AUTH_CL_INSUFFICIENT = Unauthorized(
-    ErrorResponseFactory.getJson("AUTH_CL_INSUFFICIENT", "Insufficient ConfidenceLevel")
   )
 
 }

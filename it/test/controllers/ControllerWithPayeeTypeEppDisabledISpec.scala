@@ -668,6 +668,27 @@ class ControllerWithPayeeTypeEppDisabledISpec
           checkErrorResponse(response, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC)
         }
       }
+
+      "return a 401 response and expected errorDescription" when {
+        "confidence level is insufficient" in {
+          stubAuthWithLowConfidenceLevel
+
+          withClient { ws =>
+            val response = ws
+              .url(s"$baseUrl$tfc_url")
+              .withHttpHeaders(
+                AUTHORIZATION -> "Bearer qwertyuiop",
+                CORRELATION_ID -> UUID.randomUUID().toString
+              )
+              .post(validPayload)
+              .futureValue
+
+            response.status shouldBe UNAUTHORIZED
+            (response.json \ "statusCode").as[Int] shouldBe UNAUTHORIZED
+            (response.json \ "message").as[String] shouldBe EXPECTED_CONFIDENCE_LEVEL_ERROR_DESC
+          }
+        }
+      }
     }
   }
 
