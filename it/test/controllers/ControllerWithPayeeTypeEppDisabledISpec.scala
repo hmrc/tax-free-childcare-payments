@@ -685,7 +685,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
 
             response.status shouldBe UNAUTHORIZED
             (response.json \ "statusCode").as[Int] shouldBe UNAUTHORIZED
-            (response.json \ "message").as[String] shouldBe EXPECTED_CONFIDENCE_LEVEL_ERROR_DESC
+            (response.json \ "message").as[String] shouldBe expectedConfidenceLevelErrorDesc
           }
         }
       }

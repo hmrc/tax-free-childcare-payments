@@ -32,6 +32,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel, InsufficientConfidenceLevel}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
+import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
 
 @Singleton
 class AuthAction @Inject() (
@@ -80,9 +81,8 @@ class AuthAction @Inject() (
           e
         )
         Unauthorized(
-          Json.obj(
-            "statusCode" -> UNAUTHORIZED,
-            "message"    -> e.getMessage
+          Json.toJson(
+            ErrorResponse(UNAUTHORIZED, e.getMessage)
           )
         )
       }

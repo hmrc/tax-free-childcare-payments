@@ -87,7 +87,7 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
 
         actualResult.header.status shouldBe UNAUTHORIZED
         (responseJson \ "statusCode").as[Int] shouldBe UNAUTHORIZED
-        (responseJson \ "message").as[String] shouldBe EXPECTED_CONFIDENCE_LEVEL_ERROR_DESC
+        (responseJson \ "message").as[String] shouldBe expectedConfidenceLevelErrorDesc
       }
     }
 
