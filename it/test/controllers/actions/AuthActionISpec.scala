@@ -40,7 +40,7 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
 
         val actualResult = authAction.invokeBlock(requestSansCorrelationId, successBlock).futureValue
 
-        checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
+        checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", expectedCorrelationIdErrorDesc)
       }
 
       "correlation ID is invalid" in {
@@ -53,7 +53,7 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
 
         val actualResult = authAction.invokeBlock(requestWithBadCorrelationId, successBlock).futureValue
 
-        checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
+        checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", expectedCorrelationIdErrorDesc)
       }
     }
 
@@ -68,7 +68,7 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
 
         val actualResult = authAction.invokeBlock(requestWithCorrelationId, successBlock).futureValue
 
-        checkErrorResult(actualResult, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC)
+        checkErrorResult(actualResult, INTERNAL_SERVER_ERROR, "ETFC2", expectedAuthNinoRetrievalErrorDesc)
       }
     }
 

@@ -630,7 +630,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
               .post(validPayload)
               .futureValue
 
-            checkErrorResponse(response, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
+            checkErrorResponse(response, BAD_REQUEST, "ETFC1", expectedCorrelationIdErrorDesc)
           }
 
         "correlation ID is invalid" in
@@ -647,7 +647,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
                 .post(validPayload)
                 .futureValue
 
-              checkErrorResponse(response, BAD_REQUEST, "ETFC1", EXPECTED_CORRELATION_ID_ERROR_DESC)
+              checkErrorResponse(response, BAD_REQUEST, "ETFC1", expectedCorrelationIdErrorDesc)
             }
           }
       }
@@ -665,7 +665,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
             .post(validPayload)
             .futureValue
 
-          checkErrorResponse(response, INTERNAL_SERVER_ERROR, "ETFC2", EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC)
+          checkErrorResponse(response, INTERNAL_SERVER_ERROR, "ETFC2", expectedAuthNinoRetrievalErrorDesc)
         }
       }
 

@@ -56,9 +56,9 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
       )
       .build()
 
-  protected lazy val baseUrl = s"http://localhost:$port"
+  protected val baseUrl = s"http://localhost:$port"
 
-  protected lazy val CORRELATION_ID = "Correlation-ID"
+  protected val CORRELATION_ID = "Correlation-ID"
 
   protected def checkErrorResult(
       actualResult: => Result,
@@ -73,7 +73,7 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
     checkErrorJson(Json.parse(actualResultStream), expectedErrorCode, expectedErrorDescription)
   }
 
-  protected lazy val EXPECTED_CORRELATION_ID_ERROR_DESC      = "Correlation ID is in an invalid format or is missing"
-  protected lazy val EXPECTED_AUTH_NINO_RETRIEVAL_ERROR_DESC = "Bearer Token did not return a valid record"
-  protected val expectedConfidenceLevelErrorDesc = "Insufficient ConfidenceLevel"
+  protected val expectedCorrelationIdErrorDesc      = "Correlation ID is in an invalid format or is missing"
+  protected val expectedAuthNinoRetrievalErrorDesc  = "Bearer Token did not return a valid record"
+  protected val expectedConfidenceLevelErrorDesc    = "Insufficient ConfidenceLevel"
 }
