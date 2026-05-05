@@ -25,11 +25,14 @@ import models.request.IdentifierRequest
 import utils.FormattedLogging.CORRELATION_ID
 import utils.{ErrorResponseFactory, FormattedLogging}
 
+import play.api.http.Status.UNAUTHORIZED
+import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel, InsufficientConfidenceLevel}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
+import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
 
 @Singleton
 class AuthAction @Inject() (
@@ -71,6 +74,17 @@ class AuthAction @Inject() (
               errorResponse
             }
         }
+      }
+      .recover { case e: InsufficientConfidenceLevel =>
+        logger.warn(
+          s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}",
+          e
+        )
+        Unauthorized(
+          Json.toJson(
+            ErrorResponse(UNAUTHORIZED, e.getMessage)
+          )
+        )
       }
   }
 
