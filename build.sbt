@@ -2,9 +2,7 @@ import play.sbt.PlayImport.PlayKeys.playDefaultPort
 import uk.gov.hmrc.DefaultBuildSettings
 
 ThisBuild / majorVersion                                         := 0
-ThisBuild / scalaVersion                                         := "2.13.16"
-ThisBuild / semanticdbEnabled                                    := true
-ThisBuild / semanticdbVersion                                    := scalafixSemanticdb.revision
+ThisBuild / scalaVersion                                         := "2.13.18"
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 
 lazy val microservice = Project("tax-free-childcare-payments", file("."))
