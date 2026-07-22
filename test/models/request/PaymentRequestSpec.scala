@@ -17,17 +17,17 @@
 package models.request
 
 import base.BaseSpec
-import models.request.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
+import models.request.Payee.ChildCareProvider.{CCP_POSTCODE_KEY, CCP_URN_KEY}
+import models.request.Payee.PAYEE_TYPE_KEY
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
 import models.request.data.PaymentRequestGenerators
-
 import play.api.libs.json.Reads
 
 class PaymentRequestSpec extends BaseSpec with PaymentRequestGenerators {
 
   "With implicit Payee Reads in scope, API Reads" should {
-    implicit val readsPayee: Reads[Payee] = Payee.readsPayeeFromApi
+    implicit val readsPayee: Reads[Payee] = Payee.readsPayeeFromUser
 
     "return JsError" when {
       "TFC account ref is missing" in
@@ -161,7 +161,7 @@ class PaymentRequestSpec extends BaseSpec with PaymentRequestGenerators {
   }
 
   "With implicit CCP Reads in scope, API Reads" should {
-    implicit val readsCcp: Reads[Payee] = Payee.readsCcpFromApi
+    implicit val readsCcp: Reads[Payee] = Payee.readsCcpFromUser
 
     "return JsError" when {
       "TFC account ref is missing" in

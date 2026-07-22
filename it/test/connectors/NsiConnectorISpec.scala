@@ -261,5 +261,5 @@ class NsiConnectorISpec
 
   private def getFullLogMessageFrom(partialLogMessage: String) = s"[Error] - [ ] - [null: $partialLogMessage]"
 
-  private lazy val LOGGER = Logger(classOf[NsiConnector.type])
+  private val LOGGER = Logger(classOf[NsiConnector.type])
 }

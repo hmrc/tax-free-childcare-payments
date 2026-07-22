@@ -65,6 +65,8 @@ trait Generators extends base.Generators {
     "paymentDate"      -> response.estimated_payment_date
   )
 
+  private val randomObsoleteErrorCodes = Gen.oneOf("E0040", "E0041")
+
   protected val randomUnknownErrorCodes: Gen[String] = Gen.oneOf(
     Gen.alphaStr,
     Gen.numStr,
@@ -72,5 +74,4 @@ trait Generators extends base.Generators {
     randomObsoleteErrorCodes
   )
 
-  private lazy val randomObsoleteErrorCodes = Gen.oneOf("E0040", "E0041")
 }

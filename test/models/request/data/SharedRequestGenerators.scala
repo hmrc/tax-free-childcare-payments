@@ -23,11 +23,26 @@ import play.api.libs.json.{JsObject, Json}
 
 trait SharedRequestGenerators extends base.Generators {
 
-  protected implicit val arbSharedRequestData: Arbitrary[SharedRequestData] = Arbitrary(validSharedDataModels)
+  private val CHILD_ACCOUNT_REF_LETTERS                  = 2
+  private val CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS = 2
+  private val CHILD_ACCOUNT_REF_DIGITS                   = 5
 
-  protected val validCheckBalanceRequestPayloads: Gen[JsObject] = validSharedJson
+  private val EXPECTED_CHILD_ACCOUNT_REF_PATTERN =
+    s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}[a-zA-Z0'.\\- ]{$CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
 
-  protected lazy val validSharedDataModels: Gen[SharedRequestData] =
+  private val validChildAccountRefs = for {
+    letters <- Gen.stringOfN(CHILD_ACCOUNT_REF_LETTERS, Gen.alphaChar)
+    specialCharacter <- Gen.stringOfN(
+      CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS,
+      Gen.oneOf(Gen.alphaChar, Gen.oneOf("0.'- "))
+    )
+    digits <- Gen.stringOfN(CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
+  } yield s"$letters$specialCharacter${digits}TFC"
+
+  private val invalidChildAccountRefs =
+    Gen.asciiPrintableStr.filterNot(_.matches(EXPECTED_CHILD_ACCOUNT_REF_PATTERN))
+
+  protected val validSharedDataModels: Gen[SharedRequestData] =
     for {
       epp_account     <- nonEmptyAlphaNumStrings
       epp_urn         <- nonEmptyAlphaNumStrings
@@ -45,7 +60,7 @@ trait SharedRequestGenerators extends base.Generators {
     "epp_unique_customer_id"     -> model.epp_unique_customer_id
   )
 
-  protected lazy val sharedPayloadsWithMissingTfcAccountRef: Gen[JsObject] =
+  protected val sharedPayloadsWithMissingTfcAccountRef: Gen[JsObject] =
     for {
       epp_urn     <- nonEmptyAlphaNumStrings
       epp_account <- nonEmptyAlphaNumStrings
@@ -54,7 +69,7 @@ trait SharedRequestGenerators extends base.Generators {
       "epp_unique_customer_id" -> epp_account
     )
 
-  protected lazy val sharedPayloadsWithInvalidTfcAccountRef: Gen[JsObject] =
+  protected val sharedPayloadsWithInvalidTfcAccountRef: Gen[JsObject] =
     for {
       childAccountRef <- invalidChildAccountRefs
       epp_urn         <- nonEmptyAlphaNumStrings
@@ -65,7 +80,7 @@ trait SharedRequestGenerators extends base.Generators {
       "epp_unique_customer_id"     -> epp_account
     )
 
-  protected lazy val sharedPayloadsWithMissingEppUrn: Gen[JsObject] =
+  protected val sharedPayloadsWithMissingEppUrn: Gen[JsObject] =
     for {
       childAccountRef <- validChildAccountRefs
       epp_account     <- nonEmptyAlphaNumStrings
@@ -74,7 +89,7 @@ trait SharedRequestGenerators extends base.Generators {
       "epp_unique_customer_id"     -> epp_account
     )
 
-  protected lazy val sharedPayloadsWithInvalidEppUrn: Gen[JsObject] =
+  protected val sharedPayloadsWithInvalidEppUrn: Gen[JsObject] =
     for {
       childAccountRef <- validChildAccountRefs
       epp_urn         <- nonAlphaNumStrings
@@ -85,7 +100,7 @@ trait SharedRequestGenerators extends base.Generators {
       "epp_unique_customer_id"     -> epp_account
     )
 
-  protected lazy val sharedPayloadsWithMissingEppAccountId: Gen[JsObject] =
+  protected val sharedPayloadsWithMissingEppAccountId: Gen[JsObject] =
     for {
       childAccountRef <- validChildAccountRefs
       epp_urn         <- nonEmptyAlphaNumStrings
@@ -94,7 +109,7 @@ trait SharedRequestGenerators extends base.Generators {
       "epp_reg_reference"          -> epp_urn
     )
 
-  protected lazy val sharedPayloadsWithInvalidEppAccountId: Gen[JsObject] =
+  protected val sharedPayloadsWithInvalidEppAccountId: Gen[JsObject] =
     for {
       childAccountRef <- validChildAccountRefs
       epp_urn         <- nonEmptyAlphaNumStrings
@@ -105,7 +120,7 @@ trait SharedRequestGenerators extends base.Generators {
       "epp_unique_customer_id"     -> epp_account
     )
 
-  protected lazy val validSharedJson: Gen[JsObject] =
+  protected val validSharedJson: Gen[JsObject] =
     for {
       epp_urn     <- nonEmptyAlphaNumStrings
       epp_account <- nonEmptyAlphaNumStrings
@@ -115,22 +130,8 @@ trait SharedRequestGenerators extends base.Generators {
       "epp_unique_customer_id"     -> epp_account
     )
 
-  private lazy val validChildAccountRefs = for {
-    letters <- Gen.stringOfN(CHILD_ACCOUNT_REF_LETTERS, Gen.alphaChar)
-    specialCharacter <- Gen.stringOfN(
-      CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS,
-      Gen.oneOf(Gen.alphaChar, Gen.oneOf("0.'- "))
-    )
-    digits <- Gen.stringOfN(CHILD_ACCOUNT_REF_DIGITS, Gen.numChar)
-  } yield s"$letters$specialCharacter${digits}TFC"
+  protected val validCheckBalanceRequestPayloads: Gen[JsObject] = validSharedJson
 
-  private lazy val invalidChildAccountRefs =
-    Gen.asciiPrintableStr.filterNot(_.matches(EXPECTED_CHILD_ACCOUNT_REF_PATTERN))
+  protected implicit val arbSharedRequestData: Arbitrary[SharedRequestData] = Arbitrary(validSharedDataModels)
 
-  private lazy val EXPECTED_CHILD_ACCOUNT_REF_PATTERN =
-    s"^[a-zA-Z]{$CHILD_ACCOUNT_REF_LETTERS}[a-zA-Z0'.\\- ]{$CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS}\\d{$CHILD_ACCOUNT_REF_DIGITS}TFC$$"
-
-  private val CHILD_ACCOUNT_REF_LETTERS                  = 2
-  private val CHILD_ACCOUNT_REF_LETTERS_OR_SPECIAL_CHARS = 2
-  private val CHILD_ACCOUNT_REF_DIGITS                   = 5
 }

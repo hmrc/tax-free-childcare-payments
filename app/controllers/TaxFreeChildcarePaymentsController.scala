@@ -22,7 +22,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import connectors.NsiConnector
 import controllers.actions.AuthAction
 import models.request._
-import models.response.NsiErrorResponse.Maybe
+import models.response.NsiErrorResponse.NsiResponse
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import utils.{ErrorResponseFactory, FormattedLogging}
 
@@ -46,7 +46,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
 
   def payment(): Action[JsValue] = nsiAction[PaymentRequest, PaymentResponse](implicit req => nsiConnector.makePayment)
 
-  private def nsiAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[Maybe[Res]]) =
+  private def nsiAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[NsiResponse[Res]]) =
     identify.async(parse.json) { implicit request =>
       request.body.validate[Req] match {
         case JsSuccess(value, _) =>
@@ -58,7 +58,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
           }
         case JsError(errors) =>
           Future.successful {
-            logger.info(formattedLog(errors.toString))
+            logger.info(formattedErrorLog(errors.toString))
 
             BadRequest(ErrorResponseFactory.getJson(errors))
           }

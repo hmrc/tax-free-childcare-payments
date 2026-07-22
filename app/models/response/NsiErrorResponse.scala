@@ -18,14 +18,13 @@ package models.response
 
 import enumeratum._
 
-import play.api.Logging
-import play.api.http.Status
+import play.api.http.Status._
 import play.api.libs.json.{Reads, __}
 
 sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String) extends EnumEntry
 
-object NsiErrorResponse extends Enum[NsiErrorResponse] with Status with Logging {
-  type Maybe[A] = Either[NsiErrorResponse, A]
+object NsiErrorResponse extends Enum[NsiErrorResponse] {
+  type NsiResponse[A] = Either[NsiErrorResponse, A]
 
   case object E0000
       extends NsiErrorResponse(
@@ -184,10 +183,16 @@ object NsiErrorResponse extends Enum[NsiErrorResponse] with Status with Logging 
   case object ETFC3 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway") // Unexpected NSI response
   case object ETFC4 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway") // Unexpected NSI errorCode
 
-  /** This must be lazy to stop NPE thrown by JSON reader. */
-  lazy val values: IndexedSeq[NsiErrorResponse] = findValues
+  /** This must be to stop NPE thrown by JSON reader. */
+  override val values: IndexedSeq[NsiErrorResponse] = findValues
 
   implicit val reads: Reads[NsiErrorResponse] =
-    (__ \ "errorCode").read[String].map(str => values.find(_.toString.equalsIgnoreCase(str)).getOrElse(ETFC4))
+    (__ \ "errorCode").read[String].map(str => findValue(str).getOrElse(ETFC4))
+
+  private def findValue(string: String): Option[NsiErrorResponse] =
+    values.find(matches(string))
+
+  private def matches(string: String)(response: NsiErrorResponse): Boolean =
+    response.toString.equalsIgnoreCase(string)
 
 }

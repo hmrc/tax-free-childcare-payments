@@ -1,18 +1,20 @@
-import sbt.*
+import sbt._
 
 object AppDependencies {
 
-  private val bootstrapVersion = "10.7.0"
+  private val bootstrapVersion  = "10.7.0"
+  private val enumeratumVersion = "1.9.8"
+
+  private val scalacheckVersion = "3.2.18.0"
 
   val compile: Seq[ModuleID] = Seq(
     "uk.gov.hmrc"  %% "bootstrap-backend-play-30" % bootstrapVersion,
-    "com.beachape" %% "enumeratum"                % "1.7.4"
+    "com.beachape" %% "enumeratum"                % enumeratumVersion
   )
 
   val test: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"         %% "bootstrap-test-play-30" % bootstrapVersion,
-    "com.vladsch.flexmark" % "flexmark-all"           % "0.64.8",
-    "org.scalatestplus"   %% "scalacheck-1-17"        % "3.2.18.0"
+    "uk.gov.hmrc"       %% "bootstrap-test-play-30" % bootstrapVersion,
+    "org.scalatestplus" %% "scalacheck-1-17"        % scalacheckVersion
   ).map(_ % "test")
 
   val it: Seq[ModuleID] = Seq.empty

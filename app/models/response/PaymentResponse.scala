@@ -16,9 +16,10 @@
 
 package models.response
 
-import java.time.LocalDate
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{Json, OWrites, Reads, __}
 
-import play.api.libs.json.{Json, Writes}
+import java.time.LocalDate
 
 final case class PaymentResponse(
     payment_reference: String,
@@ -27,10 +28,13 @@ final case class PaymentResponse(
 
 object PaymentResponse {
 
-  implicit val writesToAPI: Writes[PaymentResponse] = pr =>
+  implicit val writesToUser: OWrites[PaymentResponse] = pr =>
     Json.obj(
       "payment_reference"      -> pr.payment_reference,
       "estimated_payment_date" -> pr.estimated_payment_date
     )
+
+  implicit val readsFromNsi: Reads[PaymentResponse] =
+    (__ \ "paymentReference").read[String].and((__ \ "paymentDate").read[LocalDate])(PaymentResponse.apply _)
 
 }

@@ -24,7 +24,24 @@ import play.api.libs.json._
 
 class NsiAccountStatusSpec extends BaseSpec {
 
-  "writesToApi" should {
+  private val accountStatusScenarios = Table[JsValue, NsiAccountStatus, JsValue](
+    ("Expected NSI JSON", "NSI Account Status", "Expected API JSON"),
+    (JsString("ACTIVE"), NsiAccountStatus.ACTIVE, JsString("ACTIVE")),
+    (JsString("BLOCKED"), NsiAccountStatus.BLOCKED, JsString("INACTIVE"))
+  )
+
+  private val randomInvalidNsiAccountStatusJson = Gen.oneOf(
+    arbitrary[BigDecimal].map(JsNumber.apply),
+    arbitrary[Boolean].map(JsBoolean.apply),
+    Gen.const(Json.obj()),
+    Gen.const(Json.arr()),
+    Gen.const(JsNull)
+  )
+
+  private val randomInvalidNsiAccountStatusJsonString =
+    Gen.oneOf("active", "blocked", "unknown").map(JsString.apply)
+
+  "writesToUser" should {
     "return expected API JSON" in
       forAll(accountStatusScenarios) { (_, nsiAccountStatus, expectedApiJson) =>
         val actualApiJson = Json.toJson(nsiAccountStatus)
@@ -61,22 +78,5 @@ class NsiAccountStatusSpec extends BaseSpec {
         }
     }
   }
-
-  private lazy val accountStatusScenarios = Table[JsValue, NsiAccountStatus, JsValue](
-    ("Expected NSI JSON", "NSI Account Status", "Expected API JSON"),
-    (JsString("ACTIVE"), NsiAccountStatus.ACTIVE, JsString("ACTIVE")),
-    (JsString("BLOCKED"), NsiAccountStatus.BLOCKED, JsString("INACTIVE"))
-  )
-
-  private lazy val randomInvalidNsiAccountStatusJson = Gen.oneOf(
-    arbitrary[BigDecimal].map(JsNumber.apply),
-    arbitrary[Boolean].map(JsBoolean.apply),
-    Gen.const(Json.obj()),
-    Gen.const(Json.arr()),
-    Gen.const(JsNull)
-  )
-
-  private lazy val randomInvalidNsiAccountStatusJsonString =
-    Gen.oneOf("active", "blocked", "unknown").map(JsString.apply)
 
 }

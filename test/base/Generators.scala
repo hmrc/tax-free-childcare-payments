@@ -18,57 +18,65 @@ package base
 
 import models.request.Payee
 import models.request.Payee.ChildCareProvider
+import models.request.Payee.ChildCareProvider.{PostCode, Urn}
 import org.scalacheck.Gen
 
 trait Generators {
 
-  protected lazy val nonAlphaNumStrings: Gen[String] = Gen.asciiPrintableStr.map(_.filterNot(_.isLetterOrDigit))
+  protected val nonAlphaNumStrings: Gen[String] = Gen.asciiPrintableStr.map(_.filterNot(_.isLetterOrDigit))
 
-  protected lazy val fullNames: Gen[String] = for {
-    firstName <- names
-    lastName  <- names
-  } yield s"$firstName $lastName"
-
-  private lazy val names = for {
+  private val names: Gen[String] = for {
     char0 <- Gen.alphaUpperChar
     char1 <- Gen.alphaLowerChar
     chars <- Gen.alphaLowerStr
   } yield char0 +: char1 +: chars
 
-  protected lazy val nonEmptyAlphaNumStrings: Gen[String] = for {
+  protected val fullNames: Gen[String] = for {
+    firstName <- names
+    lastName  <- names
+  } yield s"$firstName $lastName"
+
+  private val MAX_PARAM_LEN = 16
+
+  protected val nonEmptyAlphaNumStrings: Gen[String] = for {
     len   <- Gen.chooseNum(1, MAX_PARAM_LEN)
     chars <- Gen.containerOfN[Array, Char](len, Gen.alphaNumChar)
   } yield chars.mkString
 
-  private lazy val MAX_PARAM_LEN = 16
-
-  protected lazy val randomNinos: Gen[String] = for {
+  protected val randomNinos: Gen[String] = for {
     char0  <- Gen.alphaUpperChar
     char1  <- Gen.alphaUpperChar
     digits <- Gen.listOfN(6, Gen.numChar)
     char8  <- Gen.oneOf("ABCD")
   } yield char0 +: char1 +: digits.mkString :+ char8
 
-  protected lazy val randomPayees: Gen[Payee] = Gen.oneOf(
+  protected val urns: Gen[Urn] = nonEmptyAlphaNumStrings.map(Urn(_))
+
+  private val randomSpaces: Gen[String] = Gen.stringOf(Gen.const(' '))
+
+  private val postcodes: Gen[PostCode] = {
+    val stringGen: Gen[String] = for {
+      leadingSpaces  <- randomSpaces
+      n              <- Gen.chooseNum(1, 2)
+      letters1       <- Gen.stringOfN(n, Gen.alphaUpperChar)
+      num1           <- Gen.chooseNum(1, 99)
+      midSpaces      <- randomSpaces
+      num2           <- Gen.chooseNum(1, 9)
+      letters2       <- Gen.stringOfN(2, Gen.alphaUpperChar)
+      trailingSpaces <- randomSpaces
+    } yield s"$leadingSpaces$letters1$num1$midSpaces$num2$letters2$trailingSpaces"
+
+    stringGen.map(PostCode(_))
+  }
+
+  protected val randomChildCareProviders: Gen[ChildCareProvider] = for {
+    urn      <- urns
+    postcode <- postcodes
+  } yield ChildCareProvider(urn, postcode)
+
+  protected val randomPayees: Gen[Payee] = Gen.oneOf(
     Gen.const(Payee.ExternalPaymentProvider),
     randomChildCareProviders
   )
 
-  protected lazy val randomChildCareProviders: Gen[ChildCareProvider] = for {
-    urn      <- nonEmptyAlphaNumStrings
-    postcode <- postcodes
-  } yield ChildCareProvider(urn, postcode)
-
-  private lazy val postcodes = for {
-    leadingSpaces  <- randomSpaces
-    n              <- Gen.chooseNum(1, 2)
-    letters1       <- Gen.stringOfN(n, Gen.alphaUpperChar)
-    num1           <- Gen.chooseNum(1, 99)
-    midSpaces      <- randomSpaces
-    num2           <- Gen.chooseNum(1, 9)
-    letters2       <- Gen.stringOfN(2, Gen.alphaUpperChar)
-    trailingSpaces <- randomSpaces
-  } yield s"$leadingSpaces$letters1$num1$midSpaces$num2$letters2$trailingSpaces"
-
-  private lazy val randomSpaces = Gen.stringOf(Gen.const(' '))
 }

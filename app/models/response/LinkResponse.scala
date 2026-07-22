@@ -16,15 +16,18 @@
 
 package models.response
 
-import play.api.libs.json.{Json, OWrites}
+import play.api.libs.json.{Json, OWrites, Reads, __}
 
 final case class LinkResponse(childFullName: String)
 
 object LinkResponse {
 
-  implicit val writesToAPI: OWrites[LinkResponse] = lr =>
+  implicit val writesToUser: OWrites[LinkResponse] = lr =>
     Json.obj(
       "child_full_name" -> lr.childFullName
     )
+
+  implicit val readsFromNsi: Reads[LinkResponse] =
+    (__ \ "childFullName").read[String].map(LinkResponse.apply)
 
 }
