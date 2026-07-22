@@ -187,12 +187,6 @@ object NsiErrorResponse extends Enum[NsiErrorResponse] {
   override val values: IndexedSeq[NsiErrorResponse] = findValues
 
   implicit val reads: Reads[NsiErrorResponse] =
-    (__ \ "errorCode").read[String].map(str => findValue(str).getOrElse(ETFC4))
-
-  private def findValue(string: String): Option[NsiErrorResponse] =
-    values.find(matches(string))
-
-  private def matches(string: String)(response: NsiErrorResponse): Boolean =
-    response.toString.equalsIgnoreCase(string)
+    (__ \ "errorCode").read[String].map(str => values.find(_.toString.equalsIgnoreCase(str)).getOrElse(ETFC4))
 
 }
