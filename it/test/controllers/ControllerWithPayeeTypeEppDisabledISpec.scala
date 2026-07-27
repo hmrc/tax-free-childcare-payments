@@ -48,6 +48,55 @@ class ControllerWithPayeeTypeEppDisabledISpec
   private val BALANCE_URL = s"$baseUrl/balance"
   private val PAYMENT_URL = s"$baseUrl/"
 
+  private val endpoints = Table(
+    ("Name", "TFC URL", "Valid Payload"),
+    ("link", "/link", validLinkPayloads.sample.get),
+    ("balance", "/balance", validSharedJson.sample.get),
+    ("payment", "/", validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
+  )
+
+  private val CONTROLLER_LOGGER = Logger(classOf[TaxFreeChildcarePaymentsController])
+
+  private val NSI_CONNECTOR_LOGGER = Logger(classOf[NsiConnector])
+
+  private val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
+    raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
+
+  private val nsiErrorScenarios = Table(
+    ("NSI Status Code", "NSI Error Code", "Expected Status Code", "Expected Error Description"),
+    (BAD_REQUEST, "E0000", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0001", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0002", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0003", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0004", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0005", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0006", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0007", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0008", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0020", BAD_GATEWAY, EXPECTED_502_DESC),
+    (BAD_REQUEST, "E0021", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0022", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0023", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (BAD_REQUEST, "E0024", BAD_REQUEST, EXPECTED_E0024_DESC),
+    (BAD_REQUEST, "E0025", BAD_REQUEST, EXPECTED_E0025_DESC),
+    (BAD_REQUEST, "E0026", BAD_REQUEST, EXPECTED_E0026_DESC),
+    (BAD_REQUEST, "E0027", BAD_REQUEST, EXPECTED_E0027_DESC),
+    (UNAUTHORIZED, "E0401", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
+    (FORBIDDEN, "E0030", BAD_REQUEST, EXPECTED_E0030_DESC),
+    (FORBIDDEN, "E0031", BAD_REQUEST, EXPECTED_E0031_DESC),
+    (FORBIDDEN, "E0032", BAD_REQUEST, EXPECTED_E0032_DESC),
+    (FORBIDDEN, "E0033", BAD_REQUEST, EXPECTED_E0033_DESC),
+    (FORBIDDEN, "E0034", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
+    (FORBIDDEN, "E0035", BAD_REQUEST, EXPECTED_E0035_DESC),
+    (FORBIDDEN, "E0036", BAD_REQUEST, EXPECTED_E0036_DESC),
+    (NOT_FOUND, "E0042", BAD_REQUEST, EXPECTED_E0042_DESC),
+    (NOT_FOUND, "E0043", BAD_REQUEST, EXPECTED_E0043_DESC),
+    (INTERNAL_SERVER_ERROR, "E9000", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
+    (INTERNAL_SERVER_ERROR, "E9999", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
+    (SERVICE_UNAVAILABLE, "E8000", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
+    (SERVICE_UNAVAILABLE, "E8001", SERVICE_UNAVAILABLE, EXPECTED_503_DESC)
+  )
+
   "POST /link" should {
 
     "respond with status 200 and correct JSON body" when {
@@ -330,7 +379,7 @@ class ControllerWithPayeeTypeEppDisabledISpec
               JsPath(List(KeyPathNode("accountStatus"))) -> List(JsonValidationError("error.invalid.account_status"))
             )
             val expectedPartialMessage =
-              s"NSI responded 200. Resulted in JSON validation errors - $expectedJsonErrors - triggering ETFC3"
+              s"NSI responded 200. Resulting in JSON validation errors - $expectedJsonErrors - triggering ETFC3"
             val expectedLogMessage = s"[Error] - [balance] - [$expectedCorrelationId: $expectedPartialMessage]"
             checkLoneLog(Level.WARN, expectedLogMessage)(logs)
 
@@ -573,47 +622,6 @@ class ControllerWithPayeeTypeEppDisabledISpec
     }
   }
 
-  private val endpoints = Table(
-    ("Name", "TFC URL", "Valid Payload"),
-    ("link", "/link", validLinkPayloads.sample.get),
-    ("balance", "/balance", validSharedJson.sample.get),
-    ("payment", "/", validPaymentRequestWithPayeeTypeSetToCCP.sample.get)
-  )
-
-  private lazy val nsiErrorScenarios = Table(
-    ("NSI Status Code", "NSI Error Code", "Expected Status Code", "Expected Error Description"),
-    (BAD_REQUEST, "E0000", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0001", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0002", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0003", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0004", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0005", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0006", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0007", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0008", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0020", BAD_GATEWAY, EXPECTED_502_DESC),
-    (BAD_REQUEST, "E0021", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0022", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0023", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (BAD_REQUEST, "E0024", BAD_REQUEST, EXPECTED_E0024_DESC),
-    (BAD_REQUEST, "E0025", BAD_REQUEST, EXPECTED_E0025_DESC),
-    (BAD_REQUEST, "E0026", BAD_REQUEST, EXPECTED_E0026_DESC),
-    (BAD_REQUEST, "E0027", BAD_REQUEST, EXPECTED_E0027_DESC),
-    (UNAUTHORIZED, "E0401", INTERNAL_SERVER_ERROR, EXPECTED_500_DESC),
-    (FORBIDDEN, "E0030", BAD_REQUEST, EXPECTED_E0030_DESC),
-    (FORBIDDEN, "E0031", BAD_REQUEST, EXPECTED_E0031_DESC),
-    (FORBIDDEN, "E0032", BAD_REQUEST, EXPECTED_E0032_DESC),
-    (FORBIDDEN, "E0033", BAD_REQUEST, EXPECTED_E0033_DESC),
-    (FORBIDDEN, "E0034", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
-    (FORBIDDEN, "E0035", BAD_REQUEST, EXPECTED_E0035_DESC),
-    (FORBIDDEN, "E0036", BAD_REQUEST, EXPECTED_E0036_DESC),
-    (NOT_FOUND, "E0042", BAD_REQUEST, EXPECTED_E0042_DESC),
-    (NOT_FOUND, "E0043", BAD_REQUEST, EXPECTED_E0043_DESC),
-    (INTERNAL_SERVER_ERROR, "E9000", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
-    (INTERNAL_SERVER_ERROR, "E9999", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
-    (SERVICE_UNAVAILABLE, "E8000", SERVICE_UNAVAILABLE, EXPECTED_503_DESC),
-    (SERVICE_UNAVAILABLE, "E8001", SERVICE_UNAVAILABLE, EXPECTED_503_DESC)
-  )
 
   forAll(endpoints) { (_, tfc_url, validPayload) =>
     s"POST $tfc_url" should {
@@ -721,12 +729,5 @@ class ControllerWithPayeeTypeEppDisabledISpec
       case other => fail(s"$other did not match $EXPECTED_LOG_MESSAGE_PATTERN")
     }
   }
-
-  private lazy val CONTROLLER_LOGGER = Logger(classOf[TaxFreeChildcarePaymentsController])
-
-  private lazy val NSI_CONNECTOR_LOGGER = Logger(classOf[NsiConnector])
-
-  private lazy val EXPECTED_LOG_MESSAGE_PATTERN: Regex =
-    raw"^\[Error] - \[([^]]+)] - \[([^:]+): (.+)]$$".r
 
 }

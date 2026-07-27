@@ -31,6 +31,9 @@ import scala.jdk.CollectionConverters.MapHasAsJava
 
 trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
 
+  private val nsiConfig   = app.configuration.get[Configuration]("microservice.services.nsi")
+  private val nsiRootPath = nsiConfig.get[String]("rootPath")
+
   /** NSI Link Accounts spec */
 
   protected def stubNsiLinkAccounts201(expectedResponseJson: JsValue): StubMapping = stubFor {
@@ -43,16 +46,16 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
     nsiLinkAccountsEndpoint.willReturn(nsiErrorResponse(status, errorCode, errorDesc))
   }
 
-  protected lazy val nsiLinkAccountsEndpoint: MappingBuilder = get(nsiLinkAccountsUrlPattern)
+  protected val nsiLinkAccountsUrlPattern: UrlPattern = nsiUrlPattern("linkAccounts", raw"[a-zA-Z0-9]+\\?[^/]+")
 
-  private lazy val nsiLinkAccountsUrlQueryParams = Map(
+  protected val nsiLinkAccountsEndpoint: MappingBuilder = get(nsiLinkAccountsUrlPattern)
+
+  private val nsiLinkAccountsUrlQueryParams = Map(
     "eppURN"     -> matching("[a-zA-Z0-9]+"),
     "eppAccount" -> matching("[a-zA-Z0-9]+"),
     "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]"),
     "childDoB"   -> matching(raw"\d{4}-\d{2}-\d{2}")
   ).asJava
-
-  protected lazy val nsiLinkAccountsUrlPattern: UrlPattern = nsiUrlPattern("linkAccounts", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   /** NSI Check Balance spec */
 
@@ -66,15 +69,15 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
     nsiCheckBalanceEndpoint.willReturn(nsiErrorResponse(status, errorCode, errorDesc))
   }
 
-  protected lazy val nsiCheckBalanceEndpoint: MappingBuilder = get(nsiBalanceUrlPattern)
+  protected val nsiBalanceUrlPattern: UrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
 
-  protected lazy val nsiBalanceUrlQueryParams: util.Map[String, StringValuePattern] = Map(
+  protected val nsiCheckBalanceEndpoint: MappingBuilder = get(nsiBalanceUrlPattern)
+
+  protected val nsiBalanceUrlQueryParams: util.Map[String, StringValuePattern] = Map(
     "eppURN"     -> matching("[a-zA-Z0-9]+"),
     "eppAccount" -> matching("[a-zA-Z0-9]+"),
     "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]")
   ).asJava
-
-  protected lazy val nsiBalanceUrlPattern: UrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   /** NSI Make Payment spec */
 
@@ -88,11 +91,11 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
     nsiMakePaymentEndpoint.willReturn(nsiErrorResponse(status, errorCode, errorDesc))
   }
 
-  protected lazy val nsiMakePaymentEndpoint: MappingBuilder = post(nsiPaymentUrlPattern)
+  protected val nsiPaymentUrlPattern: UrlPattern = nsiUrlPattern("makePayment")
 
-  protected lazy val nsiPaymentUrlPattern: UrlPattern = nsiUrlPattern("makePayment")
+  protected val nsiMakePaymentEndpoint: MappingBuilder = post(nsiPaymentUrlPattern)
 
-  private lazy val nsiPaymentRequestBodyPattern = "payeeType,amount,childAccountPaymentRef,eppURN,eppAccount,parentNino"
+  private val nsiPaymentRequestBodyPattern = "payeeType,amount,childAccountPaymentRef,eppURN,eppAccount,parentNino"
     .split(",")
     .map(prop => matchingJsonPath(s"$$.$prop"))
     .reduce(_ and _)
@@ -110,10 +113,8 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
     urlMatching(urlPattern)
   }
 
-  private lazy val nsiConfig   = app.configuration.get[Configuration]("microservice.services.nsi")
-  private lazy val nsiRootPath = nsiConfig.get[String]("rootPath")
-
   /** Random data */
 
-  protected lazy val randomHttpErrorCodes: Gen[Int] = Gen.chooseNum(BAD_REQUEST, NETWORK_AUTHENTICATION_REQUIRED)
+  protected val randomHttpErrorCodes: Gen[Int] = Gen.chooseNum(BAD_REQUEST, NETWORK_AUTHENTICATION_REQUIRED)
+
 }

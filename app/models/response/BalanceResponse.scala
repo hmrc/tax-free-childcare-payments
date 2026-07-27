@@ -16,7 +16,8 @@
 
 package models.response
 
-import play.api.libs.json.{Json, Writes}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{Json, OWrites, Reads, __}
 
 /** All currency quantities are in pence. For example, £250.00 is given as 25000. */
 final case class BalanceResponse(
@@ -30,7 +31,7 @@ final case class BalanceResponse(
 
 object BalanceResponse {
 
-  implicit val writesToAPI: Writes[BalanceResponse] = br =>
+  implicit val writesToUser: OWrites[BalanceResponse] = br =>
     Json.obj(
       "tfc_account_status" -> br.accountStatus,
       "government_top_up"  -> br.topUpAvailable,
@@ -39,5 +40,14 @@ object BalanceResponse {
       "total_balance"      -> br.totalBalance,
       "cleared_funds"      -> br.clearedFunds
     )
+
+  implicit val readsFromNsi: Reads[BalanceResponse] =
+    (__ \ "accountStatus")
+      .read[NsiAccountStatus]
+      .and((__ \ "topUpAvailable").read[Int])
+      .and((__ \ "topUpRemaining").read[Int])
+      .and((__ \ "paidIn").read[Int])
+      .and((__ \ "totalBalance").read[Int])
+      .and((__ \ "clearedFunds").read[Int])(BalanceResponse.apply _)
 
 }

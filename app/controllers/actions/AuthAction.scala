@@ -69,7 +69,7 @@ class AuthAction @Inject() (
 
           case Left((errorResponse, logMessage)) =>
             Future.successful {
-              logger.info(formattedLog(logMessage))
+              logger.info(formattedErrorLog(logMessage))
 
               errorResponse
             }
@@ -88,11 +88,11 @@ class AuthAction @Inject() (
       }
   }
 
-  private lazy val ETFC1 = BadRequest(
+  private val ETFC1 = BadRequest(
     ErrorResponseFactory.getJson("ETFC1", "Correlation ID is in an invalid format or is missing")
   )
 
-  private lazy val ETFC2 = InternalServerError(
+  private val ETFC2 = InternalServerError(
     ErrorResponseFactory.getJson("ETFC2", "Bearer Token did not return a valid record")
   )
 

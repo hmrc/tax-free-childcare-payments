@@ -16,12 +16,12 @@
 
 package models.request.data
 
-import models.request.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY, PAYEE_TYPE_KEY}
+import models.request.Payee.ChildCareProvider.{CCP_POSTCODE_KEY, CCP_URN_KEY}
+import models.request.Payee.PAYEE_TYPE_KEY
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.{Payee, PaymentRequest, SharedRequestData}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
-
 import play.api.libs.json.{JsNumber, JsObject, JsString, Json}
 
 trait PaymentRequestGenerators extends SharedRequestGenerators with PayeeGenerators {
@@ -47,12 +47,12 @@ trait PaymentRequestGenerators extends SharedRequestGenerators with PayeeGenerat
       PAYMENT_AMOUNT_KEY -> request.payment_amount
     )
 
-  protected val randomPaymentJsonWithMissingPayeeType: Gen[JsObject] =
-    validPaymentJsonWithAnyPayee.map(_ - PAYEE_TYPE_KEY)
-
   /** BEGIN Random Payment JSON with Any Payee. */
 
-  protected lazy val validPaymentJsonWithAnyPayee: Gen[JsObject] = arbitrary[PaymentRequest].map(getJsonFrom)
+  protected val validPaymentJsonWithAnyPayee: Gen[JsObject] = arbitrary[PaymentRequest].map(getJsonFrom)
+
+  protected val randomPaymentJsonWithMissingPayeeType: Gen[JsObject] =
+    validPaymentJsonWithAnyPayee.map(_ - PAYEE_TYPE_KEY)
 
   protected val randomPaymentJsonWithAnyPayeeAndMissingTfcAccountRef: Gen[JsObject] = randomPaymentJsonWithAnyPayeeAnd(
     sharedPayloadsWithMissingTfcAccountRef

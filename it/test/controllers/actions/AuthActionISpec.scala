@@ -20,16 +20,18 @@ import base.{AuthStubs, BaseISpec}
 import models.request.IdentifierRequest
 import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.{JsString, Json}
-import play.api.mvc.Results
+import play.api.mvc.{Result, Results}
 import play.api.test.FakeRequest
 
 import java.util.UUID
 import scala.concurrent.Future
 
 class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Generators {
-  private implicit lazy val as: ActorSystem = app.actorSystem
+  private implicit val as: ActorSystem = app.actorSystem
 
   private val authAction = app.injector.instanceOf[AuthAction]
+
+  val successBlock: IdentifierRequest[_] => Future[Result] = (_: IdentifierRequest[_]) => Future.successful(Ok(JsString("success")))
 
   "method invokeBlock" should {
     "return a 400 Response with errorCode ETFC1 and expected errorDescription" when {
@@ -90,8 +92,6 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
         (responseJson \ "message").as[String] shouldBe expectedConfidenceLevelErrorDesc
       }
     }
-
-    lazy val successBlock = (_: IdentifierRequest[_]) => Future.successful(Ok(JsString("success")))
   }
 
 }

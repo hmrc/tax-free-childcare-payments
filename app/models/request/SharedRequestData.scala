@@ -17,8 +17,7 @@
 package models.request
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.Reads.StringReads
-import play.api.libs.json._
+import play.api.libs.json.{ConstraintReads, Json, OWrites, Reads, __}
 
 final case class SharedRequestData(
     epp_unique_customer_id: String,
@@ -28,16 +27,23 @@ final case class SharedRequestData(
 
 object SharedRequestData extends ConstraintReads {
 
-  implicit val readsFromApi: Reads[SharedRequestData] = (
-    (__ \ EPP_ACCOUNT_ID_KEY).read(NonEmptyAlphaNumStringReads) ~
-      (__ \ EPP_URN_KEY).read(NonEmptyAlphaNumStringReads) ~
-      (__ \ TFC_ACCOUNT_REF_KEY).read(TfcAccountRefReads)
-  )(apply _)
+  val TFC_ACCOUNT_REF_KEY = "outbound_child_payment_ref"
+  val EPP_URN_KEY         = "epp_reg_reference"
+  val EPP_ACCOUNT_ID_KEY  = "epp_unique_customer_id"
 
-  lazy val TFC_ACCOUNT_REF_KEY = "outbound_child_payment_ref"
-  lazy val EPP_URN_KEY         = "epp_reg_reference"
-  lazy val EPP_ACCOUNT_ID_KEY  = "epp_unique_customer_id"
+  private val NonEmptyAlphaNumStringReads: Reads[String] = pattern("[a-zA-Z0-9]{1,255}".r)
+  private val TfcAccountRefReads: Reads[String]          = pattern("[a-zA-Z]{2}[a-zA-Z0'.\\- ]{2}[0-9]{5}TFC".r)
 
-  private lazy val NonEmptyAlphaNumStringReads = pattern("[a-zA-Z0-9]{1,255}".r)
-  private lazy val TfcAccountRefReads          = pattern("[a-zA-Z]{2}[a-zA-Z0'.\\- ]{2}[0-9]{5}TFC".r)
+  implicit val readsFromUser: Reads[SharedRequestData] =
+    (__ \ EPP_ACCOUNT_ID_KEY)
+      .read[String](NonEmptyAlphaNumStringReads)
+      .and((__ \ EPP_URN_KEY).read[String](NonEmptyAlphaNumStringReads))
+      .and((__ \ TFC_ACCOUNT_REF_KEY).read[String](TfcAccountRefReads))(SharedRequestData.apply _)
+
+  implicit val writes: OWrites[SharedRequestData] = srd =>
+    Json.obj(
+      "eppAccount" -> srd.epp_unique_customer_id,
+      "eppURN"     -> srd.epp_reg_reference
+    )
+
 }

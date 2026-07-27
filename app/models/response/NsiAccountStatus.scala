@@ -18,13 +18,15 @@ package models.response
 
 import play.api.libs.json._
 
-sealed abstract class NsiAccountStatus(val toApiString: String)
+sealed abstract class NsiAccountStatus(val toUserString: String)
 
 object NsiAccountStatus {
   case object ACTIVE  extends NsiAccountStatus("ACTIVE")
   case object BLOCKED extends NsiAccountStatus("INACTIVE")
 
   val values: Set[NsiAccountStatus] = Set(ACTIVE, BLOCKED)
+
+  implicit val writesToUser: Writes[NsiAccountStatus] = status => JsString(status.toUserString)
 
   implicit val readsFromNsi: Reads[NsiAccountStatus] = {
     case JsString(value) =>
@@ -35,5 +37,4 @@ object NsiAccountStatus {
     case _ => JsError("error.expected.account_status.string")
   }
 
-  implicit val writesToApi: Writes[NsiAccountStatus] = status => JsString(status.toApiString)
 }
