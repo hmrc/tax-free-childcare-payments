@@ -20,25 +20,44 @@ import base.{BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
+import config.AppConfig
 import models.request.data.Generators
 import models.request.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse._
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
+import org.mockito.Mockito
+import org.mockito.Mockito.{spy, when}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Gen, Shrink}
-import org.scalatest.EitherValues
+import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
+import uk.gov.hmrc.http.GatewayTimeoutException
+import uk.gov.hmrc.http.client.HttpClientV2
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
 
 class NsiConnectorISpec
     extends BaseISpec
     with NsiStubs
     with EitherValues
     with Generators
-    with models.response.Generators {
-  private val connector = app.injector.instanceOf[NsiConnector]
+    with models.response.Generators
+    with BeforeAndAfterEach {
+
+  private val httpClientV2         = app.injector.instanceOf[HttpClientV2]
+  private val appConfig: AppConfig = spy(app.injector.instanceOf[AppConfig])
+
+  private val connector = new NsiConnector(httpClientV2, appConfig)
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+
+    Mockito.reset(appConfig)
+  }
 
   "method linkAccounts" should {
     "return Right LinkResponse" when {
@@ -118,6 +137,19 @@ class NsiConnectorISpec
           actualNsiErrorResponse shouldBe ETFC4
         }
     }
+
+    "return failed Future" when {
+      "the request to NSI times out" in
+        forAll { (request: IdentifierRequest[LinkRequest], expectedResponse: LinkResponse) =>
+          when(appConfig.nsiRequestTimeout).thenReturn(100.millis)
+          stubNsiLinkAccounts201(getNsiJsonFrom(expectedResponse), 200.millis)
+
+          val actualResponse = connector.linkAccounts(request).failed.futureValue
+
+          actualResponse shouldBe a[GatewayTimeoutException]
+          actualResponse.getMessage should include(s"Request timeout to localhost/127.0.0.1:$wireMockPort after 100 ms")
+        }
+    }
   }
 
   "method checkBalance" should {
@@ -175,6 +207,19 @@ class NsiConnectorISpec
           val actualNsiErrorResponse = connector.checkBalance(request).futureValue.left.value
 
           actualNsiErrorResponse shouldBe ETFC4
+        }
+    }
+
+    "return failed Future" when {
+      "the request to NSI times out" in
+        forAll { (request: IdentifierRequest[SharedRequestData], expectedResponse: BalanceResponse) =>
+          when(appConfig.nsiRequestTimeout).thenReturn(100.millis)
+          stubNsiCheckBalance200(getNsiJsonFrom(expectedResponse), 200.millis)
+
+          val actualResponse = connector.checkBalance(request).failed.futureValue
+
+          actualResponse shouldBe a[GatewayTimeoutException]
+          actualResponse.getMessage should include(s"Request timeout to localhost/127.0.0.1:$wireMockPort after 100 ms")
         }
     }
   }
@@ -255,6 +300,19 @@ class NsiConnectorISpec
           val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
 
           actualNsiErrorResponse shouldBe ETFC4
+        }
+    }
+
+    "return failed Future" when {
+      "the request to NSI times out" in
+        forAll { (request: IdentifierRequest[PaymentRequest], expectedResponse: PaymentResponse) =>
+          when(appConfig.nsiRequestTimeout).thenReturn(100.millis)
+          stubNsiMakePayment201(getNsiJsonFrom(expectedResponse), 200.millis)
+
+          val actualResponse = connector.makePayment(request).failed.futureValue
+
+          actualResponse shouldBe a[GatewayTimeoutException]
+          actualResponse.getMessage should include(s"Request timeout to localhost/127.0.0.1:$wireMockPort after 100 ms")
         }
     }
   }
