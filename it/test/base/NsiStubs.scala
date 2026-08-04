@@ -27,6 +27,7 @@ import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 
 import java.util
+import scala.concurrent.duration.Duration
 import scala.jdk.CollectionConverters.MapHasAsJava
 
 trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
@@ -36,10 +37,13 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
 
   /** NSI Link Accounts spec */
 
-  protected def stubNsiLinkAccounts201(expectedResponseJson: JsValue): StubMapping = stubFor {
+  protected def stubNsiLinkAccounts201(
+      expectedResponseJson: JsValue,
+      responseDelay: Duration = Duration.Zero
+  ): StubMapping = stubFor {
     nsiLinkAccountsEndpoint
       .withQueryParams(nsiLinkAccountsUrlQueryParams)
-      .willReturn(created().withBody(expectedResponseJson.toString))
+      .willReturn(created().withFixedDelay(responseDelay.toMillis.toInt).withBody(expectedResponseJson.toString))
   }
 
   protected def stubNsiLinkAccountsError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
@@ -50,7 +54,7 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
 
   protected val nsiLinkAccountsEndpoint: MappingBuilder = get(nsiLinkAccountsUrlPattern)
 
-  private val nsiLinkAccountsUrlQueryParams = Map(
+  protected val nsiLinkAccountsUrlQueryParams: util.Map[String, StringValuePattern] = Map(
     "eppURN"     -> matching("[a-zA-Z0-9]+"),
     "eppAccount" -> matching("[a-zA-Z0-9]+"),
     "parentNino" -> matching(raw"[A-Z]{2}\d{6}[A-D]"),
@@ -59,10 +63,13 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
 
   /** NSI Check Balance spec */
 
-  protected def stubNsiCheckBalance200(expectedResponseJson: JsValue): StubMapping = stubFor {
+  protected def stubNsiCheckBalance200(
+      expectedResponseJson: JsValue,
+      responseDelay: Duration = Duration.Zero
+  ): StubMapping = stubFor {
     nsiCheckBalanceEndpoint
       .withQueryParams(nsiBalanceUrlQueryParams)
-      .willReturn(ok().withBody(expectedResponseJson.toString))
+      .willReturn(ok().withFixedDelay(responseDelay.toMillis.toInt).withBody(expectedResponseJson.toString))
   }
 
   protected def stubNsiCheckBalanceError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
@@ -81,10 +88,13 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
 
   /** NSI Make Payment spec */
 
-  protected def stubNsiMakePayment201(expectedResponseJson: JsValue): StubMapping = stubFor {
+  protected def stubNsiMakePayment201(
+      expectedResponseJson: JsValue,
+      responseDelay: Duration = Duration.Zero
+  ): StubMapping = stubFor {
     nsiMakePaymentEndpoint
       .withRequestBody(nsiPaymentRequestBodyPattern)
-      .willReturn(created().withBody(expectedResponseJson.toString))
+      .willReturn(created().withFixedDelay(responseDelay.toMillis.toInt).withBody(expectedResponseJson.toString))
   }
 
   protected def stubNsiMakePaymentError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {

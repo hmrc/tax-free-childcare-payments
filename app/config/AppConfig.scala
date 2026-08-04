@@ -19,6 +19,7 @@ package config
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.Duration
 
 @Singleton
 class AppConfig @Inject() (servicesConfig: ServicesConfig) {
@@ -35,5 +36,7 @@ class AppConfig @Inject() (servicesConfig: ServicesConfig) {
 
   val nsiCorrelationIdHeader: String = servicesConfig.getString("microservice.services.nsi.correlationIdHeader")
   val nsiAuthorisationToken: String  = servicesConfig.getString("microservice.services.nsi.token")
+
+  val nsiRequestTimeout: Duration = servicesConfig.getDuration("microservice.services.nsi.requestTimeout")
 
 }

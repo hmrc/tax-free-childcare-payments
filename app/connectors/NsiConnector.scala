@@ -43,12 +43,14 @@ class NsiConnector @Inject() (
     with HeaderNames {
   import NsiConnector._
 
-  def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[NsiResponse[LinkResponse]] = httpClient
-    .get(linkAccountsUrl)
-    .setHeader(appConfig.nsiCorrelationIdHeader -> req.correlation_id.toString)
-    .setHeader(Authorization -> s"Basic ${appConfig.nsiAuthorisationToken}")
-    .withProxy
-    .execute[NsiResponse[LinkResponse]]
+  def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[NsiResponse[LinkResponse]] =
+    httpClient
+      .get(linkAccountsUrl)
+      .setHeader(appConfig.nsiCorrelationIdHeader -> req.correlation_id.toString)
+      .setHeader(Authorization -> s"Basic ${appConfig.nsiAuthorisationToken}")
+      .withProxy
+      .transform(_.withRequestTimeout(appConfig.nsiRequestTimeout))
+      .execute[NsiResponse[LinkResponse]]
 
   private def linkAccountsUrl(implicit req: IdentifierRequest[LinkRequest]): URL = {
     val queryString = Map(
@@ -71,6 +73,7 @@ class NsiConnector @Inject() (
       .setHeader(appConfig.nsiCorrelationIdHeader -> req.correlation_id.toString)
       .setHeader(Authorization -> s"Basic ${appConfig.nsiAuthorisationToken}")
       .withProxy
+      .transform(_.withRequestTimeout(appConfig.nsiRequestTimeout))
       .execute[NsiResponse[BalanceResponse]]
 
   private def checkBalanceUrl(implicit req: IdentifierRequest[SharedRequestData]): URL = {
@@ -94,6 +97,7 @@ class NsiConnector @Inject() (
       .setHeader(Authorization -> s"Basic ${appConfig.nsiAuthorisationToken}")
       .withBody(enrichedWithNino[PaymentRequest])
       .withProxy
+      .transform(_.withRequestTimeout(appConfig.nsiRequestTimeout))
       .execute[NsiResponse[PaymentResponse]]
 
 }

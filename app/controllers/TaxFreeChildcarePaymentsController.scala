@@ -39,12 +39,14 @@ class TaxFreeChildcarePaymentsController @Inject() (
     extends BackendController(cc)
     with FormattedLogging {
 
-  def link(): Action[JsValue] = nsiAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
+  def link(): Action[JsValue] =
+    nsiAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
 
   def balance(): Action[JsValue] =
     nsiAction[SharedRequestData, BalanceResponse](implicit req => nsiConnector.checkBalance)
 
-  def payment(): Action[JsValue] = nsiAction[PaymentRequest, PaymentResponse](implicit req => nsiConnector.makePayment)
+  def payment(): Action[JsValue] =
+    nsiAction[PaymentRequest, PaymentResponse](implicit req => nsiConnector.makePayment)
 
   private def nsiAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[NsiResponse[Res]]) =
     identify.async(parse.json) { implicit request =>
