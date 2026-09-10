@@ -31,7 +31,7 @@ final case class BalanceResponse(
 
 object BalanceResponse {
 
-  implicit val writesToUser: OWrites[BalanceResponse] = br =>
+  given OWrites[BalanceResponse] = br =>
     Json.obj(
       "tfc_account_status" -> br.accountStatus,
       "government_top_up"  -> br.topUpAvailable,
@@ -41,7 +41,7 @@ object BalanceResponse {
       "cleared_funds"      -> br.clearedFunds
     )
 
-  implicit val readsFromNsi: Reads[BalanceResponse] =
+  given Reads[BalanceResponse] =
     (__ \ "accountStatus")
       .read[NsiAccountStatus]
       .and((__ \ "topUpAvailable").read[Int])

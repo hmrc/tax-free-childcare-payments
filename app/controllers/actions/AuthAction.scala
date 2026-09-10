@@ -27,7 +27,7 @@ import utils.{ErrorResponseFactory, FormattedLogging}
 
 import play.api.http.Status.UNAUTHORIZED
 import play.api.libs.json.Json
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel, InsufficientConfidenceLevel}
@@ -38,15 +38,17 @@ import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
 class AuthAction @Inject() (
     val authConnector: AuthConnector,
     val parser: BodyParsers.Default
-)(implicit val executionContext: ExecutionContext)
+)(using ec: ExecutionContext)
     extends ActionBuilder[IdentifierRequest, AnyContent]
     with BackendHeaderCarrierProvider
     with AuthorisedFunctions
     with FormattedLogging
     with Results {
 
+  override protected def executionContext: ExecutionContext = ec
+
   override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
-    implicit val req: Request[A] = request
+    given Request[A] = request
 
     /** Confidence level is retrieved so that it appears in implicit audit events to aid with security metrics. */
     authorised(ConfidenceLevel.L200)

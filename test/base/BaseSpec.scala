@@ -25,7 +25,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Assertion, EitherValues, LoneElement, OptionValues}
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 abstract class BaseSpec
     extends AnyWordSpec
@@ -35,7 +35,7 @@ abstract class BaseSpec
     with ScalaCheckPropertyChecks
     with LoneElement {
 
-  implicit val prettifier: Prettifier = {
+  given Prettifier = {
     case IdentifierRequest(_, _, underlying) => s"IdentifierRequest( ${underlying.body} )"
     case other                               => Prettifier.default(other)
   }

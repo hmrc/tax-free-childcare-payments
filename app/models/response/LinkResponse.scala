@@ -22,12 +22,12 @@ final case class LinkResponse(childFullName: String)
 
 object LinkResponse {
 
-  implicit val writesToUser: OWrites[LinkResponse] = lr =>
+  given OWrites[LinkResponse] = lr =>
     Json.obj(
       "child_full_name" -> lr.childFullName
     )
 
-  implicit val readsFromNsi: Reads[LinkResponse] =
+  given Reads[LinkResponse] =
     (__ \ "childFullName").read[String].map(LinkResponse.apply)
 
 }

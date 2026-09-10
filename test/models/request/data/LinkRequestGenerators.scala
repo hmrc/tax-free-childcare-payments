@@ -28,7 +28,7 @@ trait LinkRequestGenerators extends SharedRequestGenerators {
   private val MIN_YEAR = 2000
   private val MAX_YEAR = 3000
 
-  protected implicit val arbLinkRequest: Arbitrary[LinkRequest] = Arbitrary(
+  protected given arbLinkRequest: Arbitrary[LinkRequest] = Arbitrary(
     for {
       sharedRequestData <- validSharedDataModels
       calendar          <- Gen.calendar

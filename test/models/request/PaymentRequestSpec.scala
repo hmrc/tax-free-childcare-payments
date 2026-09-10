@@ -27,7 +27,7 @@ import play.api.libs.json.Reads
 class PaymentRequestSpec extends BaseSpec with PaymentRequestGenerators {
 
   "With implicit Payee Reads in scope, API Reads" should {
-    implicit val readsPayee: Reads[Payee] = Payee.readsPayeeFromUser
+    given Reads[Payee] = Payee.readsPayeeFromUser
 
     "return JsError" when {
       "TFC account ref is missing" in
@@ -161,7 +161,7 @@ class PaymentRequestSpec extends BaseSpec with PaymentRequestGenerators {
   }
 
   "With implicit CCP Reads in scope, API Reads" should {
-    implicit val readsCcp: Reads[Payee] = Payee.readsCcpFromUser
+    given Reads[Payee] = Payee.readsCcpFromUser
 
     "return JsError" when {
       "TFC account ref is missing" in

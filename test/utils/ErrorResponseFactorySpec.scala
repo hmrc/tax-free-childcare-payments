@@ -19,7 +19,7 @@ package utils
 import base.BaseSpec
 import models.request.data.Generators
 import models.request.{LinkRequest, Payee, PaymentRequest, SharedRequestData}
-import models.response.NsiErrorResponse._
+import models.response.NsiErrorResponse.*
 import org.apache.pekko.actor.ActorSystem
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
@@ -35,7 +35,7 @@ class ErrorResponseFactorySpec
     with LogCapturing
     with Status
     with ScalaFutures {
-  private implicit val as: ActorSystem = ActorSystem(getClass.getSimpleName)
+  private given ActorSystem = ActorSystem(getClass.getSimpleName)
 
   private val linkRequestJsonErrorScenarios = Table(
     ("Invalid Payloads", "Expected Error Code", "Expected Error Description"),
@@ -135,7 +135,7 @@ class ErrorResponseFactorySpec
 
   "method getJson" should {
     "return expected errorCode and errorDescription" when {
-      implicit val readsPayee: Reads[Payee] = Payee.readsCcpFromUser
+      given Reads[Payee] = Payee.readsCcpFromUser
 
       "LinkRequest JSON is invalid" in
         forAll(linkRequestJsonErrorScenarios) { (invalidPayloads, expectedErrorCode, expectedErrorDesc) =>

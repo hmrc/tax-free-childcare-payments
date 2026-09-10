@@ -45,7 +45,7 @@ trait PayeeGenerators extends base.Generators {
     .map(JsString.apply)
 
   private val oversizedCcpUrns = Gen
-    .chooseNum(CCP_REG_MAX_LEN + 1, Byte.MaxValue)
+    .chooseNum(CCP_REG_MAX_LEN + 1, Byte.MaxValue.toInt)
     .flatMap(size => Gen.stringOfN(size, Gen.asciiPrintableChar))
 
   protected val invalidCcpUrns: Gen[JsString] = Gen

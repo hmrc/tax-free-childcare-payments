@@ -27,11 +27,11 @@ import java.util.UUID
 import scala.concurrent.Future
 
 class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Generators {
-  private implicit val as: ActorSystem = app.actorSystem
+  given ActorSystem = app.actorSystem
 
   private val authAction = app.injector.instanceOf[AuthAction]
 
-  val successBlock: IdentifierRequest[_] => Future[Result] = (_: IdentifierRequest[_]) => Future.successful(Ok(JsString("success")))
+  val successBlock: IdentifierRequest[?] => Future[Result] = (_: IdentifierRequest[?]) => Future.successful(Ok(JsString("success")))
 
   "method invokeBlock" should {
     "return a 400 Response with errorCode ETFC1 and expected errorDescription" when {

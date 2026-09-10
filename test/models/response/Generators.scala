@@ -24,7 +24,7 @@ import play.api.libs.json.{JsObject, Json}
 
 trait Generators extends base.Generators {
 
-  protected implicit val arbLinkResponse: Arbitrary[LinkResponse] = Arbitrary(
+  protected given arbLinkResponse: Arbitrary[LinkResponse] = Arbitrary(
     fullNames.map(LinkResponse.apply)
   )
 
@@ -32,7 +32,7 @@ trait Generators extends base.Generators {
     "childFullName" -> response.childFullName
   )
 
-  protected implicit val arbBalanceResponse: Arbitrary[BalanceResponse] = Arbitrary(
+  protected given arbBalanceResponse: Arbitrary[BalanceResponse] = Arbitrary(
     for {
       accountStatus  <- Gen.oneOf(NsiAccountStatus.values)
       topUpAvailable <- Gen.posNum[Int]
@@ -52,7 +52,7 @@ trait Generators extends base.Generators {
     "clearedFunds"   -> response.clearedFunds
   )
 
-  protected implicit val arbPaymentResponse: Arbitrary[PaymentResponse] = Arbitrary(
+  protected given arbPaymentResponse: Arbitrary[PaymentResponse] = Arbitrary(
     for {
       reference <- Gen.asciiPrintableStr
       calendar  <- Gen.calendar

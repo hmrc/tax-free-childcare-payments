@@ -19,11 +19,11 @@ package connectors
 import base.{BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import config.AppConfig
 import models.request.data.Generators
 import models.request.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
-import models.response.NsiErrorResponse._
+import models.response.NsiErrorResponse.*
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import org.mockito.Mockito
 import org.mockito.Mockito.{spy, when}
@@ -65,7 +65,7 @@ class NsiConnectorISpec
         forAll { (request: IdentifierRequest[LinkRequest], expectedResponse: LinkResponse) =>
           stubNsiLinkAccounts201(getNsiJsonFrom(expectedResponse))
 
-          val actualResponse = connector.linkAccounts(request).futureValue.value
+          val actualResponse = connector.linkAccounts(using request).futureValue.value
 
           actualResponse shouldBe expectedResponse
           WireMock.verify(
@@ -84,7 +84,7 @@ class NsiConnectorISpec
             val expectedStatus = randomHttpErrorCodes.sample.get
             stubNsiLinkAccountsError(expectedStatus, "E0001", expectedErrorDescription)
 
-            val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
+            val actualNsiErrorResponse = connector.linkAccounts(using request).futureValue.left.value
 
             actualNsiErrorResponse shouldBe E0001
 
@@ -109,7 +109,7 @@ class NsiConnectorISpec
             val expectedStatus = randomHttpErrorCodes.sample.get
             stubNsiLinkAccountsError(expectedStatus, "E0024", expectedErrorDescription)
 
-            val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
+            val actualNsiErrorResponse = connector.linkAccounts(using request).futureValue.left.value
 
             actualNsiErrorResponse shouldBe E0024
 
@@ -132,7 +132,7 @@ class NsiConnectorISpec
         ) { (request, unknownErrorCode) =>
           stubNsiLinkAccountsError(BAD_REQUEST, unknownErrorCode, "An error occurred")
 
-          val actualNsiErrorResponse = connector.linkAccounts(request).futureValue.left.value
+          val actualNsiErrorResponse = connector.linkAccounts(using request).futureValue.left.value
 
           actualNsiErrorResponse shouldBe ETFC4
         }
@@ -144,7 +144,7 @@ class NsiConnectorISpec
           when(appConfig.nsiRequestTimeout).thenReturn(100.millis)
           stubNsiLinkAccounts201(getNsiJsonFrom(expectedResponse), 200.millis)
 
-          val actualResponse = connector.linkAccounts(request).failed.futureValue
+          val actualResponse = connector.linkAccounts(using request).failed.futureValue
 
           actualResponse shouldBe a[GatewayTimeoutException]
           actualResponse.getMessage should include(s"Request timeout to localhost/127.0.0.1:$wireMockPort after 100 ms")
@@ -158,7 +158,7 @@ class NsiConnectorISpec
         forAll { (request: IdentifierRequest[SharedRequestData], expectedResponse: BalanceResponse) =>
           stubNsiCheckBalance200(getNsiJsonFrom(expectedResponse))
 
-          val actualResponse = connector.checkBalance(request).futureValue.value
+          val actualResponse = connector.checkBalance(using request).futureValue.value
 
           actualResponse shouldBe expectedResponse
           WireMock.verify(
@@ -168,11 +168,11 @@ class NsiConnectorISpec
     }
 
     "return Left ETFC3" when {
-      implicit val shr: Shrink[String] = Shrink.shrinkAny
+      given Shrink[String] = Shrink.shrinkAny
 
       "NSI responds with an invalid account status" in
         forAll(randomNinos, Gen.uuid, validSharedDataModels) { (nino, correlationId, sharedRequestData) =>
-          implicit val req: IdentifierRequest[SharedRequestData] =
+          given IdentifierRequest[SharedRequestData] =
             IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), sharedRequestData))
 
           val invalidBalanceResponse = Json.obj(
@@ -204,7 +204,7 @@ class NsiConnectorISpec
         ) { (request, unknownErrorCode) =>
           stubNsiCheckBalanceError(BAD_REQUEST, unknownErrorCode, "An error occurred")
 
-          val actualNsiErrorResponse = connector.checkBalance(request).futureValue.left.value
+          val actualNsiErrorResponse = connector.checkBalance(using request).futureValue.left.value
 
           actualNsiErrorResponse shouldBe ETFC4
         }
@@ -216,7 +216,7 @@ class NsiConnectorISpec
           when(appConfig.nsiRequestTimeout).thenReturn(100.millis)
           stubNsiCheckBalance200(getNsiJsonFrom(expectedResponse), 200.millis)
 
-          val actualResponse = connector.checkBalance(request).failed.futureValue
+          val actualResponse = connector.checkBalance(using request).failed.futureValue
 
           actualResponse shouldBe a[GatewayTimeoutException]
           actualResponse.getMessage should include(s"Request timeout to localhost/127.0.0.1:$wireMockPort after 100 ms")
@@ -230,7 +230,7 @@ class NsiConnectorISpec
         forAll { (request: IdentifierRequest[PaymentRequest], expectedResponse: PaymentResponse) =>
           stubNsiMakePayment201(getNsiJsonFrom(expectedResponse))
 
-          val actualResponse = connector.makePayment(request).futureValue.value
+          val actualResponse = connector.makePayment(using request).futureValue.value
 
           actualResponse shouldBe expectedResponse
           WireMock.verify(
@@ -249,7 +249,7 @@ class NsiConnectorISpec
             val expectedStatus = randomHttpErrorCodes.sample.get
             stubNsiMakePaymentError(expectedStatus, "E0009", expectedErrorDescription)
 
-            val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
+            val actualNsiErrorResponse = connector.makePayment(using request).futureValue.left.value
 
             actualNsiErrorResponse shouldBe E0009
 
@@ -274,7 +274,7 @@ class NsiConnectorISpec
             val expectedStatus = randomHttpErrorCodes.sample.get
             stubNsiMakePaymentError(expectedStatus, "E0027", expectedErrorDescription)
 
-            val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
+            val actualNsiErrorResponse = connector.makePayment(using request).futureValue.left.value
 
             actualNsiErrorResponse shouldBe E0027
 
@@ -297,7 +297,7 @@ class NsiConnectorISpec
         ) { (request, unknownErrorCode) =>
           stubNsiMakePaymentError(BAD_REQUEST, unknownErrorCode, "An error occurred")
 
-          val actualNsiErrorResponse = connector.makePayment(request).futureValue.left.value
+          val actualNsiErrorResponse = connector.makePayment(using request).futureValue.left.value
 
           actualNsiErrorResponse shouldBe ETFC4
         }
@@ -309,7 +309,7 @@ class NsiConnectorISpec
           when(appConfig.nsiRequestTimeout).thenReturn(100.millis)
           stubNsiMakePayment201(getNsiJsonFrom(expectedResponse), 200.millis)
 
-          val actualResponse = connector.makePayment(request).failed.futureValue
+          val actualResponse = connector.makePayment(using request).failed.futureValue
 
           actualResponse shouldBe a[GatewayTimeoutException]
           actualResponse.getMessage should include(s"Request timeout to localhost/127.0.0.1:$wireMockPort after 100 ms")

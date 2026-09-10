@@ -18,16 +18,14 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.request._
+import models.request.*
 import models.response.NsiErrorResponse.NsiResponse
 import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
 import utils.{ErrorResponseFactory, FormattedLogging}
-
-import play.api.libs.json._
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.libs.json.*
+import play.api.mvc.{Action, ControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 @Singleton()
@@ -35,24 +33,26 @@ class TaxFreeChildcarePaymentsController @Inject() (
     cc: ControllerComponents,
     identify: AuthAction,
     nsiConnector: NsiConnector
-)(implicit ec: ExecutionContext, readsPayee: Reads[Payee])
+)(using ExecutionContext, Reads[Payee])
     extends BackendController(cc)
     with FormattedLogging {
 
   def link(): Action[JsValue] =
-    nsiAction[LinkRequest, LinkResponse](implicit req => nsiConnector.linkAccounts)
+    nsiAction[LinkRequest, LinkResponse](req => nsiConnector.linkAccounts(using req))
 
   def balance(): Action[JsValue] =
-    nsiAction[SharedRequestData, BalanceResponse](implicit req => nsiConnector.checkBalance)
+    nsiAction[SharedRequestData, BalanceResponse](req => nsiConnector.checkBalance(using req))
 
   def payment(): Action[JsValue] =
-    nsiAction[PaymentRequest, PaymentResponse](implicit req => nsiConnector.makePayment)
+    nsiAction[PaymentRequest, PaymentResponse](req => nsiConnector.makePayment(using req))
 
   private def nsiAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[NsiResponse[Res]]) =
-    identify.async(parse.json) { implicit request =>
+    identify.async(parse.json) { request =>
+      given Request[JsValue] = request
       request.body.validate[Req] match {
         case JsSuccess(value, _) =>
-          val requestWithValidBody = IdentifierRequest(request.nino, request.correlation_id, request.map(_ => value))
+          val requestWithValidBody: IdentifierRequest[Req] =
+            IdentifierRequest(request.nino, request.correlation_id, request.map(_ => value))
 
           block(requestWithValidBody).map {
             case Left(nsiError)    => ErrorResponseFactory.getResult(nsiError)
