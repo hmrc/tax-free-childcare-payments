@@ -34,13 +34,13 @@ object SharedRequestData extends ConstraintReads {
   private val NonEmptyAlphaNumStringReads: Reads[String] = pattern("[a-zA-Z0-9]{1,255}".r)
   private val TfcAccountRefReads: Reads[String]          = pattern("[a-zA-Z]{2}[a-zA-Z0'.\\- ]{2}[0-9]{5}TFC".r)
 
-  implicit val readsFromUser: Reads[SharedRequestData] =
+  given Reads[SharedRequestData] =
     (__ \ EPP_ACCOUNT_ID_KEY)
       .read[String](NonEmptyAlphaNumStringReads)
       .and((__ \ EPP_URN_KEY).read[String](NonEmptyAlphaNumStringReads))
       .and((__ \ TFC_ACCOUNT_REF_KEY).read[String](TfcAccountRefReads))(SharedRequestData.apply _)
 
-  implicit val writes: OWrites[SharedRequestData] = srd =>
+  given OWrites[SharedRequestData] = srd =>
     Json.obj(
       "eppAccount" -> srd.epp_unique_customer_id,
       "eppURN"     -> srd.epp_reg_reference

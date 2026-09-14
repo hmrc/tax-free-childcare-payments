@@ -1,5 +1,5 @@
 # microservice specific routes
 
-POST       /link           controllers.TaxFreeChildcarePaymentsController.link
-POST       /balance        controllers.TaxFreeChildcarePaymentsController.balance
-POST       /               controllers.TaxFreeChildcarePaymentsController.payment
+POST       /link           controllers.TaxFreeChildcarePaymentsController.link()
+POST       /balance        controllers.TaxFreeChildcarePaymentsController.balance()
+POST       /               controllers.TaxFreeChildcarePaymentsController.payment()

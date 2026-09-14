@@ -28,13 +28,13 @@ final case class PaymentResponse(
 
 object PaymentResponse {
 
-  implicit val writesToUser: OWrites[PaymentResponse] = pr =>
+  given OWrites[PaymentResponse] = pr =>
     Json.obj(
       "payment_reference"      -> pr.payment_reference,
       "estimated_payment_date" -> pr.estimated_payment_date
     )
 
-  implicit val readsFromNsi: Reads[PaymentResponse] =
+  given Reads[PaymentResponse] =
     (__ \ "paymentReference").read[String].and((__ \ "paymentDate").read[LocalDate])(PaymentResponse.apply _)
 
 }

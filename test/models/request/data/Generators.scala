@@ -16,7 +16,7 @@
 
 package models.request.data
 
-import models.request._
+import models.request.*
 
 import play.api.mvc.Headers
 import play.api.test.FakeRequest
@@ -26,7 +26,7 @@ trait Generators extends LinkRequestGenerators with PaymentRequestGenerators {
   import org.scalacheck.{Arbitrary, Gen}
   import Arbitrary.arbitrary
 
-  protected implicit def arbIdentifierRequest[A: Arbitrary]: Arbitrary[IdentifierRequest[A]] = Arbitrary(
+  protected given arbIdentifierRequest[A: Arbitrary]: Arbitrary[IdentifierRequest[A]] = Arbitrary(
     randomIdentifierRequest(arbitrary[A])
   )
 

@@ -65,7 +65,7 @@ abstract class BaseISpec(enablePayeeTypeEPP: Boolean = false)
       expectedStatus: Int,
       expectedErrorCode: String,
       expectedErrorDescription: String
-  )(implicit as: ActorSystem): Assertion = {
+  )(using ActorSystem): Assertion = {
     actualResult.header.status shouldBe expectedStatus
 
     val actualResultStream = actualResult.body.consumeData.futureValue.toArray

@@ -16,7 +16,7 @@
 
 package models.response
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 sealed abstract class NsiAccountStatus(val toUserString: String)
 
@@ -26,9 +26,9 @@ object NsiAccountStatus {
 
   val values: Set[NsiAccountStatus] = Set(ACTIVE, BLOCKED)
 
-  implicit val writesToUser: Writes[NsiAccountStatus] = status => JsString(status.toUserString)
+  given Writes[NsiAccountStatus] = status => JsString(status.toUserString)
 
-  implicit val readsFromNsi: Reads[NsiAccountStatus] = {
+  given Reads[NsiAccountStatus] = {
     case JsString(value) =>
       values.find(_.toString == value) match {
         case Some(accountStatus) => JsSuccess(accountStatus)

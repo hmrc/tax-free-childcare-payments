@@ -20,7 +20,7 @@ import base.BaseSpec
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 class NsiAccountStatusSpec extends BaseSpec {
 

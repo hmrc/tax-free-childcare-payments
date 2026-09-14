@@ -16,9 +16,9 @@
 
 package models.response
 
-import enumeratum._
+import enumeratum.*
 
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.{Reads, __}
 
 sealed abstract class NsiErrorResponse(val reportAs: Int, val message: String) extends EnumEntry
@@ -186,7 +186,7 @@ object NsiErrorResponse extends Enum[NsiErrorResponse] {
   /** This must be to stop NPE thrown by JSON reader. */
   override val values: IndexedSeq[NsiErrorResponse] = findValues
 
-  implicit val reads: Reads[NsiErrorResponse] =
+  given Reads[NsiErrorResponse] =
     (__ \ "errorCode").read[String].map(str => values.find(_.toString.equalsIgnoreCase(str)).getOrElse(ETFC4))
 
 }

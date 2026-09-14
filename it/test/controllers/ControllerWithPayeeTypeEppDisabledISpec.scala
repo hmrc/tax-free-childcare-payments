@@ -30,6 +30,7 @@ import org.scalatest.Assertion
 import play.api.Logger
 import play.api.libs.json.{JsPath, Json, JsonValidationError, KeyPathNode}
 import play.api.libs.ws.WSResponse
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 import java.util.UUID
 import scala.util.matching.Regex

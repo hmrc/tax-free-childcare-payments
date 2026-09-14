@@ -132,6 +132,6 @@ trait SharedRequestGenerators extends base.Generators {
 
   protected val validCheckBalanceRequestPayloads: Gen[JsObject] = validSharedJson
 
-  protected implicit val arbSharedRequestData: Arbitrary[SharedRequestData] = Arbitrary(validSharedDataModels)
+  protected given arbSharedRequestData: Arbitrary[SharedRequestData] = Arbitrary(validSharedDataModels)
 
 }

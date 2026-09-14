@@ -21,6 +21,7 @@ import models.request.data.Generators
 import models.request.{IdentifierRequest, PaymentRequest}
 import models.response.PaymentResponse
 import play.api.libs.json.Json
+import play.api.libs.ws.writeableOf_JsValue
 
 class ControllerWithPayeeTypeEppEnabledISpec
     extends BaseISpec(enablePayeeTypeEPP = true)

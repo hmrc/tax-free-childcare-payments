@@ -17,7 +17,7 @@
 package models.request
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
+import play.api.libs.json.*
 
 final case class PaymentRequest(
     sharedRequestData: SharedRequestData,
@@ -27,10 +27,10 @@ final case class PaymentRequest(
 
 object PaymentRequest extends ConstraintReads {
 
-  implicit def readsFromUser(implicit ofPayee: Reads[Payee]): Reads[PaymentRequest] =
+  given readsFromUser(using ofPayee: Reads[Payee]): Reads[PaymentRequest] =
     of[SharedRequestData].and((__ \ PAYMENT_AMOUNT_KEY).read(min(1))).and(ofPayee)(apply _)
 
-  implicit val writesPaymentReq: OWrites[PaymentRequest] = pr =>
+  given OWrites[PaymentRequest] = pr =>
     Json.toJsObject(pr.sharedRequestData) ++
       Json.toJsObject(pr.payee) ++
       Json.obj(

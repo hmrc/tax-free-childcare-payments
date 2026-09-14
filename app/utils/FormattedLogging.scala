@@ -22,13 +22,13 @@ import play.api.mvc.RequestHeader
 trait FormattedLogging extends Logging {
   import utils.FormattedLogging.{CORRELATION_ID, endpoints}
 
-  def formattedErrorLog(msg: String)(implicit req: RequestHeader): String =
+  def formattedErrorLog(msg: String)(using RequestHeader): String =
     formattedLog("Error", msg)
 
-  def formattedInfoLog(msg: String)(implicit req: RequestHeader): String =
+  def formattedInfoLog(msg: String)(using RequestHeader): String =
     formattedLog("Info", msg)
 
-  private def formattedLog(level: String, msg: String)(implicit req: RequestHeader): String = {
+  private def formattedLog(level: String, msg: String)(using req: RequestHeader): String = {
     val endpoint      = endpoints.getOrElse(req.uri, s"${req.method} ${req.uri}")
     val correlationId = req.headers.get(CORRELATION_ID).orNull
 

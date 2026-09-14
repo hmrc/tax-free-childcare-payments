@@ -2,7 +2,7 @@ import play.sbt.PlayImport.PlayKeys.playDefaultPort
 import uk.gov.hmrc.DefaultBuildSettings
 
 ThisBuild / majorVersion                                         := 0
-ThisBuild / scalaVersion                                         := "2.13.18"
+ThisBuild / scalaVersion                                         := "3.3.7"
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 
 lazy val microservice = Project("tax-free-childcare-payments", file("."))
@@ -14,11 +14,8 @@ lazy val microservice = Project("tax-free-childcare-payments", file("."))
     scalacOptions ++= Seq(
       // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
       // suppress warnings in generated routes files
-      "-Wconf:src=routes/.*:s",
-      "-Wconf:cat=unused&src=views/.*\\.scala:s",
-      "-Wconf:cat=unused&src=.*RoutesPrefix\\.scala:s",
-      "-Wconf:cat=unused&src=.*Routes\\.scala:s",
-      "-Wconf:cat=unused&src=.*ReverseRoutes\\.scala:s"
+      "-Wconf:msg=unused&src=.*routes.*:s",
+      "-Wconf:msg=Flag.*repeatedly:s"
     ),
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     playDefaultPort := 10500
@@ -29,6 +26,10 @@ lazy val it = project
   .dependsOn(microservice % "test->test")
   .settings(DefaultBuildSettings.itSettings())
   .settings(libraryDependencies ++= AppDependencies.it)
+
+scalacOptions ++= Seq(
+  "-Wconf:msg=Flag.*repeatedly:s"
+)
 
 commands ++= Seq(
   Command.command("run-all-tests")(state => "test" :: "it/test" :: state),

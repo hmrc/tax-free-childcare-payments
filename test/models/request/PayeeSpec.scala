@@ -24,7 +24,7 @@ import play.api.libs.json.{KeyPathNode, Reads}
 class PayeeSpec extends BaseSpec with PayeeGenerators {
 
   "val readsPayeeFromUser" should {
-    implicit val reads: Reads[Payee] = Payee.readsPayeeFromUser
+    given Reads[Payee] = Payee.readsPayeeFromUser
 
     "return JsSuccess" when {
       "JSON is valid" in
@@ -57,7 +57,7 @@ class PayeeSpec extends BaseSpec with PayeeGenerators {
   }
 
   "val readsCcpFromUser" should {
-    implicit val reads: Reads[Payee] = Payee.readsCcpFromUser
+    given Reads[Payee] = Payee.readsCcpFromUser
 
     "return JsSuccess" when {
       "JSON is valid" in

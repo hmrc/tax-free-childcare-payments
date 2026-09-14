@@ -18,7 +18,7 @@ package models.request
 
 import models.request.Payee.ChildCareProvider.{PostCode, Urn}
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json._
+import play.api.libs.json.*
 
 sealed abstract class Payee
 
@@ -46,8 +46,8 @@ object Payee extends ConstraintReads {
 
     object PostCode {
 
-      implicit val reads: Reads[PostCode]   = pattern("\\s*[a-zA-Z0-9]{2,4}\\s*\\d[a-zA-Z]{2}\\s*$".r).map(PostCode(_))
-      implicit val writes: Writes[PostCode] = postCode => JsString(postCode.value)
+      given Reads[PostCode]  = pattern("\\s*[a-zA-Z0-9]{2,4}\\s*\\d[a-zA-Z]{2}\\s*$".r).map(PostCode(_))
+      given Writes[PostCode] = postCode => JsString(postCode.value)
 
     }
 
@@ -57,8 +57,8 @@ object Payee extends ConstraintReads {
 
       val CCP_REG_MAX_LEN = 20
 
-      implicit val reads: Reads[Urn]   = pattern(s".{1,$CCP_REG_MAX_LEN}".r).map(apply)
-      implicit val writes: Writes[Urn] = reference => JsString(reference.value)
+      given Reads[Urn]  = pattern(s".{1,$CCP_REG_MAX_LEN}".r).map(apply)
+      given Writes[Urn] = reference => JsString(reference.value)
     }
 
   }
@@ -82,7 +82,7 @@ object Payee extends ConstraintReads {
         case _     => readsPayeeFailed
       }
 
-  implicit val writesToNsi: OWrites[Payee] = {
+  given OWrites[Payee] = {
     case ExternalPaymentProvider => Json.obj("payeeType" -> "EPP")
     case ChildCareProvider(urn, postcode) =>
       Json.obj(

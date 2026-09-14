@@ -17,7 +17,7 @@
 package base
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.matching.{StringValuePattern, UrlPattern}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalacheck.Gen

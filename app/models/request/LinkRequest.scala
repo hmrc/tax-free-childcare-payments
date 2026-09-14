@@ -31,7 +31,7 @@ object LinkRequest {
 
   val CHILD_DOB_KEY = "child_date_of_birth"
 
-  implicit val readsFromUser: Reads[LinkRequest] =
+  given Reads[LinkRequest] =
     __.read[SharedRequestData]
       .and((__ \ CHILD_DOB_KEY).read[String].flatMapResult(s => JsResult.fromTry(Try(LocalDate.parse(s)))))(apply _)
 

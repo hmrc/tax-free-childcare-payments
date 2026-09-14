@@ -17,17 +17,18 @@
 package connectors
 
 import config.AppConfig
-import models.request._
+import models.request.*
 import models.response.NsiErrorResponse.{ETFC3, NsiResponse}
-import models.response._
+import models.response.*
 import play.api.http.Status
-import play.api.libs.json._
+import play.api.libs.json.*
 import play.api.mvc.RequestHeader
 import sttp.model.HeaderNames
 import uk.gov.hmrc.http.HttpReads
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import utils.FormattedLogging
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 import java.net.{URI, URL, URLEncoder}
 import javax.inject.{Inject, Singleton}
@@ -37,13 +38,13 @@ import scala.concurrent.{ExecutionContext, Future}
 class NsiConnector @Inject() (
     httpClient: HttpClientV2,
     appConfig: AppConfig
-)(implicit ec: ExecutionContext)
+)(using ExecutionContext)
     extends BackendHeaderCarrierProvider
     with FormattedLogging
     with HeaderNames {
-  import NsiConnector._
+  import NsiConnector.{given, *}
 
-  def linkAccounts(implicit req: IdentifierRequest[LinkRequest]): Future[NsiResponse[LinkResponse]] =
+  def linkAccounts(using req: IdentifierRequest[LinkRequest]): Future[NsiResponse[LinkResponse]] =
     httpClient
       .get(linkAccountsUrl)
       .setHeader(appConfig.nsiCorrelationIdHeader -> req.correlation_id.toString)
@@ -52,7 +53,7 @@ class NsiConnector @Inject() (
       .transform(_.withRequestTimeout(appConfig.nsiRequestTimeout))
       .execute[NsiResponse[LinkResponse]]
 
-  private def linkAccountsUrl(implicit req: IdentifierRequest[LinkRequest]): URL = {
+  private def linkAccountsUrl(using req: IdentifierRequest[LinkRequest]): URL = {
     val queryString = Map(
       "eppURN"     -> req.body.sharedRequestData.epp_reg_reference,
       "eppAccount" -> req.body.sharedRequestData.epp_unique_customer_id,
@@ -67,7 +68,7 @@ class NsiConnector @Inject() (
     new URI(url).toURL
   }
 
-  def checkBalance(implicit req: IdentifierRequest[SharedRequestData]): Future[NsiResponse[BalanceResponse]] =
+  def checkBalance(using req: IdentifierRequest[SharedRequestData]): Future[NsiResponse[BalanceResponse]] =
     httpClient
       .get(checkBalanceUrl)
       .setHeader(appConfig.nsiCorrelationIdHeader -> req.correlation_id.toString)
@@ -76,7 +77,7 @@ class NsiConnector @Inject() (
       .transform(_.withRequestTimeout(appConfig.nsiRequestTimeout))
       .execute[NsiResponse[BalanceResponse]]
 
-  private def checkBalanceUrl(implicit req: IdentifierRequest[SharedRequestData]): URL = {
+  private def checkBalanceUrl(using req: IdentifierRequest[SharedRequestData]): URL = {
     val queryString = Map(
       "eppURN"     -> req.body.epp_reg_reference,
       "eppAccount" -> req.body.epp_unique_customer_id,
@@ -90,7 +91,7 @@ class NsiConnector @Inject() (
     new URI(url).toURL
   }
 
-  def makePayment(implicit req: IdentifierRequest[PaymentRequest]): Future[NsiResponse[PaymentResponse]] =
+  def makePayment(using req: IdentifierRequest[PaymentRequest]): Future[NsiResponse[PaymentResponse]] =
     httpClient
       .post(new URI(appConfig.nsiMakePaymentUrl).toURL)
       .setHeader(appConfig.nsiCorrelationIdHeader -> req.correlation_id.toString)
@@ -104,13 +105,13 @@ class NsiConnector @Inject() (
 
 object NsiConnector extends FormattedLogging with Status {
 
-  private def enrichedWithNino[R: OWrites](implicit req: IdentifierRequest[R]): JsObject =
+  private def enrichedWithNino[R: OWrites](using req: IdentifierRequest[R]): JsObject =
     Json.toJsObject(req.body) + ("parentNino" -> JsString(req.nino))
 
   private def encodeParam(outboundPaymentRef: String): String =
     URLEncoder.encode(outboundPaymentRef, "UTF-8").replaceAll("\\+", "%20")
 
-  private implicit def httpReadsNsiResponse[A: Reads](implicit rh: RequestHeader): HttpReads[NsiResponse[A]] =
+  private given httpReadsNsiResponse[A: Reads](using rh: RequestHeader): HttpReads[NsiResponse[A]] =
     (_, _, response) =>
       if (response.status / 100 == 2) {
         response.json.validate[A] match {

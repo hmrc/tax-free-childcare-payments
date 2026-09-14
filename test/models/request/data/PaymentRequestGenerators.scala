@@ -26,7 +26,7 @@ import play.api.libs.json.{JsNumber, JsObject, JsString, Json}
 
 trait PaymentRequestGenerators extends SharedRequestGenerators with PayeeGenerators {
 
-  protected implicit val arbPaymentRequest: Arbitrary[PaymentRequest] = Arbitrary(
+  protected given Arbitrary[PaymentRequest] = Arbitrary(
     randomPaymentRequestWith(arbitrary[SharedRequestData], randomPayees)
   )
 
