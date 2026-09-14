@@ -27,6 +27,10 @@ lazy val it = project
   .settings(DefaultBuildSettings.itSettings())
   .settings(libraryDependencies ++= AppDependencies.it)
 
+scalacOptions ++= Seq(
+  "-Wconf:msg=Flag.*repeatedly:s"
+)
+
 commands ++= Seq(
   Command.command("run-all-tests")(state => "test" :: "it/test" :: state),
   Command.command("pre-commit") { state =>
