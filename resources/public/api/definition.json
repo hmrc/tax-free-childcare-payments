@@ -6,9 +6,7 @@
     "categories": ["OTHER"],
     "versions": [
       {
-        "access": {
-          "type": "PRIVATE"
-        },
+        "access": "INTERNAL",
         "version": "1.2",
         "status": "BETA",
         "endpointsEnabled": true
