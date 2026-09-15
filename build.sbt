@@ -26,10 +26,11 @@ lazy val it = project
   .dependsOn(microservice % "test->test")
   .settings(DefaultBuildSettings.itSettings())
   .settings(libraryDependencies ++= AppDependencies.it)
-
-scalacOptions ++= Seq(
-  "-Wconf:msg=Flag.*repeatedly:s"
-)
+  .settings(
+    scalacOptions ++= Seq(
+      "-Wconf:msg=Flag.*repeatedly:s"
+    )
+  )
 
 commands ++= Seq(
   Command.command("run-all-tests")(state => "test" :: "it/test" :: state),
