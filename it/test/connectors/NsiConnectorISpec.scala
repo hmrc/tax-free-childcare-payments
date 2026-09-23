@@ -124,6 +124,30 @@ class NsiConnectorISpec
         }
     }
 
+    "return Left ETFC3" when {
+      "NSI responds with HTML Gateway Time-out" in
+        forAll(
+          arbitrary[IdentifierRequest[LinkRequest]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubNsiLinkAccountsHtml(500, htmlError)
+
+            val htmlErrorResponse = connector.linkAccounts(using request).futureValue.left.value
+
+            htmlErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+    }
+
     "return Left ETFC4" when {
       "NSI responds with unknown errorCode" in
         forAll(
@@ -137,31 +161,6 @@ class NsiConnectorISpec
           actualNsiErrorResponse shouldBe ETFC4
         }
     }
-
-    "return Left ETFC5" when {
-      "NSI responds with HTML Gateway Time-out" in
-        forAll(
-          arbitrary[IdentifierRequest[LinkRequest]]
-        ) { request =>
-          withCaptureOfLoggingFrom(LOGGER) { logs =>
-            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
-
-            stubNsiLinkAccountsHtml(500, htmlError)
-
-            val htmlErrorResponse = connector.linkAccounts(using request).futureValue.left.value
-
-            htmlErrorResponse shouldBe ETFC5
-
-            val expectedPartialLogMessage =
-              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
-            checkLoneLog(
-              expectedLevel = Level.WARN,
-              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
-            )(logs)
-          }
-        }
-    }
-
 
     "return failed Future" when {
       "the request to NSI times out" in
@@ -219,6 +218,28 @@ class NsiConnectorISpec
 
           actualNsiErrorResponse shouldBe ETFC3
         }
+
+      "NSI responds with HTML Gateway Time-out" in
+        forAll(
+          arbitrary[IdentifierRequest[SharedRequestData]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubNsiCheckBalanceHtml(500, htmlError)
+
+            val htmlErrorResponse = connector.checkBalance(using request).futureValue.left.value
+
+            htmlErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
     }
 
     "return Left ETFC4" when {
@@ -234,32 +255,6 @@ class NsiConnectorISpec
           actualNsiErrorResponse shouldBe ETFC4
         }
     }
-
-
-    "return Left ETFC5" when {
-      "NSI responds with HTML Gateway Time-out" in
-        forAll(
-          arbitrary[IdentifierRequest[SharedRequestData]]
-        ) { request =>
-          withCaptureOfLoggingFrom(LOGGER) { logs =>
-            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
-
-            stubNsiCheckBalanceHtml(500, htmlError)
-
-            val htmlErrorResponse = connector.checkBalance(using request).futureValue.left.value
-
-            htmlErrorResponse shouldBe ETFC5
-
-            val expectedPartialLogMessage =
-              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
-            checkLoneLog(
-              expectedLevel = Level.WARN,
-              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
-            )(logs)
-          }
-        }
-    }
-
 
     "return failed Future" when {
       "the request to NSI times out" in
@@ -346,6 +341,28 @@ class NsiConnectorISpec
             )(logs)
           }
         }
+
+      "NSI responds with HTML Gateway Time-out" in
+        forAll(
+          arbitrary[IdentifierRequest[PaymentRequest]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubNsiMakePaymentHtml(500, htmlError)
+
+            val htmlErrorResponse = connector.makePayment(using request).futureValue.left.value
+
+            htmlErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
     }
 
     "return Left ETFC4" when {
@@ -359,30 +376,6 @@ class NsiConnectorISpec
           val actualNsiErrorResponse = connector.makePayment(using request).futureValue.left.value
 
           actualNsiErrorResponse shouldBe ETFC4
-        }
-    }
-
-    "return Left ETFC5" when {
-      "NSI responds with HTML Gateway Time-out" in
-        forAll(
-          arbitrary[IdentifierRequest[PaymentRequest]]
-        ) { request =>
-          withCaptureOfLoggingFrom(LOGGER) { logs =>
-            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
-
-            stubNsiMakePaymentHtml(500, htmlError)
-
-            val htmlErrorResponse = connector.makePayment(using request).futureValue.left.value
-
-            htmlErrorResponse shouldBe ETFC5
-
-            val expectedPartialLogMessage =
-              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
-            checkLoneLog(
-              expectedLevel = Level.WARN,
-              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
-            )(logs)
-          }
         }
     }
 

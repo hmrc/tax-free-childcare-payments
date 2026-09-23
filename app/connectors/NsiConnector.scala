@@ -19,7 +19,7 @@ package connectors
 import com.fasterxml.jackson.core.JsonParseException
 import config.AppConfig
 import models.request.*
-import models.response.NsiErrorResponse.{ETFC3, ETFC5, NsiResponse}
+import models.response.NsiErrorResponse.{ETFC3, NsiResponse}
 import models.response.*
 import play.api.http.Status
 import play.api.libs.json.*
@@ -162,7 +162,7 @@ object NsiConnector extends FormattedLogging with Status {
                 s"NSI responded $status with body - $body - triggering ETFC3"
               )
             )
-            Left(ETFC5)
+            Left(ETFC3)
         }
       }
 

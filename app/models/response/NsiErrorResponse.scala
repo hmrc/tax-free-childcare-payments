@@ -183,8 +183,6 @@ object NsiErrorResponse extends Enum[NsiErrorResponse] {
   case object ETFC3 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway") // Unexpected NSI response
   case object ETFC4 extends NsiErrorResponse(BAD_GATEWAY, "Bad Gateway") // Unexpected NSI errorCode
 
-  case object ETFC5 extends NsiErrorResponse(GATEWAY_TIMEOUT, "The server didn't respond in time.")
-
   /** This must be to stop NPE thrown by JSON reader. */
   override val values: IndexedSeq[NsiErrorResponse] = findValues
 
