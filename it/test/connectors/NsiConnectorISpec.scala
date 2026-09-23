@@ -24,7 +24,7 @@ import config.AppConfig
 import models.request.data.Generators
 import models.request.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse.*
-import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
+import models.response.{BalanceResponse, LinkResponse, NsiErrorResponse, PaymentResponse}
 import org.mockito.Mockito
 import org.mockito.Mockito.{spy, when}
 import org.scalacheck.Arbitrary.arbitrary
@@ -138,6 +138,31 @@ class NsiConnectorISpec
         }
     }
 
+    "return Left ETFC5" when {
+      "NSI responds with HTML Gateway Time-out" in
+        forAll(
+          arbitrary[IdentifierRequest[LinkRequest]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubNsiLinkAccountsHtml(500, htmlError)
+
+            val htmlErrorResponse = connector.linkAccounts(using request).futureValue.left.value
+
+            htmlErrorResponse shouldBe ETFC5
+
+            val expectedPartialLogMessage =
+              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+    }
+
+
     "return failed Future" when {
       "the request to NSI times out" in
         forAll { (request: IdentifierRequest[LinkRequest], expectedResponse: LinkResponse) =>
@@ -210,6 +235,32 @@ class NsiConnectorISpec
         }
     }
 
+
+    "return Left ETFC5" when {
+      "NSI responds with HTML Gateway Time-out" in
+        forAll(
+          arbitrary[IdentifierRequest[SharedRequestData]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubNsiCheckBalanceHtml(500, htmlError)
+
+            val htmlErrorResponse = connector.checkBalance(using request).futureValue.left.value
+
+            htmlErrorResponse shouldBe ETFC5
+
+            val expectedPartialLogMessage =
+              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+    }
+
+
     "return failed Future" when {
       "the request to NSI times out" in
         forAll { (request: IdentifierRequest[SharedRequestData], expectedResponse: BalanceResponse) =>
@@ -221,6 +272,14 @@ class NsiConnectorISpec
           actualResponse shouldBe a[GatewayTimeoutException]
           actualResponse.getMessage should include(s"Request timeout to localhost/127.0.0.1:$wireMockPort after 100 ms")
         }
+    }
+
+    "return error" when {
+      "the request doesn't validate" in {
+        //val request = Html("<>")
+        //val actualResponse = connector.checkBalance(using request).futureValue.value
+
+      }
     }
   }
 
@@ -302,6 +361,31 @@ class NsiConnectorISpec
           actualNsiErrorResponse shouldBe ETFC4
         }
     }
+
+    "return Left ETFC5" when {
+      "NSI responds with HTML Gateway Time-out" in
+        forAll(
+          arbitrary[IdentifierRequest[PaymentRequest]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubNsiMakePaymentHtml(500, htmlError)
+
+            val htmlErrorResponse = connector.makePayment(using request).futureValue.left.value
+
+            htmlErrorResponse shouldBe ETFC5
+
+            val expectedPartialLogMessage =
+              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+    }
+
 
     "return failed Future" when {
       "the request to NSI times out" in

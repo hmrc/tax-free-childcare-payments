@@ -25,6 +25,7 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
+import play.twirl.api.Html
 
 import java.util
 import scala.concurrent.duration.Duration
@@ -48,6 +49,15 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
 
   protected def stubNsiLinkAccountsError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
     nsiLinkAccountsEndpoint.willReturn(nsiErrorResponse(status, errorCode, errorDesc))
+  }
+
+  protected def stubNsiLinkAccountsHtml(status: Int, htmlBody:String): StubMapping = stubFor {
+    nsiLinkAccountsEndpoint
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(Html(htmlBody).toString)
+      )
   }
 
   protected val nsiLinkAccountsUrlPattern: UrlPattern = nsiUrlPattern("linkAccounts", raw"[a-zA-Z0-9]+\\?[^/]+")
@@ -76,6 +86,16 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
     nsiCheckBalanceEndpoint.willReturn(nsiErrorResponse(status, errorCode, errorDesc))
   }
 
+
+  protected def stubNsiCheckBalanceHtml(status: Int, htmlBody:String): StubMapping = stubFor {
+    nsiCheckBalanceEndpoint
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(htmlBody)
+      )
+  }
+
   protected val nsiBalanceUrlPattern: UrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   protected val nsiCheckBalanceEndpoint: MappingBuilder = get(nsiBalanceUrlPattern)
@@ -99,6 +119,16 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
 
   protected def stubNsiMakePaymentError(status: Int, errorCode: String, errorDesc: String): StubMapping = stubFor {
     nsiMakePaymentEndpoint.willReturn(nsiErrorResponse(status, errorCode, errorDesc))
+  }
+
+
+  protected def stubNsiMakePaymentHtml(status: Int, htmlBody:String): StubMapping = stubFor {
+    nsiMakePaymentEndpoint
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(Html(htmlBody).toString)
+      )
   }
 
   protected val nsiPaymentUrlPattern: UrlPattern = nsiUrlPattern("makePayment")
