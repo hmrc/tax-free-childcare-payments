@@ -16,9 +16,10 @@
 
 package connectors
 
+import com.fasterxml.jackson.core.JsonParseException
 import config.AppConfig
 import models.request.*
-import models.response.NsiErrorResponse.{ETFC3, NsiResponse}
+import models.response.NsiErrorResponse.{ETFC3, ETFC5, NsiResponse}
 import models.response.*
 import play.api.http.Status
 import play.api.libs.json.*
@@ -131,24 +132,37 @@ object NsiConnector extends FormattedLogging with Status {
             Left(ETFC3)
         }
       } else {
-        response.json.validate[NsiErrorResponse] match {
-          case JsSuccess(nsiErrorResponse, _) =>
-            val message = formattedErrorLog(
-              s"NSI responded ${response.status} with body ${response.body} - triggering $nsiErrorResponse"
-            )
-            if (nsiErrorResponse.reportAs < INTERNAL_SERVER_ERROR) {
-              logger.info(message)
-            } else {
-              logger.warn(message)
-            }
-            Left(nsiErrorResponse)
-          case JsError(jsonErrors) =>
+        try
+          response.json.validate[NsiErrorResponse] match {
+            case JsSuccess(nsiErrorResponse, _) =>
+              val message = formattedErrorLog(
+                s"NSI responded ${response.status} with body ${response.body} - triggering $nsiErrorResponse"
+              )
+              if (nsiErrorResponse.reportAs < INTERNAL_SERVER_ERROR) {
+                logger.info(message)
+              } else {
+                logger.warn(message)
+              }
+              Left(nsiErrorResponse)
+            case JsError(jsonErrors) =>
+              logger.warn(
+                formattedErrorLog(
+                  s"NSI responded ${response.status}. Resulting in JSON validation errors - $jsonErrors - triggering ETFC3"
+                )
+              )
+              Left(ETFC3)
+          }
+        catch {
+          case ex: JsonParseException =>
+            val htmlErrorSplit = response.body.split("<.*?>")
+            val status         = htmlErrorSplit(3).split(" ")(0).toInt
+            val body           = htmlErrorSplit(4)
             logger.warn(
               formattedErrorLog(
-                s"NSI responded ${response.status}. Resulting in JSON validation errors - $jsonErrors - triggering ETFC3"
+                s"NSI responded $status with body - $body - triggering ETFC3"
               )
             )
-            Left(ETFC3)
+            Left(ETFC5)
         }
       }
 
