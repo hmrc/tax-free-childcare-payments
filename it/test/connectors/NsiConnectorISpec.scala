@@ -24,7 +24,7 @@ import config.AppConfig
 import models.request.data.Generators
 import models.request.{IdentifierRequest, LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse.*
-import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
+import models.response.{BalanceResponse, LinkResponse, NsiErrorResponse, PaymentResponse}
 import org.mockito.Mockito
 import org.mockito.Mockito.{spy, when}
 import org.scalacheck.Arbitrary.arbitrary
@@ -124,6 +124,30 @@ class NsiConnectorISpec
         }
     }
 
+    "return Left ETFC3" when {
+      "NSI responds with HTML Gateway Time-out" in
+        forAll(
+          arbitrary[IdentifierRequest[LinkRequest]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubNsiLinkAccountsHtml(500, htmlError)
+
+            val htmlErrorResponse = connector.linkAccounts(using request).futureValue.left.value
+
+            htmlErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded with a JsonParseException for correlation ID - ${request.correlation_id} - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+    }
+
     "return Left ETFC4" when {
       "NSI responds with unknown errorCode" in
         forAll(
@@ -193,6 +217,28 @@ class NsiConnectorISpec
           val actualNsiErrorResponse = connector.checkBalance.futureValue.left.value
 
           actualNsiErrorResponse shouldBe ETFC3
+        }
+
+      "NSI responds with HTML Gateway Time-out" in
+        forAll(
+          arbitrary[IdentifierRequest[SharedRequestData]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubNsiCheckBalanceHtml(500, htmlError)
+
+            val htmlErrorResponse = connector.checkBalance(using request).futureValue.left.value
+
+            htmlErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded with a JsonParseException for correlation ID - ${request.correlation_id} - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
         }
     }
 
@@ -287,6 +333,28 @@ class NsiConnectorISpec
             )(logs)
           }
         }
+
+      "NSI responds with HTML Gateway Time-out" in
+        forAll(
+          arbitrary[IdentifierRequest[PaymentRequest]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubNsiMakePaymentHtml(500, htmlError)
+
+            val htmlErrorResponse = connector.makePayment(using request).futureValue.left.value
+
+            htmlErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded with a JsonParseException for correlation ID - ${request.correlation_id} - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
     }
 
     "return Left ETFC4" when {
@@ -302,6 +370,7 @@ class NsiConnectorISpec
           actualNsiErrorResponse shouldBe ETFC4
         }
     }
+
 
     "return failed Future" when {
       "the request to NSI times out" in
