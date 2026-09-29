@@ -139,7 +139,7 @@ class NsiConnectorISpec
             htmlErrorResponse shouldBe ETFC3
 
             val expectedPartialLogMessage =
-              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
+              s"NSI responded with a JsonParseException for correlation ID - ${request.correlation_id} - triggering ETFC3"
             checkLoneLog(
               expectedLevel = Level.WARN,
               expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
@@ -233,7 +233,7 @@ class NsiConnectorISpec
             htmlErrorResponse shouldBe ETFC3
 
             val expectedPartialLogMessage =
-              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
+              s"NSI responded with a JsonParseException for correlation ID - ${request.correlation_id} - triggering ETFC3"
             checkLoneLog(
               expectedLevel = Level.WARN,
               expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
@@ -348,7 +348,7 @@ class NsiConnectorISpec
             htmlErrorResponse shouldBe ETFC3
 
             val expectedPartialLogMessage =
-              s"NSI responded 504 with body - The server didn't respond in time. - triggering ETFC3"
+              s"NSI responded with a JsonParseException for correlation ID - ${request.correlation_id} - triggering ETFC3"
             checkLoneLog(
               expectedLevel = Level.WARN,
               expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
