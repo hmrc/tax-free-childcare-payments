@@ -123,13 +123,10 @@ object NsiConnector extends FormattedLogging with Status {
       } else {
         val jsonValidatedResponse: Try[JsResult[NsiErrorResponse]] = Try(response.json.validate[NsiErrorResponse])
         jsonValidatedResponse match {
-          case Success(value) =>
-            value match {
-              case JsSuccess(nsiErrorResponse, _) =>
-                errorResponseNsi(response.status, response.body, nsiErrorResponse)
-              case JsError(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]) =>
-                errorResponseJson(response.status, jsonErrors)
-            }
+          case Success(JsSuccess(nsiErrorResponse, _)) =>
+            errorResponseNsi(response.status, response.body, nsiErrorResponse)
+          case Success(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]) =>
+            errorResponseJson(response.status, jsonErrors)
           case Failure(exception) =>
             exceptionResponse(exception, response, req)
         }
