@@ -113,7 +113,10 @@ object NsiConnector extends FormattedLogging with Status {
   private def encodeParam(outboundPaymentRef: String): String =
     URLEncoder.encode(outboundPaymentRef, "UTF-8").replaceAll("\\+", "%20")
 
-  private given httpReadsNsiResponse[A, B: Reads](using rh: RequestHeader, req: IdentifierRequest[A]): HttpReads[NsiResponse[B]] =
+  private given httpReadsNsiResponse[A, B: Reads](
+      using rh: RequestHeader,
+      req: IdentifierRequest[A]
+  ): HttpReads[NsiResponse[B]] =
     (_, _, response) =>
       if (response.status / 100 == 2) {
         nsiResponse(response)
@@ -127,13 +130,12 @@ object NsiConnector extends FormattedLogging with Status {
               case JsError(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]) =>
                 errorResponseJson(response.status, jsonErrors)
             }
-          case Failure(exception) => {
-              exceptionResponse(exception, response, req)
-            }
+          case Failure(exception) =>
+            exceptionResponse(exception, response, req)
         }
       }
 
-  private def nsiResponse[A: Reads](response: HttpResponse)(using rh: RequestHeader) = {
+  private def nsiResponse[A: Reads](response: HttpResponse)(using rh: RequestHeader) =
     response.json.validate[A] match {
       case JsSuccess(result, _) =>
         logger.info(
@@ -150,7 +152,6 @@ object NsiConnector extends FormattedLogging with Status {
         )
         Left(ETFC3)
     }
-  }
 
   private def errorResponseNsi(status: Int, body: String, response: NsiErrorResponse)(using rh: RequestHeader) = {
     val message = formattedErrorLog(
@@ -164,7 +165,10 @@ object NsiConnector extends FormattedLogging with Status {
     Left(response)
   }
 
-  private def errorResponseJson(status: Int, errors:  Seq[(JsPath, Seq[JsonValidationError])])(using rh: RequestHeader) = {
+  private def errorResponseJson(
+      status: Int,
+      errors: Seq[(JsPath, Seq[JsonValidationError])]
+  )(using rh: RequestHeader) = {
     logger.warn(
       formattedErrorLog(
         s"NSI responded $status. Resulting in JSON validation errors - $errors - triggering ETFC3"
@@ -173,7 +177,9 @@ object NsiConnector extends FormattedLogging with Status {
     Left(ETFC3)
   }
 
-  private def exceptionResponse(exception: Throwable, response: HttpResponse, req: IdentifierRequest[?])(using rh: RequestHeader) = {
+  private def exceptionResponse(exception: Throwable, response: HttpResponse, req: IdentifierRequest[?])(
+      using rh: RequestHeader
+  ) =
     exception match {
       case ex: JsonParseException =>
         logger.warn(
@@ -183,6 +189,5 @@ object NsiConnector extends FormattedLogging with Status {
         )
         Left(ETFC3)
     }
-  }
 
 }
