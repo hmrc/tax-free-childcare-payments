@@ -268,14 +268,6 @@ class NsiConnectorISpec
           actualResponse.getMessage should include(s"Request timeout to localhost/127.0.0.1:$wireMockPort after 100 ms")
         }
     }
-
-    "return error" when {
-      "the request doesn't validate" in {
-        //val request = Html("<>")
-        //val actualResponse = connector.checkBalance(using request).futureValue.value
-
-      }
-    }
   }
 
   "method makePayment" should {
