@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package base
+package helpers
 
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, okJson, stubFor}

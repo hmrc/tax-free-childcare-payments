@@ -16,9 +16,10 @@
 
 package controllers
 
-import base.{AuthStubs, BaseISpec, NsiStubs}
+import base.{BaseISpec, NsiStubs}
 import ch.qos.logback.classic.Level
 import connectors.NsiConnector
+import helpers.AuthStubs
 import models.request.LinkRequest.CHILD_DOB_KEY
 import models.request.Payee.PAYEE_TYPE_KEY
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY

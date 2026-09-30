@@ -31,7 +31,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (
     cc: ControllerComponents,
-    identify: AuthAction,
+    authAction: AuthAction,
     nsiConnector: NsiConnector
 )(using ExecutionContext)
     extends BackendController(cc)
@@ -47,7 +47,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
     nsiAction[PaymentRequest, PaymentResponse](req => nsiConnector.makePayment(using req))
 
   private def nsiAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[NsiResponse[Res]]) =
-    identify.async(parse.json) { request =>
+    authAction.identify.async(parse.json) { request =>
       given Request[JsValue] = request
       request.body.validate[Req] match {
         case JsSuccess(value, _) =>

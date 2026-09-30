@@ -18,14 +18,14 @@ package utils
 
 import base.BaseSpec
 import models.request.data.Generators
-import models.request.{LinkRequest, Payee, PaymentRequest, SharedRequestData}
+import models.request.{LinkRequest, PaymentRequest, SharedRequestData}
 import models.response.NsiErrorResponse.*
 import org.apache.pekko.actor.ActorSystem
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 
 import play.api.http.Status
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.Json
 import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
 
 class ErrorResponseFactorySpec

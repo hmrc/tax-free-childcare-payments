@@ -16,8 +16,10 @@
 
 package controllers.actions
 
-import base.{AuthStubs, BaseISpec}
+import base.BaseISpec
+import helpers.AuthStubs
 import models.request.IdentifierRequest
+import models.request.data.Generators
 import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{Result, Results}
@@ -26,23 +28,29 @@ import play.api.test.FakeRequest
 import java.util.UUID
 import scala.concurrent.Future
 
-class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Generators {
+class AuthActionISpec extends BaseISpec with Results with AuthStubs with Generators{
   given ActorSystem = app.actorSystem
 
-  private val authAction = app.injector.instanceOf[AuthAction]
+  private val authActions = app.injector.instanceOf[AuthAction].identify
 
-  val successBlock: IdentifierRequest[?] => Future[Result] = (_: IdentifierRequest[?]) => Future.successful(Ok(JsString("success")))
+  val successBlock: IdentifierRequest[?] => Future[Result] = (_: IdentifierRequest[?]) =>
+    Future.successful(Ok(JsString("success")))
 
-  "method invokeBlock" should {
+  "auth actions" should {
     "return a 400 Response with errorCode ETFC1 and expected errorDescription" when {
       "correlation ID is missing" in {
         stubAuthRetrievalOf(randomNinos.sample.get)
 
         val requestSansCorrelationId = FakeRequest().withHeaders(AUTHORIZATION -> "Bearer a-totally-random-token")
 
-        val actualResult = authAction.invokeBlock(requestSansCorrelationId, successBlock).futureValue
+        val actualResult = authActions.invokeBlock(requestSansCorrelationId, successBlock).futureValue
 
-        checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", expectedCorrelationIdErrorDesc)
+        val resultJson = Json.parse(actualResult.body.consumeData.futureValue.toArray)
+
+        (actualResult.header.status, resultJson) shouldBe (
+          BAD_REQUEST,
+          Json.obj("errorCode" -> "ETFC1", "errorDescription" -> expectedCorrelationIdErrorDesc)
+        )
       }
 
       "correlation ID is invalid" in {
@@ -53,9 +61,14 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
           CORRELATION_ID -> "an-invalid-uuid"
         )
 
-        val actualResult = authAction.invokeBlock(requestWithBadCorrelationId, successBlock).futureValue
+        val actualResult = authActions.invokeBlock(requestWithBadCorrelationId, successBlock).futureValue
 
-        checkErrorResult(actualResult, BAD_REQUEST, "ETFC1", expectedCorrelationIdErrorDesc)
+        val resultJson = Json.parse(actualResult.body.consumeData.futureValue.toArray)
+
+        (actualResult.header.status, resultJson) shouldBe (
+          BAD_REQUEST,
+          Json.obj("errorCode" -> "ETFC1", "errorDescription" -> expectedCorrelationIdErrorDesc)
+        )
       }
     }
 
@@ -68,9 +81,14 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
           CORRELATION_ID -> UUID.randomUUID().toString
         )
 
-        val actualResult = authAction.invokeBlock(requestWithCorrelationId, successBlock).futureValue
+        val actualResult = authActions.invokeBlock(requestWithCorrelationId, successBlock).futureValue
 
-        checkErrorResult(actualResult, INTERNAL_SERVER_ERROR, "ETFC2", expectedAuthNinoRetrievalErrorDesc)
+        val resultJson = Json.parse(actualResult.body.consumeData.futureValue.toArray)
+
+        (actualResult.header.status, resultJson) shouldBe (
+          INTERNAL_SERVER_ERROR,
+          Json.obj("errorCode" -> "ETFC2", "errorDescription" -> expectedAuthNinoRetrievalErrorDesc)
+        )
       }
     }
 
@@ -83,7 +101,7 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
           CORRELATION_ID -> UUID.randomUUID().toString
         )
 
-        val actualResult = authAction.invokeBlock(requestWithCorrelationId, successBlock).futureValue
+        val actualResult = authActions.invokeBlock(requestWithCorrelationId, successBlock).futureValue
         val responseBody = actualResult.body.consumeData.futureValue.toArray
         val responseJson = Json.parse(responseBody)
 
@@ -91,6 +109,19 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with base.Ge
         (responseJson \ "statusCode").as[Int] shouldBe UNAUTHORIZED
         (responseJson \ "message").as[String] shouldBe expectedConfidenceLevelErrorDesc
       }
+    }
+
+    "add the correlation id header from the request onto the response" in {
+      stubAuthRetrievalOf("nino")
+
+      val correlationId = UUID.randomUUID.toString
+
+      val requestWithCorrelationId =
+        FakeRequest().withHeaders(AUTHORIZATION -> "Bearer a-totally-random-token", CORRELATION_ID -> correlationId)
+
+      val actualResult = authActions.invokeBlock(requestWithCorrelationId, successBlock).futureValue
+
+      actualResult.header.headers(CORRELATION_ID) shouldBe correlationId
     }
   }
 
