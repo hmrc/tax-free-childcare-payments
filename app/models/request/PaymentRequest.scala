@@ -27,8 +27,8 @@ final case class PaymentRequest(
 
 object PaymentRequest extends ConstraintReads {
 
-  given readsFromUser(using ofPayee: Reads[Payee]): Reads[PaymentRequest] =
-    of[SharedRequestData].and((__ \ PAYMENT_AMOUNT_KEY).read(min(1))).and(ofPayee)(apply _)
+  given readsFromUser: Reads[PaymentRequest] =
+    of[SharedRequestData].and((__ \ PAYMENT_AMOUNT_KEY).read(min(1))).and(of[Payee])(apply _)
 
   given OWrites[PaymentRequest] = pr =>
     Json.toJsObject(pr.sharedRequestData) ++

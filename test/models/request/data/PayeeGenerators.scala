@@ -17,19 +17,16 @@
 package models.request.data
 
 import models.request.Payee
-import models.request.Payee.ChildCareProvider.Urn.CCP_REG_MAX_LEN
+import models.request.Payee.Urn.CCP_REG_MAX_LEN
 import org.scalacheck.Gen
 import play.api.libs.json.{JsObject, JsString, Json}
 
 trait PayeeGenerators extends base.Generators {
 
-  protected val validCcpJson: Gen[JsObject]   = randomChildCareProviders.map(getJsonFrom)
-  protected val validEppJson: Gen[JsObject]   = Gen.const(Json.obj("payee_type" -> "EPP"))
-  protected val validPayeeJson: Gen[JsObject] = Gen.oneOf(validCcpJson, validEppJson)
+  protected val validPayeeJson: Gen[JsObject] = randomPayees.map(getJsonFrom)
 
   protected def getJsonFrom(payee: Payee): JsObject = payee match {
-    case Payee.ExternalPaymentProvider => Json.obj("payee_type" -> "EPP")
-    case Payee.ChildCareProvider(urn, postcode) =>
+    case Payee(urn, postcode) =>
       Json.obj(
         "payee_type"        -> "CCP",
         "ccp_reg_reference" -> urn,
@@ -69,17 +66,17 @@ trait PayeeGenerators extends base.Generators {
     payeeType <- invalidPayeeTypes
   } yield payeeJson + ("payee_type" -> payeeType)
 
-  private val randomCcpJsonWithMissingUrn: Gen[JsObject] = validCcpJson.map(_ - "ccp_reg_reference")
+  private val randomCcpJsonWithMissingUrn: Gen[JsObject] = validPayeeJson.map(_ - "ccp_reg_reference")
 
   private val randomCcpJsonWithInvalidUrn: Gen[JsObject] = for {
-    ccpJson <- validCcpJson
+    ccpJson <- validPayeeJson
     ccpUrn  <- invalidCcpUrns
   } yield ccpJson + ("ccp_reg_reference" -> ccpUrn)
 
-  private val randomCcpJsonWithMissingPostcode: Gen[JsObject] = validCcpJson.map(_ - "ccp_postcode")
+  private val randomCcpJsonWithMissingPostcode: Gen[JsObject] = validPayeeJson.map(_ - "ccp_postcode")
 
   private val randomCcpJsonWithInvalidPostcode: Gen[JsObject] = for {
-    ccpJson  <- validCcpJson
+    ccpJson  <- validPayeeJson
     postcode <- invalidPostcodes
   } yield ccpJson + ("ccp_postcode" -> postcode)
 
@@ -90,8 +87,7 @@ trait PayeeGenerators extends base.Generators {
 
   protected val randomCcpJsonWithPayeeTypeError: Gen[JsObject] = Gen.oneOf(
     randomPayeeJsonWithMissingPayeeType,
-    randomPayeeJsonWithInvalidPayeeType,
-    validEppJson
+    randomPayeeJsonWithInvalidPayeeType
   )
 
   protected val randomCcpJsonWithUrnError: Gen[JsObject] = Gen.oneOf(

@@ -16,7 +16,7 @@
 
 package models.request.data
 
-import models.request.Payee.ChildCareProvider.{CCP_POSTCODE_KEY, CCP_URN_KEY}
+import models.request.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY}
 import models.request.Payee.PAYEE_TYPE_KEY
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.{Payee, PaymentRequest, SharedRequestData}
@@ -31,7 +31,7 @@ trait PaymentRequestGenerators extends SharedRequestGenerators with PayeeGenerat
   )
 
   protected def randomPaymentRequestWithOnlyCCP: Gen[PaymentRequest] =
-    randomPaymentRequestWith(randomPayees = randomChildCareProviders)
+    randomPaymentRequestWith(randomPayees = randomPayees)
 
   protected def randomPaymentRequestWith(
       randomSharedData: Gen[SharedRequestData] = arbitrary[SharedRequestData],
@@ -184,7 +184,7 @@ trait PaymentRequestGenerators extends SharedRequestGenerators with PayeeGenerat
   private def randomPaymentJsonWithCcpOnlyAnd(randomSharedJson: Gen[JsObject]) =
     for {
       sharedJson         <- randomSharedJson
-      ccpJson            <- validCcpJson
+      ccpJson            <- validPayeeJson
       paymentAmountPence <- Gen.posNum[Int]
     } yield sharedJson ++ ccpJson ++ Json.obj(
       "payment_amount" -> paymentAmountPence

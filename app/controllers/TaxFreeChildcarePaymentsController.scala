@@ -33,7 +33,7 @@ class TaxFreeChildcarePaymentsController @Inject() (
     cc: ControllerComponents,
     identify: AuthAction,
     nsiConnector: NsiConnector
-)(using ExecutionContext, Reads[Payee])
+)(using ExecutionContext)
     extends BackendController(cc)
     with FormattedLogging {
 

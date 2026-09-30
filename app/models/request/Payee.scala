@@ -16,80 +16,57 @@
 
 package models.request
 
-import models.request.Payee.ChildCareProvider.{PostCode, Urn}
+import models.request.Payee.{PostCode, Urn}
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.*
 
-sealed abstract class Payee
+final case class Payee(urn: Urn, postcode: PostCode)
 
 object Payee extends ConstraintReads {
 
-  case object ExternalPaymentProvider extends Payee {
+  val CCP_POSTCODE_KEY = "ccp_postcode"
+  val CCP_URN_KEY      = "ccp_reg_reference"
 
-    val reads: Reads[ExternalPaymentProvider.type] = Reads.pure(ExternalPaymentProvider)
+  private val readsPayee: Reads[Payee] =
+    (__ \ CCP_URN_KEY)
+      .read[Urn]
+      .and((__ \ CCP_POSTCODE_KEY).read[PostCode])(Payee.apply _)
+
+  case class PostCode(value: String) extends AnyVal
+
+  object PostCode {
+
+    given Reads[PostCode]  = pattern("\\s*[a-zA-Z0-9]{2,4}\\s*\\d[a-zA-Z]{2}\\s*$".r).map(PostCode(_))
+    given Writes[PostCode] = postCode => JsString(postCode.value)
 
   }
 
-  final case class ChildCareProvider(urn: Urn, postcode: PostCode) extends Payee
+  case class Urn(value: String) extends AnyVal
 
-  object ChildCareProvider {
+  object Urn {
 
-    val CCP_POSTCODE_KEY = "ccp_postcode"
-    val CCP_URN_KEY      = "ccp_reg_reference"
+    val CCP_REG_MAX_LEN = 20
 
-    val reads: Reads[ChildCareProvider] =
-      (__ \ CCP_URN_KEY)
-        .read[Urn]
-        .and((__ \ CCP_POSTCODE_KEY).read[PostCode])(ChildCareProvider.apply _)
-
-    case class PostCode(value: String) extends AnyVal
-
-    object PostCode {
-
-      given Reads[PostCode]  = pattern("\\s*[a-zA-Z0-9]{2,4}\\s*\\d[a-zA-Z]{2}\\s*$".r).map(PostCode(_))
-      given Writes[PostCode] = postCode => JsString(postCode.value)
-
-    }
-
-    case class Urn(value: String) extends AnyVal
-
-    object Urn {
-
-      val CCP_REG_MAX_LEN = 20
-
-      given Reads[Urn]  = pattern(s".{1,$CCP_REG_MAX_LEN}".r).map(apply)
-      given Writes[Urn] = reference => JsString(reference.value)
-    }
-
+    given Reads[Urn]  = pattern(s".{1,$CCP_REG_MAX_LEN}".r).map(apply)
+    given Writes[Urn] = reference => JsString(reference.value)
   }
 
   val PAYEE_TYPE_KEY = "payee_type"
 
-  val readsPayeeFromUser: Reads[Payee] =
+  given readsPayeeFromUser: Reads[Payee] =
     (__ \ PAYEE_TYPE_KEY)
       .read[String]
       .flatMap {
-        case "EPP" => ExternalPaymentProvider.reads.widen
-        case "CCP" => ChildCareProvider.reads.widen
+        case "CCP" => readsPayee
         case _     => readsPayeeFailed
       }
 
-  val readsCcpFromUser: Reads[Payee] =
-    (__ \ PAYEE_TYPE_KEY)
-      .read[String]
-      .flatMap {
-        case "CCP" => ChildCareProvider.reads.widen
-        case _     => readsPayeeFailed
-      }
-
-  given OWrites[Payee] = {
-    case ExternalPaymentProvider => Json.obj("payeeType" -> "EPP")
-    case ChildCareProvider(urn, postcode) =>
-      Json.obj(
-        "payeeType"   -> "CCP",
-        "ccpURN"      -> urn,
-        "ccpPostcode" -> postcode
-      )
+  given OWrites[Payee] = { case Payee(urn, postcode) =>
+    Json.obj(
+      "payeeType"   -> "CCP",
+      "ccpURN"      -> urn,
+      "ccpPostcode" -> postcode
+    )
   }
 
   private val readsPayeeFailed: Reads[Payee] =

@@ -56,12 +56,11 @@ class PayeeSpec extends BaseSpec with PayeeGenerators {
     }
   }
 
-  "val readsCcpFromUser" should {
-    given Reads[Payee] = Payee.readsCcpFromUser
+  "Reads" should {
 
     "return JsSuccess" when {
       "JSON is valid" in
-        forAll(randomChildCareProviders) { expectedCcp =>
+        forAll(randomPayees) { expectedCcp =>
           val json      = getJsonFrom(expectedCcp)
           val actualCcp = json.validate[Payee].asEither.value
           actualCcp shouldBe expectedCcp

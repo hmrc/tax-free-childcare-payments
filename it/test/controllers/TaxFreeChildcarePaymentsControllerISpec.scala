@@ -35,7 +35,7 @@ import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import java.util.UUID
 import scala.util.matching.Regex
 
-class ControllerWithPayeeTypeEppDisabledISpec
+class TaxFreeChildcarePaymentsControllerISpec
     extends BaseISpec
     with AuthStubs
     with NsiStubs

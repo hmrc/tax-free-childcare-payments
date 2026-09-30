@@ -17,8 +17,7 @@
 package base
 
 import models.request.Payee
-import models.request.Payee.ChildCareProvider
-import models.request.Payee.ChildCareProvider.{PostCode, Urn}
+import models.request.Payee.{PostCode, Urn}
 import org.scalacheck.Gen
 
 trait Generators {
@@ -69,14 +68,9 @@ trait Generators {
     stringGen.map(PostCode(_))
   }
 
-  protected val randomChildCareProviders: Gen[ChildCareProvider] = for {
+  protected val randomPayees: Gen[Payee] = for {
     urn      <- urns
     postcode <- postcodes
-  } yield ChildCareProvider(urn, postcode)
-
-  protected val randomPayees: Gen[Payee] = Gen.oneOf(
-    Gen.const(Payee.ExternalPaymentProvider),
-    randomChildCareProviders
-  )
+  } yield Payee(urn, postcode)
 
 }

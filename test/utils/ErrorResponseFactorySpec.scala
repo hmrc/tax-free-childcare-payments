@@ -135,8 +135,6 @@ class ErrorResponseFactorySpec
 
   "method getJson" should {
     "return expected errorCode and errorDescription" when {
-      given Reads[Payee] = Payee.readsCcpFromUser
-
       "LinkRequest JSON is invalid" in
         forAll(linkRequestJsonErrorScenarios) { (invalidPayloads, expectedErrorCode, expectedErrorDesc) =>
           forAll(invalidPayloads) { payload =>

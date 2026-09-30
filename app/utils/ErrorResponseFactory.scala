@@ -17,7 +17,7 @@
 package utils
 
 import models.request.LinkRequest.CHILD_DOB_KEY
-import models.request.Payee.ChildCareProvider.{CCP_POSTCODE_KEY, CCP_URN_KEY}
+import models.request.Payee.{CCP_POSTCODE_KEY, CCP_URN_KEY}
 import models.request.Payee.PAYEE_TYPE_KEY
 import models.request.PaymentRequest.PAYMENT_AMOUNT_KEY
 import models.request.SharedRequestData.{EPP_ACCOUNT_ID_KEY, EPP_URN_KEY, TFC_ACCOUNT_REF_KEY}
