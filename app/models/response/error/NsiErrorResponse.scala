@@ -178,7 +178,7 @@ enum NsiErrorResponse(override val reportAsStatus: Int, override val message: St
 
 object NsiErrorResponse {
 
-  private[error] val byName: Map[String, NsiErrorResponse] =
+  private val byName: Map[String, NsiErrorResponse] =
     values.toSeq.map(response => response.toString.toLowerCase -> response).toMap
 
   def withName(name: String): Option[NsiErrorResponse] = byName.get(name.toLowerCase)
