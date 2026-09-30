@@ -16,17 +16,20 @@
 
 package controllers
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 import connectors.NsiConnector
 import controllers.actions.AuthAction
-import models.request.*
-import models.response.NsiErrorResponse.NsiResponse
-import models.response.{BalanceResponse, LinkResponse, PaymentResponse}
-import utils.{ErrorResponseFactory, FormattedLogging}
+import models.request.IdentifierRequest
+import models.request.external.{ExternalBalanceRequest, ExternalLinkRequest, ExternalPaymentRequest}
+import models.response.error.ErrorResponse.Response
+import models.response.error.ServiceErrorResponse
+import models.response.external.{ExternalBalanceResponse, ExternalLinkResponse, ExternalPaymentResponse}
 import play.api.libs.json.*
 import play.api.mvc.{Action, ControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.FormattedLogging
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class TaxFreeChildcarePaymentsController @Inject() (
@@ -37,32 +40,34 @@ class TaxFreeChildcarePaymentsController @Inject() (
     extends BackendController(cc)
     with FormattedLogging {
 
-  def link(): Action[JsValue] =
-    nsiAction[LinkRequest, LinkResponse](req => nsiConnector.linkAccounts(using req))
+  def link: Action[JsValue] =
+    nsiAction[ExternalLinkRequest, ExternalLinkResponse](req => nsiConnector.linkAccounts(using req))
 
-  def balance(): Action[JsValue] =
-    nsiAction[SharedRequestData, BalanceResponse](req => nsiConnector.checkBalance(using req))
+  def balance: Action[JsValue] =
+    nsiAction[ExternalBalanceRequest, ExternalBalanceResponse](req => nsiConnector.checkBalance(using req))
 
-  def payment(): Action[JsValue] =
-    nsiAction[PaymentRequest, PaymentResponse](req => nsiConnector.makePayment(using req))
+  def payment: Action[JsValue] =
+    nsiAction[ExternalPaymentRequest, ExternalPaymentResponse](req => nsiConnector.makePayment(using req))
 
-  private def nsiAction[Req: Reads, Res: Writes](block: IdentifierRequest[Req] => Future[NsiResponse[Res]]) =
+  private def nsiAction[Req, Res](
+      block: IdentifierRequest[Req] => Future[Response[Res]]
+  )(using Reads[Req], Writes[Res]): Action[JsValue] =
     authAction.identify.async(parse.json) { request =>
       given Request[JsValue] = request
       request.body.validate[Req] match {
         case JsSuccess(value, _) =>
           val requestWithValidBody: IdentifierRequest[Req] =
-            IdentifierRequest(request.nino, request.correlation_id, request.map(_ => value))
+            IdentifierRequest(request.nino, request.correlation_id, request.withBody(value))
 
           block(requestWithValidBody).map {
-            case Left(nsiError)    => ErrorResponseFactory.getResult(nsiError)
+            case Left(nsiError)    => nsiError.toResult
             case Right(nsiSuccess) => Ok(Json.toJson(nsiSuccess))
           }
-        case JsError(errors) =>
+        case error: JsError =>
           Future.successful {
-            logger.info(formattedErrorLog(errors.toString))
+            logger.info(formattedErrorLog(error.errors.toString))
 
-            BadRequest(ErrorResponseFactory.getJson(errors))
+            ServiceErrorResponse.fromValidationError(error).toResult
           }
       }
     }

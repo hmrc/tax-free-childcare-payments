@@ -16,6 +16,7 @@
 
 package controllers.actions
 
+import models.response.error.ServiceErrorResponse
 import play.api.http.Status.UNAUTHORIZED
 import play.api.libs.json.Json
 import play.api.mvc.*
@@ -23,7 +24,6 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel, InsufficientConfidenceLevel}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
-import utils.{ErrorResponseFactory, FormattedLogging}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,7 +35,7 @@ class RetrieveNinoAction @Inject() (
     extends ActionRefiner[Request, NinoRequest]
     with BackendHeaderCarrierProvider
     with AuthorisedFunctions
-    with FormattedLogging
+    with ErrorHelper
     with Results {
 
   override protected[actions] def refine[A](
@@ -48,9 +48,7 @@ class RetrieveNinoAction @Inject() (
       .retrieve(Retrievals.nino.and(Retrievals.confidenceLevel))
       .apply {
         case None ~ _ =>
-          logger.info(formattedErrorLog("Unable to retrieve NI number"))
-
-          Future.successful(Left(ETFC2))
+          Future.successful(Left(logAndReturnError(ServiceErrorResponse.ETFC2 -> "Unable to retrieve NI number")))
         case Some(nino) ~ _ =>
           Future.successful(Right(NinoRequest(nino, request)))
       }
@@ -68,9 +66,5 @@ class RetrieveNinoAction @Inject() (
         )
       }
   }
-
-  private val ETFC2 = InternalServerError(
-    ErrorResponseFactory.getJson("ETFC2", "Bearer Token did not return a valid record")
-  )
 
 }

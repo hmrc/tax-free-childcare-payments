@@ -16,9 +16,9 @@
 
 package controllers.actions
 
-import base.BaseSpec
+import helpers.BaseSpec
+import helpers.generators.IdentifierRequestGenerators
 import models.request.IdentifierRequest
-import models.request.data.Generators
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import play.api.mvc.Results.Ok
@@ -26,9 +26,9 @@ import utils.FormattedLogging.CORRELATION_ID
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AddResponseCorrelationIdHeaderActionSpec extends BaseSpec with Generators with ScalaFutures {
+class AddResponseCorrelationIdHeaderActionSpec extends BaseSpec with IdentifierRequestGenerators with ScalaFutures {
 
-  private val genUnitIdentifierRequests: Gen[IdentifierRequest[Unit]] = randomIdentifierRequest(Gen.const(()))
+  private val genUnitIdentifierRequests: Gen[IdentifierRequest[Unit]] = genIdentifierRequests(Gen.const(()))
 
   private val executionContext: ExecutionContext = ExecutionContext.global
 

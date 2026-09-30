@@ -17,10 +17,9 @@
 package controllers.actions
 
 import models.request.IdentifierRequest
-import play.api.mvc.Results.BadRequest
+import models.response.error.ServiceErrorResponse.ETFC1
 import play.api.mvc.{ActionRefiner, RequestHeader, Result}
 import utils.FormattedLogging.CORRELATION_ID
-import utils.{ErrorResponseFactory, FormattedLogging}
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -30,30 +29,22 @@ import scala.util.Try
 @Singleton
 class ExtractRequestCorrelationIdHeaderAction @Inject() ()(using override val executionContext: ExecutionContext)
     extends ActionRefiner[NinoRequest, IdentifierRequest]
-    with FormattedLogging {
+    with ErrorHelper {
 
   override protected[actions] def refine[A](request: NinoRequest[A]): Future[Either[Result, IdentifierRequest[A]]] = {
     given RequestHeader = request
 
-    val either: Either[(Result, String), IdentifierRequest[A]] = for {
+    val either: Either[Result, IdentifierRequest[A]] = for {
       correlationIdHeader <- request.headers
         .get(CORRELATION_ID)
         .toRight(
-          ETFC1 -> "Correlation-ID header is missing"
+          logAndReturnError(ETFC1 -> "Correlation-ID header is missing")
         )
       correlationId <- Try(UUID.fromString(correlationIdHeader)).toOption
-        .toRight(ETFC1 -> "Correlation-ID header is invalid")
+        .toRight(logAndReturnError(ETFC1 -> "Correlation-ID header is invalid"))
     } yield IdentifierRequest(request.nino, correlationId, request)
 
-    Future.successful(either.left.map { case (result, errorMessage) =>
-      logger.info(formattedErrorLog(errorMessage))
-
-      result
-    })
+    Future.successful(either)
   }
-
-  private val ETFC1 = BadRequest(
-    ErrorResponseFactory.getJson("ETFC1", "Correlation ID is in an invalid format or is missing")
-  )
 
 }
