@@ -16,7 +16,7 @@
 
 package controllers.actions
 
-import base.BaseSpec
+import helpers.BaseSpec
 import models.request.IdentifierRequest
 import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.Json

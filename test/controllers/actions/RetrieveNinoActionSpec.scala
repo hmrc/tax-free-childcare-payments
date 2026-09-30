@@ -16,7 +16,7 @@
 
 package controllers.actions
 
-import base.BaseSpec
+import helpers.BaseSpec
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach

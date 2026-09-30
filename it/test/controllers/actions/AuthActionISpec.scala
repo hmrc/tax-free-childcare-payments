@@ -16,10 +16,10 @@
 
 package controllers.actions
 
-import base.BaseISpec
-import helpers.AuthStubs
+import helpers.error.ExpectedErrorResponses
+import helpers.generators.other.NinoGenerators
+import helpers.{AuthStubs, BaseISpec}
 import models.request.IdentifierRequest
-import models.request.data.Generators
 import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{Result, Results}
@@ -28,7 +28,7 @@ import play.api.test.FakeRequest
 import java.util.UUID
 import scala.concurrent.Future
 
-class AuthActionISpec extends BaseISpec with Results with AuthStubs with Generators{
+class AuthActionISpec extends BaseISpec with Results with AuthStubs with NinoGenerators with ExpectedErrorResponses {
   given ActorSystem = app.actorSystem
 
   private val authActions = app.injector.instanceOf[AuthAction].identify
@@ -39,7 +39,7 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with Generat
   "auth actions" should {
     "return a 400 Response with errorCode ETFC1 and expected errorDescription" when {
       "correlation ID is missing" in {
-        stubAuthRetrievalOf(randomNinos.sample.get)
+        stubAuthRetrievalOf(genNinos.sample.get)
 
         val requestSansCorrelationId = FakeRequest().withHeaders(AUTHORIZATION -> "Bearer a-totally-random-token")
 
@@ -49,12 +49,12 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with Generat
 
         (actualResult.header.status, resultJson) shouldBe (
           BAD_REQUEST,
-          Json.obj("errorCode" -> "ETFC1", "errorDescription" -> expectedCorrelationIdErrorDesc)
+          errorAsJson("ETFC1", EXPECTED_ETFC1_MISSING_OR_INVALID_CORRELATION_ID_DESC)
         )
       }
 
       "correlation ID is invalid" in {
-        stubAuthRetrievalOf(randomNinos.sample.get)
+        stubAuthRetrievalOf(genNinos.sample.get)
 
         val requestWithBadCorrelationId = FakeRequest().withHeaders(
           AUTHORIZATION  -> "Bearer a-totally-random-token",
@@ -67,7 +67,7 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with Generat
 
         (actualResult.header.status, resultJson) shouldBe (
           BAD_REQUEST,
-          Json.obj("errorCode" -> "ETFC1", "errorDescription" -> expectedCorrelationIdErrorDesc)
+          errorAsJson("ETFC1", EXPECTED_ETFC1_MISSING_OR_INVALID_CORRELATION_ID_DESC)
         )
       }
     }
@@ -87,7 +87,7 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with Generat
 
         (actualResult.header.status, resultJson) shouldBe (
           INTERNAL_SERVER_ERROR,
-          Json.obj("errorCode" -> "ETFC2", "errorDescription" -> expectedAuthNinoRetrievalErrorDesc)
+          errorAsJson("ETFC2", EXPECTED_ETFC2_NO_NINO_RETRIEVED_DESC)
         )
       }
     }
@@ -107,7 +107,7 @@ class AuthActionISpec extends BaseISpec with Results with AuthStubs with Generat
 
         actualResult.header.status shouldBe UNAUTHORIZED
         (responseJson \ "statusCode").as[Int] shouldBe UNAUTHORIZED
-        (responseJson \ "message").as[String] shouldBe expectedConfidenceLevelErrorDesc
+        (responseJson \ "message").as[String] shouldBe EXPECTED_INSUFFICIENT_CONFIDENCE_LEVEL_DESC
       }
     }
 
