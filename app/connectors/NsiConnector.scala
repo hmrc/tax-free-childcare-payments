@@ -115,12 +115,11 @@ object NsiConnector extends FormattedLogging with Status {
   private def encodeParam(outboundPaymentRef: String): String =
     URLEncoder.encode(outboundPaymentRef, "UTF-8").replaceAll("\\+", "%20")
 
-  private given httpReadsNsiResponse[A, B: Reads](
-      using rh: RequestHeader,
-      req: IdentifierRequest[A]
-  ): HttpReads[NsiResponse[B]] =
+  private given httpReadsNsiResponse[A: Reads](
+      using RequestHeader
+  ): HttpReads[NsiResponse[A]] =
     (_, _, response) =>
-      if (response.status / 100 == 2) response.json.validate[B] match {
+      if (response.status / 100 == 2) response.json.validate[A] match {
         case JsSuccess(result, _) =>
           nsi200Response(response.status, result)
         case JsError(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]) =>
@@ -134,7 +133,7 @@ object NsiConnector extends FormattedLogging with Status {
           case Success(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]) =>
             errorResponseJson(response.status, jsonErrors)
           case Failure(exception) =>
-            exceptionResponse(exception, req)
+            exceptionResponse(exception)
         }
       }
 
@@ -171,14 +170,14 @@ object NsiConnector extends FormattedLogging with Status {
     Left(response)
   }
 
-  private def exceptionResponse(exception: Throwable, req: IdentifierRequest[?])(
+  private def exceptionResponse(exception: Throwable)(
       using rh: RequestHeader
   ) =
     exception match {
       case ex: JsonParseException =>
         logger.warn(
           formattedErrorLog(
-            s"NSI responded with a JsonParseException for correlation ID - ${req.correlation_id} - triggering ETFC3"
+            s"NSI responded with a body that cannot be parsed triggering ETFC3"
           )
         )
         Left(ETFC3)
