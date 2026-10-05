@@ -17,22 +17,24 @@
 package controllers.actions
 
 import models.request.IdentifierRequest
-import play.api.mvc.{ActionBuilder, AnyContent, ControllerComponents}
+import play.api.mvc.{ActionFunction, Result}
+import utils.FormattedLogging.CORRELATION_ID
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AuthAction @Inject (
-    controllerComponents: ControllerComponents,
-    extractRequestCorrelationIdHeaderAction: ExtractRequestCorrelationIdHeaderAction,
-    retrieveNinoAction: RetrieveNinoAction,
-    addResponseCorrelationIdHeaderAction: AddResponseCorrelationIdHeaderAction
-) {
+class AddResponseCorrelationIdHeaderAction @Inject() ()(using override val executionContext: ExecutionContext)
+    extends ActionFunction[IdentifierRequest, IdentifierRequest] {
 
-  def identify: ActionBuilder[IdentifierRequest, AnyContent] =
-    controllerComponents.actionBuilder
-      .andThen(retrieveNinoAction)
-      .andThen(extractRequestCorrelationIdHeaderAction)
-      .andThen(addResponseCorrelationIdHeaderAction)
+  override def invokeBlock[A](
+      request: IdentifierRequest[A],
+      block: IdentifierRequest[A] => Future[Result]
+  ): Future[Result] =
+    block(request).map { result =>
+      result.withHeaders(
+        CORRELATION_ID -> request.correlation_id.toString
+      )
+    }
 
 }
