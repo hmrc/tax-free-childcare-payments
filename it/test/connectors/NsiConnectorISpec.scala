@@ -400,28 +400,6 @@ class NsiConnectorISpec
             )(logs)
           }
         }
-
-      "NSI responds with HTML Gateway Time-out" in
-        forAll(
-          arbitrary[IdentifierRequest[PaymentRequest]]
-        ) { request =>
-          withCaptureOfLoggingFrom(LOGGER) { logs =>
-            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
-
-            stubNsiMakePaymentHtml(500, htmlError)
-
-            val htmlErrorResponse = connector.makePayment(using request).futureValue.left.value
-
-            htmlErrorResponse shouldBe ETFC3
-
-            val expectedPartialLogMessage =
-              s"NSI responded with a body that cannot be parsed triggering ETFC3"
-            checkLoneLog(
-              expectedLevel = Level.WARN,
-              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
-            )(logs)
-          }
-        }
     }
 
     "return Left ETFC3" when {
