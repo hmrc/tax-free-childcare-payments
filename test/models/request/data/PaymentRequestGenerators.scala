@@ -49,6 +49,18 @@ trait PaymentRequestGenerators extends SharedRequestGenerators with PayeeGenerat
 
   /** BEGIN Random Payment JSON with Any Payee. */
 
+  protected val validPaymentRequestModels: Gen[PaymentRequest] =
+    for {
+      sharedRequestData <- validSharedDataModels
+      paymentAmount     <- Gen.chooseNum(1, Int.MaxValue)
+      payee             <- randomPayees
+
+    } yield PaymentRequest(
+      sharedRequestData = sharedRequestData,
+      payment_amount = paymentAmount,
+      payee = payee
+    )
+
   protected val validPaymentJsonWithAnyPayee: Gen[JsObject] = arbitrary[PaymentRequest].map(getJsonFrom)
 
   protected val randomPaymentJsonWithMissingPayeeType: Gen[JsObject] =

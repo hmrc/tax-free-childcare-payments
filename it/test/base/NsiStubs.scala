@@ -18,6 +18,7 @@ package base
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.matching.{StringValuePattern, UrlPattern}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalacheck.Gen
@@ -60,6 +61,13 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
       )
   }
 
+  protected def stubNsiLinkAccountsException(): StubMapping = stubFor {
+    nsiLinkAccountsEndpoint
+      .willReturn(
+        serverError()
+      )
+  }
+
   protected val nsiLinkAccountsUrlPattern: UrlPattern = nsiUrlPattern("linkAccounts", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   protected val nsiLinkAccountsEndpoint: MappingBuilder = get(nsiLinkAccountsUrlPattern)
@@ -96,6 +104,13 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
       )
   }
 
+  protected def stubNsiCheckBalanceException(): StubMapping = stubFor {
+    nsiCheckBalanceEndpoint
+      .willReturn(
+        serverError()
+      )
+  }
+
   protected val nsiBalanceUrlPattern: UrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   protected val nsiCheckBalanceEndpoint: MappingBuilder = get(nsiBalanceUrlPattern)
@@ -128,6 +143,13 @@ trait NsiStubs extends Status { self: GuiceOneServerPerSuite =>
         aResponse()
           .withStatus(status)
           .withBody(Html(htmlBody).toString)
+      )
+  }
+
+  protected def stubNsiMakePaymentException(): StubMapping = stubFor {
+    nsiMakePaymentEndpoint
+      .willReturn(
+        serverError()
       )
   }
 

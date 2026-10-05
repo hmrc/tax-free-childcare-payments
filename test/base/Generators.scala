@@ -21,6 +21,8 @@ import models.request.Payee.ChildCareProvider
 import models.request.Payee.ChildCareProvider.{PostCode, Urn}
 import org.scalacheck.Gen
 
+import java.time.LocalDate
+
 trait Generators {
 
   protected val nonAlphaNumStrings: Gen[String] = Gen.asciiPrintableStr.map(_.filterNot(_.isLetterOrDigit))
@@ -78,5 +80,11 @@ trait Generators {
     Gen.const(Payee.ExternalPaymentProvider),
     randomChildCareProviders
   )
+
+  protected val dates: Gen[LocalDate] = {
+    val start = LocalDate.of(2000, 1, 1)
+    val end   = LocalDate.of(2030, 1, 1)
+    Gen.choose(start, end)
+  }
 
 }

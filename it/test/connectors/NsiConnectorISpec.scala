@@ -37,6 +37,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.http.GatewayTimeoutException
 import uk.gov.hmrc.http.client.HttpClientV2
 
+import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
@@ -52,6 +53,8 @@ class NsiConnectorISpec
   private val appConfig: AppConfig = spy(app.injector.instanceOf[AppConfig])
 
   private val connector = new NsiConnector(httpClientV2, appConfig)
+  
+  private val testDateTime = LocalDateTime.of(2000, 1, 1, 0, 0, 0)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -125,6 +128,27 @@ class NsiConnectorISpec
     }
 
     "return Left ETFC3" when {
+      given Shrink[String] = Shrink.shrinkAny
+
+      "NSI responds with an invalid account status" in
+        forAll(randomNinos, Gen.uuid, validLinkRequestModels) { (nino, correlationId, linkRequest) =>
+          given IdentifierRequest[LinkRequest] =
+            IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), linkRequest))
+
+          val invalidLinkResponse = Json.obj(
+            "childFullName" -> "unknown"
+          )
+
+          stubFor {
+            nsiMakePaymentEndpoint
+              .willReturn(created().withBody(invalidLinkResponse.toString))
+          }
+
+          val actualNsiErrorResponse = connector.linkAccounts.futureValue.left.value
+
+          actualNsiErrorResponse shouldBe ETFC3
+        }
+      
       "NSI responds with HTML Gateway Time-out" in
         forAll(
           arbitrary[IdentifierRequest[LinkRequest]]
@@ -140,6 +164,28 @@ class NsiConnectorISpec
 
             val expectedPartialLogMessage =
               s"NSI responded with a body that cannot be parsed triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+
+
+      "NSI responds with another exception" in
+        forAll(
+          arbitrary[IdentifierRequest[LinkRequest]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+
+            stubNsiLinkAccountsException()
+
+            val exceptionResponse = connector.linkAccounts(using request).futureValue.left.value
+
+            exceptionResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded with an exception triggering ETFC3"
             checkLoneLog(
               expectedLevel = Level.WARN,
               expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
@@ -200,12 +246,12 @@ class NsiConnectorISpec
             IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), sharedRequestData))
 
           val invalidBalanceResponse = Json.obj(
-            "accountStatus"  -> "unknown",
+            "accountStatus" -> "unknown",
             "topUpAvailable" -> 1234,
             "topUpRemaining" -> 1234,
-            "paidIn"         -> 1234,
-            "totalBalance"   -> 1234,
-            "clearedFunds"   -> 1234
+            "paidIn" -> 1234,
+            "totalBalance" -> 1234,
+            "clearedFunds" -> 1234
           )
 
           stubFor {
@@ -239,6 +285,27 @@ class NsiConnectorISpec
               expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
             )(logs)
           }
+        }
+
+      "NSI responds with another exception" in
+        forAll(
+          arbitrary[IdentifierRequest[SharedRequestData]]
+        ) { request =>
+            withCaptureOfLoggingFrom(LOGGER) { logs =>
+
+              stubNsiCheckBalanceException()
+
+              val exceptionResponse = connector.checkBalance(using request).futureValue.left.value
+
+              exceptionResponse shouldBe ETFC3
+
+              val expectedPartialLogMessage =
+                s"NSI responded with an exception triggering ETFC3"
+              checkLoneLog(
+                expectedLevel = Level.WARN,
+                expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+              )(logs)
+            }
         }
     }
 
@@ -349,6 +416,73 @@ class NsiConnectorISpec
 
             val expectedPartialLogMessage =
               s"NSI responded with a body that cannot be parsed triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+    }
+
+    "return Left ETFC3" when {
+      given Shrink[String] = Shrink.shrinkAny
+
+      "NSI responds with an invalid account status" in
+        forAll(randomNinos, Gen.uuid, validPaymentRequestModels) { (nino, correlationId, paymentRequest) =>
+          given IdentifierRequest[PaymentRequest] =
+            IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), paymentRequest))
+
+          val invalidPaymentResponse = Json.obj(
+            "payment_reference"      -> "unknown", 
+            "estimated_payment_date" -> testDateTime
+          )
+
+          stubFor {
+            nsiMakePaymentEndpoint
+              .willReturn(created().withBody(invalidPaymentResponse.toString))
+          }
+
+          val actualNsiErrorResponse = connector.makePayment.futureValue.left.value
+
+          actualNsiErrorResponse shouldBe ETFC3
+        }
+
+      "NSI responds with HTML Gateway Time-out" in
+        forAll(
+          arbitrary[IdentifierRequest[PaymentRequest]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val htmlError = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubNsiMakePaymentHtml(500, htmlError)
+
+            val htmlErrorResponse = connector.makePayment(using request).futureValue.left.value
+
+            htmlErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded with a body that cannot be parsed triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+
+      "NSI responds with another exception" in
+        forAll(
+          arbitrary[IdentifierRequest[PaymentRequest]]
+        ) { request =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+
+            stubNsiMakePaymentException()
+
+            val exceptionResponse = connector.makePayment(using request).futureValue.left.value
+
+            exceptionResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded with an exception triggering ETFC3"
             checkLoneLog(
               expectedLevel = Level.WARN,
               expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)

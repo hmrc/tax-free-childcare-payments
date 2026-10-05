@@ -45,6 +45,16 @@ trait LinkRequestGenerators extends SharedRequestGenerators {
       "child_date_of_birth" -> linkRequest.child_date_of_birth
     )
 
+  protected val validLinkRequestModels: Gen[LinkRequest] =
+    for {
+      sharedRequestData <- validSharedDataModels
+      childDateOfBirth  <- dates
+
+    } yield LinkRequest(
+      sharedRequestData = sharedRequestData,
+      child_date_of_birth = childDateOfBirth
+    )
+
   protected val validLinkPayloads: Gen[JsObject] = linkPayloadsWith(validSharedJson)
 
   protected val linkPayloadsWithMissingTfcAccountRef: Gen[JsObject] = linkPayloadsWith(
