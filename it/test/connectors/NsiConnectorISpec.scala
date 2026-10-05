@@ -185,7 +185,7 @@ class NsiConnectorISpec
             exceptionResponse shouldBe ETFC3
 
             val expectedPartialLogMessage =
-              s"NSI responded with an exception triggering ETFC3"
+              s"An exception occurred while reading NSI response triggering ETFC3"
             checkLoneLog(
               expectedLevel = Level.WARN,
               expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
@@ -300,7 +300,7 @@ class NsiConnectorISpec
               exceptionResponse shouldBe ETFC3
 
               val expectedPartialLogMessage =
-                s"NSI responded with an exception triggering ETFC3"
+                s"An exception occurred while reading NSI response triggering ETFC3"
               checkLoneLog(
                 expectedLevel = Level.WARN,
                 expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
@@ -482,7 +482,7 @@ class NsiConnectorISpec
             exceptionResponse shouldBe ETFC3
 
             val expectedPartialLogMessage =
-              s"NSI responded with an exception triggering ETFC3"
+              s"An exception occurred while reading NSI response triggering ETFC3"
             checkLoneLog(
               expectedLevel = Level.WARN,
               expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)

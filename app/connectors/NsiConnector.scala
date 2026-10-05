@@ -187,7 +187,7 @@ object NsiConnector extends FormattedLogging with Status {
       case _ =>
         logger.warn(
           formattedErrorLog(
-            s"NSI responded with an exception triggering ETFC3"
+            s"An exception occurred while reading NSI response triggering ETFC3"
           )
         )
     }
