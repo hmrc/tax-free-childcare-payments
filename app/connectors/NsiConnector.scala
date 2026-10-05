@@ -119,15 +119,19 @@ object NsiConnector extends FormattedLogging with Status {
       using RequestHeader
   ): HttpReads[NsiResponse[A]] =
     (_, _, response) =>
-      if (response.status / 100 == 2) response.json.validate[A] match {
-        case JsSuccess(result, _) =>
-          nsi200Response(response.status, result)
-        case JsError(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]) =>
-          errorResponseJson(response.status, jsonErrors)
-      }
-      else {
-        val jsonValidatedResponse: Try[JsResult[NsiErrorResponse]] = Try(response.json.validate[NsiErrorResponse])
+      if (response.status / 100 == 2) {
+        val jsonValidatedResponse: Try[JsResult[A]] = Try(response.json.validate[A])
         jsonValidatedResponse match {
+          case Success(JsSuccess(result, _)) =>
+            nsi200Response(response.status, result)
+          case Success(JsError(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])])) =>
+            errorResponseJson(response.status, jsonErrors)
+          case Failure(exception) =>
+            exceptionResponse(exception)
+        }
+      } else {
+        val jsonValidatedErrorResponse: Try[JsResult[NsiErrorResponse]] = Try(response.json.validate[NsiErrorResponse])
+        jsonValidatedErrorResponse match {
           case Success(JsSuccess(nsiErrorResponse, _)) =>
             errorResponseNsi(response.status, response.body, nsiErrorResponse)
           case Success(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]) =>
@@ -174,13 +178,19 @@ object NsiConnector extends FormattedLogging with Status {
       using rh: RequestHeader
   ) =
     exception match {
-      case ex: JsonParseException =>
+      case _: JsonParseException =>
         logger.warn(
           formattedErrorLog(
             s"NSI responded with a body that cannot be parsed triggering ETFC3"
           )
         )
-        Left(ETFC3)
+      case _ =>
+        logger.warn(
+          formattedErrorLog(
+            s"NSI responded with an exception triggering ETFC3"
+          )
+        )
     }
+    Left(ETFC3)
 
 }
