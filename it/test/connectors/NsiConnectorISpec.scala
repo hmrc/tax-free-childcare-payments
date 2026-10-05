@@ -132,21 +132,30 @@ class NsiConnectorISpec
 
       "NSI responds with an invalid account status" in
         forAll(randomNinos, Gen.uuid, validLinkRequestModels) { (nino, correlationId, linkRequest) =>
-          given IdentifierRequest[LinkRequest] =
-            IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), linkRequest))
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            given IdentifierRequest[LinkRequest] =
+              IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), linkRequest))
 
-          val invalidLinkResponse = Json.obj(
-            "childFullName" -> 123
-          )
+            val invalidLinkResponse = Json.obj(
+              "childFullName" -> 123
+            )
 
-          stubFor {
-            nsiLinkAccountsEndpoint
-              .willReturn(created().withBody(invalidLinkResponse.toString))
+            stubFor {
+              nsiLinkAccountsEndpoint
+                .willReturn(created().withBody(invalidLinkResponse.toString))
+            }
+
+            val actualNsiErrorResponse = connector.linkAccounts.futureValue.left.value
+
+            actualNsiErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded 201. Resulting in JSON validation errors - List((/childFullName,List(JsonValidationError(List(error.expected.jsstring),ArraySeq())))) - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
           }
-
-          val actualNsiErrorResponse = connector.linkAccounts.futureValue.left.value
-
-          actualNsiErrorResponse shouldBe ETFC3
         }
       
       "NSI responds with HTML Gateway Time-out" in
@@ -242,27 +251,36 @@ class NsiConnectorISpec
 
       "NSI responds with an invalid account status" in
         forAll(randomNinos, Gen.uuid, validSharedDataModels) { (nino, correlationId, sharedRequestData) =>
-          given IdentifierRequest[SharedRequestData] =
-            IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), sharedRequestData))
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            given IdentifierRequest[SharedRequestData] =
+              IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), sharedRequestData))
 
-          val invalidBalanceResponse = Json.obj(
-            "accountStatus" -> "unknown",
-            "topUpAvailable" -> 1234,
-            "topUpRemaining" -> 1234,
-            "paidIn" -> 1234,
-            "totalBalance" -> 1234,
-            "clearedFunds" -> 1234
-          )
+            val invalidBalanceResponse = Json.obj(
+              "accountStatus" -> "unknown",
+              "topUpAvailable" -> 1234,
+              "topUpRemaining" -> 1234,
+              "paidIn" -> 1234,
+              "totalBalance" -> 1234,
+              "clearedFunds" -> 1234
+            )
 
-          stubFor {
-            nsiCheckBalanceEndpoint
-              .withQueryParams(nsiBalanceUrlQueryParams)
-              .willReturn(created().withBody(invalidBalanceResponse.toString))
+            stubFor {
+              nsiCheckBalanceEndpoint
+                .withQueryParams(nsiBalanceUrlQueryParams)
+                .willReturn(created().withBody(invalidBalanceResponse.toString))
+            }
+
+            val actualNsiErrorResponse = connector.checkBalance.futureValue.left.value
+
+            actualNsiErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded 201. Resulting in JSON validation errors - List((/accountStatus,List(JsonValidationError(List(error.invalid.account_status),ArraySeq())))) - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
           }
-
-          val actualNsiErrorResponse = connector.checkBalance.futureValue.left.value
-
-          actualNsiErrorResponse shouldBe ETFC3
         }
 
       "NSI responds with HTML Gateway Time-out" in
@@ -407,22 +425,31 @@ class NsiConnectorISpec
 
       "NSI responds with an invalid account status" in
         forAll(randomNinos, Gen.uuid, validPaymentRequestModels) { (nino, correlationId, paymentRequest) =>
-          given IdentifierRequest[PaymentRequest] =
-            IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), paymentRequest))
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            given IdentifierRequest[PaymentRequest] =
+              IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), paymentRequest))
 
-          val invalidPaymentResponse = Json.obj(
-            "payment_reference"      -> "unknown", 
-            "estimated_payment_date" -> testDateTime
-          )
+            val invalidPaymentResponse = Json.obj(
+              "payment_reference"      -> "unknown",
+              "estimated_payment_date" -> testDateTime
+            )
 
-          stubFor {
-            nsiMakePaymentEndpoint
-              .willReturn(created().withBody(invalidPaymentResponse.toString))
+            stubFor {
+              nsiMakePaymentEndpoint
+                .willReturn(created().withBody(invalidPaymentResponse.toString))
+            }
+
+            val actualNsiErrorResponse = connector.makePayment.futureValue.left.value
+
+            actualNsiErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded 201. Resulting in JSON validation errors - List((/paymentReference,List(JsonValidationError(List(error.path.missing),ArraySeq()))), (/paymentDate,List(JsonValidationError(List(error.path.missing),ArraySeq())))) - triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
           }
-
-          val actualNsiErrorResponse = connector.makePayment.futureValue.left.value
-
-          actualNsiErrorResponse shouldBe ETFC3
         }
 
       "NSI responds with HTML Gateway Time-out" in
