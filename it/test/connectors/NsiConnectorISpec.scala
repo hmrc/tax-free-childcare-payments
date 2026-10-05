@@ -136,11 +136,11 @@ class NsiConnectorISpec
             IdentifierRequest(nino, correlationId, FakeRequest("", "", Headers(), linkRequest))
 
           val invalidLinkResponse = Json.obj(
-            "childFullName" -> "unknown"
+            "childFullName" -> 123
           )
 
           stubFor {
-            nsiMakePaymentEndpoint
+            nsiLinkAccountsEndpoint
               .willReturn(created().withBody(invalidLinkResponse.toString))
           }
 
