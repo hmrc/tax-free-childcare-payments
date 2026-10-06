@@ -19,8 +19,11 @@ package connectors
 import com.fasterxml.jackson.core.JsonParseException
 import config.AppConfig
 import models.request.*
-import models.response.NsiErrorResponse.{ETFC3, NsiResponse}
-import models.response.*
+import models.request.external.{ExternalBalanceRequest, ExternalLinkRequest, ExternalPaymentRequest}
+import models.response.error.ErrorResponse.Response
+import models.response.error.{ErrorResponse, ServiceErrorResponse}
+import models.response.external.{ExternalBalanceResponse, ExternalLinkResponse, ExternalPaymentResponse}
+import models.response.nsi.{NsiBalanceResponse, NsiLinkResponse, NsiPaymentResponse}
 import play.api.http.Status
 import play.api.libs.json.*
 import play.api.libs.json.Format.GenericFormat
@@ -48,76 +51,84 @@ class NsiConnector @Inject() (
     with HeaderNames {
   import NsiConnector.{given, *}
 
-  def linkAccounts(using req: IdentifierRequest[LinkRequest]): Future[NsiResponse[LinkResponse]] =
+  private def correlationIdHeader(using req: IdentifierRequest[?]): (String, String) =
+    appConfig.nsiCorrelationIdHeader -> req.correlation_id.toString
+
+  private def authorizationHeader: (String, String) = Authorization -> s"Basic ${appConfig.nsiAuthorisationToken}"
+
+  def linkAccounts(using req: IdentifierRequest[ExternalLinkRequest]): Future[Response[ExternalLinkResponse]] =
     httpClient
       .get(linkAccountsUrl)
-      .setHeader(appConfig.nsiCorrelationIdHeader -> req.correlation_id.toString)
-      .setHeader(Authorization -> s"Basic ${appConfig.nsiAuthorisationToken}")
+      .setHeader(correlationIdHeader)
+      .setHeader(authorizationHeader)
       .withProxy
       .transform(_.withRequestTimeout(appConfig.nsiRequestTimeout))
-      .execute[NsiResponse[LinkResponse]]
+      .execute[Response[NsiLinkResponse]]
+      .map(_.map(_.toExternalLinkResponse))
 
-  private def linkAccountsUrl(using req: IdentifierRequest[LinkRequest]): URL = {
-    val queryString = Map(
-      "eppURN"     -> req.body.sharedRequestData.epp_reg_reference,
-      "eppAccount" -> req.body.sharedRequestData.epp_unique_customer_id,
+  private def linkAccountsUrl(using req: IdentifierRequest[ExternalLinkRequest]): URL = {
+    val queryString = Map[String, String](
+      "eppURN"     -> req.body.epp_reg_reference.toString,
+      "eppAccount" -> req.body.epp_unique_customer_id.toString,
       "parentNino" -> req.nino,
-      "childDoB"   -> req.body.child_date_of_birth
+      "childDoB"   -> req.body.child_date_of_birth.toLocalDate.toString
     ).map { case (k, v) => s"$k=$v" }.mkString("?", "&", "")
 
-    val childPaymentRef = encodeParam(req.body.sharedRequestData.outbound_child_payment_ref)
+    val childPaymentRef = encodeParam(req.body.outbound_child_payment_ref.toString)
 
     val url = s"${appConfig.nsiLinkAccountsUrl}/$childPaymentRef$queryString"
 
     new URI(url).toURL
   }
 
-  def checkBalance(using req: IdentifierRequest[SharedRequestData]): Future[NsiResponse[BalanceResponse]] =
+  def checkBalance(using req: IdentifierRequest[ExternalBalanceRequest]): Future[Response[ExternalBalanceResponse]] =
     httpClient
       .get(checkBalanceUrl)
-      .setHeader(appConfig.nsiCorrelationIdHeader -> req.correlation_id.toString)
-      .setHeader(Authorization -> s"Basic ${appConfig.nsiAuthorisationToken}")
+      .setHeader(correlationIdHeader)
+      .setHeader(authorizationHeader)
       .withProxy
       .transform(_.withRequestTimeout(appConfig.nsiRequestTimeout))
-      .execute[NsiResponse[BalanceResponse]]
+      .execute[Response[NsiBalanceResponse]]
+      .map(_.map(_.toExternalBalanceResponse))
 
-  private def checkBalanceUrl(using req: IdentifierRequest[SharedRequestData]): URL = {
+  private def checkBalanceUrl(using req: IdentifierRequest[ExternalBalanceRequest]): URL = {
     val queryString = Map(
       "eppURN"     -> req.body.epp_reg_reference,
       "eppAccount" -> req.body.epp_unique_customer_id,
       "parentNino" -> req.nino
     ).map { case (k, v) => s"$k=$v" }.mkString("?", "&", "")
 
-    val childPaymentRef = encodeParam(req.body.outbound_child_payment_ref)
+    val childPaymentRef = encodeParam(req.body.outbound_child_payment_ref.toString)
 
     val url = s"${appConfig.nsiCheckBalanceUrl}/$childPaymentRef$queryString"
 
     new URI(url).toURL
   }
 
-  def makePayment(using req: IdentifierRequest[PaymentRequest]): Future[NsiResponse[PaymentResponse]] =
+  def makePayment(using req: IdentifierRequest[ExternalPaymentRequest]): Future[Response[ExternalPaymentResponse]] =
     httpClient
-      .post(new URI(appConfig.nsiMakePaymentUrl).toURL)
-      .setHeader(appConfig.nsiCorrelationIdHeader -> req.correlation_id.toString)
-      .setHeader(Authorization -> s"Basic ${appConfig.nsiAuthorisationToken}")
-      .withBody(enrichedWithNino[PaymentRequest])
+      .post(makePaymentUrl)
+      .setHeader(correlationIdHeader)
+      .setHeader(authorizationHeader)
+      .withBody(enrichedWithNino(req.body.toNsiPaymentRequest))
       .withProxy
       .transform(_.withRequestTimeout(appConfig.nsiRequestTimeout))
-      .execute[NsiResponse[PaymentResponse]]
+      .execute[Response[NsiPaymentResponse]]
+      .map(_.map(_.toExternalPaymentResponse))
+
+  private def makePaymentUrl: URL = new URI(appConfig.nsiMakePaymentUrl).toURL
 
 }
 
 object NsiConnector extends FormattedLogging with Status {
 
-  private def enrichedWithNino[R: OWrites](using req: IdentifierRequest[R]): JsObject =
-    Json.toJsObject(req.body) + ("parentNino" -> JsString(req.nino))
+  private def enrichedWithNino[R](body: R)(using req: IdentifierRequest[?], writes: OWrites[R]): JsObject =
+    Json.toJsObject(body) + ("parentNino" -> JsString(req.nino))
 
   private def encodeParam(outboundPaymentRef: String): String =
     URLEncoder.encode(outboundPaymentRef, "UTF-8").replaceAll("\\+", "%20")
 
-  private given httpReadsNsiResponse[A: Reads](
-      using RequestHeader
-  ): HttpReads[NsiResponse[A]] =
+  private given [A: Reads](using RequestHeader): HttpReads[Response[A]] =
     (_, _, response) =>
       if (response.status / 100 == 2) {
         val jsonValidatedResponse: Try[JsResult[A]] = Try(response.json.validate[A])
@@ -130,7 +141,7 @@ object NsiConnector extends FormattedLogging with Status {
             exceptionResponse(exception)
         }
       } else {
-        val jsonValidatedErrorResponse: Try[JsResult[NsiErrorResponse]] = Try(response.json.validate[NsiErrorResponse])
+        val jsonValidatedErrorResponse: Try[JsResult[ErrorResponse]] = Try(response.json.validate[ErrorResponse])
         jsonValidatedErrorResponse match {
           case Success(JsSuccess(nsiErrorResponse, _)) =>
             errorResponseNsi(response.status, response.body, nsiErrorResponse)
@@ -159,14 +170,14 @@ object NsiConnector extends FormattedLogging with Status {
         s"NSI responded $status. Resulting in JSON validation errors - $errors - triggering ETFC3"
       )
     )
-    Left(ETFC3)
+    Left(ServiceErrorResponse.ETFC3)
   }
 
-  private def errorResponseNsi(status: Int, body: String, response: NsiErrorResponse)(using rh: RequestHeader) = {
+  private def errorResponseNsi(status: Int, body: String, response: ErrorResponse)(using rh: RequestHeader) = {
     val message = formattedErrorLog(
       s"NSI responded $status with body $body - triggering $response"
     )
-    if (response.reportAs < INTERNAL_SERVER_ERROR) {
+    if (response.reportAsStatus < INTERNAL_SERVER_ERROR) {
       logger.info(message)
     } else {
       logger.warn(message)
@@ -191,6 +202,6 @@ object NsiConnector extends FormattedLogging with Status {
           )
         )
     }
-    Left(ETFC3)
+    Left(ServiceErrorResponse.ETFC3)
 
 }

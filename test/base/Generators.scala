@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,77 +14,3 @@
  * limitations under the License.
  */
 
-package base
-
-import models.request.Payee
-import models.request.Payee.ChildCareProvider
-import models.request.Payee.ChildCareProvider.{PostCode, Urn}
-import org.scalacheck.Gen
-
-import java.time.LocalDate
-
-trait Generators {
-
-  protected val nonAlphaNumStrings: Gen[String] = Gen.asciiPrintableStr.map(_.filterNot(_.isLetterOrDigit))
-
-  private val names: Gen[String] = for {
-    char0 <- Gen.alphaUpperChar
-    char1 <- Gen.alphaLowerChar
-    chars <- Gen.alphaLowerStr
-  } yield char0 +: char1 +: chars
-
-  protected val fullNames: Gen[String] = for {
-    firstName <- names
-    lastName  <- names
-  } yield s"$firstName $lastName"
-
-  private val MAX_PARAM_LEN = 16
-
-  protected val nonEmptyAlphaNumStrings: Gen[String] = for {
-    len   <- Gen.chooseNum(1, MAX_PARAM_LEN)
-    chars <- Gen.containerOfN[Array, Char](len, Gen.alphaNumChar)
-  } yield chars.mkString
-
-  protected val randomNinos: Gen[String] = for {
-    char0  <- Gen.alphaUpperChar
-    char1  <- Gen.alphaUpperChar
-    digits <- Gen.listOfN(6, Gen.numChar)
-    char8  <- Gen.oneOf("ABCD")
-  } yield char0 +: char1 +: digits.mkString :+ char8
-
-  protected val urns: Gen[Urn] = nonEmptyAlphaNumStrings.map(Urn(_))
-
-  private val randomSpaces: Gen[String] = Gen.stringOf(Gen.const(' '))
-
-  private val postcodes: Gen[PostCode] = {
-    val stringGen: Gen[String] = for {
-      leadingSpaces  <- randomSpaces
-      n              <- Gen.chooseNum(1, 2)
-      letters1       <- Gen.stringOfN(n, Gen.alphaUpperChar)
-      num1           <- Gen.chooseNum(1, 99)
-      midSpaces      <- randomSpaces
-      num2           <- Gen.chooseNum(1, 9)
-      letters2       <- Gen.stringOfN(2, Gen.alphaUpperChar)
-      trailingSpaces <- randomSpaces
-    } yield s"$leadingSpaces$letters1$num1$midSpaces$num2$letters2$trailingSpaces"
-
-    stringGen.map(PostCode(_))
-  }
-
-  protected val randomChildCareProviders: Gen[ChildCareProvider] = for {
-    urn      <- urns
-    postcode <- postcodes
-  } yield ChildCareProvider(urn, postcode)
-
-  protected val randomPayees: Gen[Payee] = Gen.oneOf(
-    Gen.const(Payee.ExternalPaymentProvider),
-    randomChildCareProviders
-  )
-
-  protected val dates: Gen[LocalDate] = {
-    val start = LocalDate.of(2000, 1, 1)
-    val end   = LocalDate.of(2030, 1, 1)
-    Gen.choose(start, end)
-  }
-
-}

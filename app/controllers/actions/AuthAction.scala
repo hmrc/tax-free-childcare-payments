@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,86 +16,23 @@
 
 package controllers.actions
 
-import java.util.UUID
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
-
 import models.request.IdentifierRequest
-import utils.FormattedLogging.CORRELATION_ID
-import utils.{ErrorResponseFactory, FormattedLogging}
+import play.api.mvc.{ActionBuilder, AnyContent, ControllerComponents}
 
-import play.api.http.Status.UNAUTHORIZED
-import play.api.libs.json.Json
-import play.api.mvc.*
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, ConfidenceLevel, InsufficientConfidenceLevel}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
-import uk.gov.hmrc.play.bootstrap.http.ErrorResponse
+import javax.inject.{Inject, Singleton}
 
 @Singleton
-class AuthAction @Inject() (
-    val authConnector: AuthConnector,
-    val parser: BodyParsers.Default
-)(using ec: ExecutionContext)
-    extends ActionBuilder[IdentifierRequest, AnyContent]
-    with BackendHeaderCarrierProvider
-    with AuthorisedFunctions
-    with FormattedLogging
-    with Results {
+class AuthAction @Inject (
+    controllerComponents: ControllerComponents,
+    extractRequestCorrelationIdHeaderAction: ExtractRequestCorrelationIdHeaderAction,
+    retrieveNinoAction: RetrieveNinoAction,
+    addResponseCorrelationIdHeaderAction: AddResponseCorrelationIdHeaderAction
+) {
 
-  override protected def executionContext: ExecutionContext = ec
-
-  override def invokeBlock[A](request: Request[A], block: IdentifierRequest[A] => Future[Result]): Future[Result] = {
-    given Request[A] = request
-
-    /** Confidence level is retrieved so that it appears in implicit audit events to aid with security metrics. */
-    authorised(ConfidenceLevel.L200)
-      .retrieve(Retrievals.nino.and(Retrievals.confidenceLevel)) { case optNino ~ _ =>
-        val optCorrelationIdHeader = request.headers.get(CORRELATION_ID)
-        val optIdentifierRequest = for {
-          correlationIdHeader <- optCorrelationIdHeader.toRight(ETFC1 -> "Correlation-ID header is missing")
-          correlationId <- Try(UUID.fromString(correlationIdHeader)).toOption
-            .toRight(ETFC1 -> "Correlation-ID header is invalid")
-          nino <- optNino.toRight(ETFC2 -> "Unable to retrieve NI number")
-        } yield IdentifierRequest(nino, correlationId, request)
-
-        optIdentifierRequest match {
-          case Right(identifierRequest) =>
-            block(identifierRequest).map { result =>
-              result.withHeaders(
-                CORRELATION_ID -> identifierRequest.correlation_id.toString
-              )
-            }
-
-          case Left((errorResponse, logMessage)) =>
-            Future.successful {
-              logger.info(formattedErrorLog(logMessage))
-
-              errorResponse
-            }
-        }
-      }
-      .recover { case e: InsufficientConfidenceLevel =>
-        logger.warn(
-          s"${request.method} ${request.uri} failed with ${e.getClass.getName}: ${e.getMessage}",
-          e
-        )
-        Unauthorized(
-          Json.toJson(
-            ErrorResponse(UNAUTHORIZED, e.getMessage)
-          )
-        )
-      }
-  }
-
-  private val ETFC1 = BadRequest(
-    ErrorResponseFactory.getJson("ETFC1", "Correlation ID is in an invalid format or is missing")
-  )
-
-  private val ETFC2 = InternalServerError(
-    ErrorResponseFactory.getJson("ETFC2", "Bearer Token did not return a valid record")
-  )
+  def identify: ActionBuilder[IdentifierRequest, AnyContent] =
+    controllerComponents.actionBuilder
+      .andThen(retrieveNinoAction)
+      .andThen(extractRequestCorrelationIdHeaderAction)
+      .andThen(addResponseCorrelationIdHeaderAction)
 
 }
