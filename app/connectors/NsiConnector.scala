@@ -124,8 +124,8 @@ object NsiConnector extends FormattedLogging with Status {
         jsonValidatedResponse match {
           case Success(JsSuccess(result, _)) =>
             nsi200Response(response.status, result)
-          case Success(JsError(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])])) =>
-            errorResponseJson(response.status, jsonErrors)
+          case Success(JsError(jsonErrors)) =>
+            errorResponseJson(response.status, jsonErrors.toString())
           case Failure(exception) =>
             exceptionResponse(exception)
         }
@@ -134,8 +134,9 @@ object NsiConnector extends FormattedLogging with Status {
         jsonValidatedErrorResponse match {
           case Success(JsSuccess(nsiErrorResponse, _)) =>
             errorResponseNsi(response.status, response.body, nsiErrorResponse)
-          case Success(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]) =>
-            errorResponseJson(response.status, jsonErrors)
+          case Success(JsError(jsonErrors)) =>
+            println("hello")
+            errorResponseJson(response.status, jsonErrors.toString)
           case Failure(exception) =>
             exceptionResponse(exception)
         }
@@ -152,7 +153,7 @@ object NsiConnector extends FormattedLogging with Status {
 
   private def errorResponseJson(
       status: Int,
-      errors: Seq[(JsPath, Seq[JsonValidationError])]
+      errors: String
   )(using rh: RequestHeader) = {
     logger.warn(
       formattedErrorLog(
