@@ -135,7 +135,6 @@ object NsiConnector extends FormattedLogging with Status {
           case Success(JsSuccess(nsiErrorResponse, _)) =>
             errorResponseNsi(response.status, response.body, nsiErrorResponse)
           case Success(JsError(jsonErrors)) =>
-            println("hello")
             errorResponseJson(response.status, jsonErrors.toString)
           case Failure(exception) =>
             exceptionResponse(exception)
