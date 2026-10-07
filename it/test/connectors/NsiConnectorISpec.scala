@@ -27,7 +27,7 @@ import helpers.generators.response.error.NsiErrorResponseGenerators
 import helpers.generators.response.nsi.{NsiBalanceResponseGenerators, NsiLinkResponseGenerators, NsiPaymentResponseGenerators}
 import models.request.IdentifierRequest
 import models.request.external.{ExternalBalanceRequest, ExternalLinkRequest, ExternalPaymentRequest}
-import models.response.error.NsiErrorResponse.{E0001, E0009, E0024, E0027}
+import models.response.error.NsiErrorResponse.{E0001, E0006, E0009, E0024, E0027, E0032}
 import models.response.error.ServiceErrorResponse.{ETFC3, ETFC4}
 import models.response.nsi.{NsiBalanceResponse, NsiLinkResponse, NsiPaymentResponse}
 import org.mockito.Mockito
@@ -142,7 +142,7 @@ class NsiConnectorISpec
     }
 
     "return Left ETFC3" when {
-      "NSI responds 201 with an invalid account status" in
+      "NSI responds 201 with an invalid JSON body" in
         forAll(genLinkIdentifierRequests) { externalLinkRequest =>
           withCaptureOfLoggingFrom(LOGGER) { logs =>
             given IdentifierRequest[ExternalLinkRequest] = externalLinkRequest
@@ -174,6 +174,31 @@ class NsiConnectorISpec
           withCaptureOfLoggingFrom(LOGGER) { logs =>
             given IdentifierRequest[ExternalLinkRequest] = externalLinkRequest
 
+            val invalidLinkResponse = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubFor {
+              nsiLinkAccountsEndpoint
+                .willReturn(created().withBody(invalidLinkResponse))
+            }
+
+            val actualNsiErrorResponse = connector.linkAccounts.futureValue.left.value
+
+            actualNsiErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded with a body that cannot be parsed triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+
+      "NSI responds 201 with an empty body" in
+        forAll(genLinkIdentifierRequests) { externalLinkRequest =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            given IdentifierRequest[ExternalLinkRequest] = externalLinkRequest
+
             val invalidLinkResponse = ""
 
             stubFor {
@@ -194,7 +219,7 @@ class NsiConnectorISpec
           }
         }
 
-      "NSI responds with an error status and invalid account status" in
+      "NSI responds with an error status and invalid JSON body" in
         forAll(genLinkIdentifierRequests) { externalLinkRequest =>
           withCaptureOfLoggingFrom(LOGGER) { logs =>
             given IdentifierRequest[ExternalLinkRequest] = externalLinkRequest
@@ -243,13 +268,13 @@ class NsiConnectorISpec
           }
         }
 
-      "NSI responds with another exception" in
+      "NSI responds with another error" in
         forAll(
           genLinkIdentifierRequests
         ) { request =>
           withCaptureOfLoggingFrom(LOGGER) { logs =>
 
-            stubNsiLinkAccountsException()
+            stubNsiLinkAccountsError()
 
             val exceptionResponse = connector.linkAccounts(using request).futureValue.left.value
 
@@ -318,8 +343,62 @@ class NsiConnectorISpec
         }
     }
 
+    "return Left E0006 and log errorDescription" when {
+      "NSI responds with error status, errorCode E0006, and defined errorDescription" in
+        forAll(
+          genBalanceIdentifierRequests,
+          Gen.asciiPrintableStr
+        ) { (request, expectedErrorDescription) =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val expectedStatus = randomHttpErrorCodes.sample.get
+
+            val errorJson = errorAsJson("E0006", expectedErrorDescription)
+
+            stubNsiBalanceCheck(status = expectedStatus, body = errorJson.toString)
+
+            val actualNsiErrorResponse = connector.checkBalance(using request).futureValue.left.value
+
+            actualNsiErrorResponse shouldBe E0006
+
+            val expectedPartialLogMessage =
+              s"NSI responded $expectedStatus with body $errorJson - triggering E0006"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+    }
+
+    "return Left E0032 and log errorDescription" when {
+      "NSI responds with error status, errorCode E0032, and defined errorDescription" in
+        forAll(
+          genBalanceIdentifierRequests,
+          Gen.asciiPrintableStr
+        ) { (request, expectedErrorDescription) =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            val expectedStatus = randomHttpErrorCodes.sample.get
+
+            val errorJson = errorAsJson("E0032", expectedErrorDescription)
+
+            stubNsiBalanceCheck(status = expectedStatus, body = errorJson.toString)
+
+            val actualNsiErrorResponse = connector.checkBalance(using request).futureValue.left.value
+
+            actualNsiErrorResponse shouldBe E0032
+
+            val expectedPartialLogMessage = s"NSI responded $expectedStatus with body $errorJson - triggering E0032"
+
+            checkLoneLog(
+              expectedLevel = Level.INFO,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+    }
+
     "return Left ETFC3" when {
-      "NSI responds 201 with an invalid account status" in
+      "NSI responds 201 with an invalid JSON body" in
         forAll(genBalanceIdentifierRequests) { externalBalanceRequest =>
           withCaptureOfLoggingFrom(LOGGER) { logs =>
             given IdentifierRequest[ExternalBalanceRequest] = externalBalanceRequest
@@ -357,6 +436,31 @@ class NsiConnectorISpec
           withCaptureOfLoggingFrom(LOGGER) { logs =>
             given IdentifierRequest[ExternalBalanceRequest] = externalBalanceRequest
 
+            val invalidBalanceResponse = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubFor {
+              nsiCheckBalanceEndpoint
+                .willReturn(created().withBody(invalidBalanceResponse))
+            }
+
+            val actualNsiErrorResponse = connector.checkBalance.futureValue.left.value
+
+            actualNsiErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded with a body that cannot be parsed triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+
+      "NSI responds 201 with an empty body" in
+        forAll(genBalanceIdentifierRequests) { externalBalanceRequest =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            given IdentifierRequest[ExternalBalanceRequest] = externalBalanceRequest
+
             val invalidBalanceResponse = ""
 
             stubFor {
@@ -377,7 +481,7 @@ class NsiConnectorISpec
           }
         }
 
-      "NSI responds with an error status and invalid account status" in
+      "NSI responds with an error status and invalid JSON body" in
         forAll(genBalanceIdentifierRequests) { externalBalanceRequest =>
           withCaptureOfLoggingFrom(LOGGER) { logs =>
             given IdentifierRequest[ExternalBalanceRequest] = externalBalanceRequest
@@ -431,13 +535,13 @@ class NsiConnectorISpec
           }
         }
 
-      "NSI responds with another exception" in
+      "NSI responds with another error" in
         forAll(
           genBalanceIdentifierRequests
         ) { request =>
             withCaptureOfLoggingFrom(LOGGER) { logs =>
 
-              stubNsiCheckBalanceException()
+              stubNsiCheckBalanceError()
 
               val exceptionResponse = connector.checkBalance(using request).futureValue.left.value
 
@@ -506,7 +610,7 @@ class NsiConnectorISpec
     }
 
     "return Left E0009 and log errorDescription" when {
-      "NSI responds with error status, errorCode E0027, and defined errorDescription" in
+      "NSI responds with error status, errorCode E0009, and defined errorDescription" in
         forAll(
           genPaymentIdentifierRequests,
           Gen.asciiPrintableStr
@@ -560,7 +664,7 @@ class NsiConnectorISpec
     }
 
     "return Left ETFC3" when {
-      "NSI responds 201 with an invalid account status" in
+      "NSI responds 201 with an invalid JSON body" in
         forAll(genPaymentIdentifierRequests) { externalPaymentRequest =>
           withCaptureOfLoggingFrom(LOGGER) { logs =>
             given IdentifierRequest[ExternalPaymentRequest] = externalPaymentRequest
@@ -593,6 +697,31 @@ class NsiConnectorISpec
           withCaptureOfLoggingFrom(LOGGER) { logs =>
             given IdentifierRequest[ExternalPaymentRequest] = externalPaymentRequest
 
+            val invalidPaymentResponse = "<html><body><h1>504 Gateway Time-out</h1>The server didn't respond in time.</body></html>"
+
+            stubFor {
+              nsiMakePaymentEndpoint
+                .willReturn(created().withBody(invalidPaymentResponse))
+            }
+
+            val actualNsiErrorResponse = connector.makePayment.futureValue.left.value
+
+            actualNsiErrorResponse shouldBe ETFC3
+
+            val expectedPartialLogMessage =
+              s"NSI responded with a body that cannot be parsed triggering ETFC3"
+            checkLoneLog(
+              expectedLevel = Level.WARN,
+              expectedMessage = getFullLogMessageFrom(expectedPartialLogMessage)
+            )(logs)
+          }
+        }
+
+      "NSI responds 201 with an empty body" in
+        forAll(genPaymentIdentifierRequests) { externalPaymentRequest =>
+          withCaptureOfLoggingFrom(LOGGER) { logs =>
+            given IdentifierRequest[ExternalPaymentRequest] = externalPaymentRequest
+
             val invalidPaymentResponse = ""
 
             stubFor {
@@ -613,7 +742,7 @@ class NsiConnectorISpec
           }
         }
 
-      "NSI responds with an error status and invalid account status" in
+      "NSI responds with an error status and invalid JSON body" in
         forAll(genPaymentIdentifierRequests) { externalPaymentRequest =>
           withCaptureOfLoggingFrom(LOGGER) { logs =>
             given IdentifierRequest[ExternalPaymentRequest] = externalPaymentRequest
@@ -663,13 +792,13 @@ class NsiConnectorISpec
           }
         }
 
-      "NSI responds with another exception" in
+      "NSI responds with another error" in
         forAll(
           genPaymentIdentifierRequests
         ) { request =>
           withCaptureOfLoggingFrom(LOGGER) { logs =>
 
-            stubNsiMakePaymentException()
+            stubNsiMakePaymentError()
 
             val exceptionResponse = connector.makePayment(using request).futureValue.left.value
 

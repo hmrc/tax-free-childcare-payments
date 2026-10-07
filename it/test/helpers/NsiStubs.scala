@@ -58,7 +58,7 @@ trait NsiStubs extends Status { self: BaseISpec =>
       )
   }
 
-  protected def stubNsiLinkAccountsException(): StubMapping = stubFor {
+  protected def stubNsiLinkAccountsError(): StubMapping = stubFor {
     nsiLinkAccountsEndpoint
       .willReturn(
         serverError()
@@ -98,7 +98,7 @@ trait NsiStubs extends Status { self: BaseISpec =>
       )
   }
 
-  protected def stubNsiCheckBalanceException(): StubMapping = stubFor {
+  protected def stubNsiCheckBalanceError(): StubMapping = stubFor {
     nsiCheckBalanceEndpoint
       .willReturn(
         serverError()
@@ -137,7 +137,7 @@ trait NsiStubs extends Status { self: BaseISpec =>
       )
   }
 
-  protected def stubNsiMakePaymentException(): StubMapping = stubFor {
+  protected def stubNsiMakePaymentError(): StubMapping = stubFor {
     nsiMakePaymentEndpoint
       .willReturn(
         serverError()
