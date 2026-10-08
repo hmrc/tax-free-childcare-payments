@@ -16,13 +16,17 @@
 
 package helpers
 
+import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.client.{MappingBuilder, ResponseDefinitionBuilder}
 import com.github.tomakehurst.wiremock.matching.{StringValuePattern, UrlPattern}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalacheck.Gen
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Configuration
 import play.api.http.Status
+import play.api.libs.json.{JsValue, Json}
+import play.twirl.api.Html
 
 import java.util
 import scala.concurrent.duration.Duration
@@ -43,6 +47,22 @@ trait NsiStubs extends Status { self: BaseISpec =>
     nsiLinkAccountsEndpoint
       .withQueryParams(nsiLinkAccountsUrlQueryParams)
       .willReturn(response(status, body, responseTime))
+  }
+
+  protected def stubNsiLinkAccountsHtml(status: Int, htmlBody:String): StubMapping = stubFor {
+    nsiLinkAccountsEndpoint
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(Html(htmlBody).toString)
+      )
+  }
+
+  protected def stubNsiLinkAccountsError(): StubMapping = stubFor {
+    nsiLinkAccountsEndpoint
+      .willReturn(
+        serverError()
+      )
   }
 
   protected val nsiLinkAccountsUrlPattern: UrlPattern = nsiUrlPattern("linkAccounts", raw"[a-zA-Z0-9]+\\?[^/]+")
@@ -68,6 +88,23 @@ trait NsiStubs extends Status { self: BaseISpec =>
       .willReturn(response(status, body, responseTime))
   }
 
+
+  protected def stubNsiCheckBalanceHtml(status: Int, htmlBody:String): StubMapping = stubFor {
+    nsiCheckBalanceEndpoint
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(htmlBody)
+      )
+  }
+
+  protected def stubNsiCheckBalanceError(): StubMapping = stubFor {
+    nsiCheckBalanceEndpoint
+      .willReturn(
+        serverError()
+      )
+  }
+
   protected val nsiBalanceUrlPattern: UrlPattern = nsiUrlPattern("checkBalance", raw"[a-zA-Z0-9]+\\?[^/]+")
 
   protected val nsiCheckBalanceEndpoint: MappingBuilder = get(nsiBalanceUrlPattern)
@@ -88,6 +125,23 @@ trait NsiStubs extends Status { self: BaseISpec =>
     nsiMakePaymentEndpoint
       .withRequestBody(nsiPaymentRequestBodyPattern)
       .willReturn(response(status, body, responseTime))
+  }
+
+
+  protected def stubNsiMakePaymentHtml(status: Int, htmlBody:String): StubMapping = stubFor {
+    nsiMakePaymentEndpoint
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withBody(Html(htmlBody).toString)
+      )
+  }
+
+  protected def stubNsiMakePaymentError(): StubMapping = stubFor {
+    nsiMakePaymentEndpoint
+      .willReturn(
+        serverError()
+      )
   }
 
   protected val nsiPaymentUrlPattern: UrlPattern = nsiUrlPattern("makePayment")

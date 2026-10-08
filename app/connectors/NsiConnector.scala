@@ -16,6 +16,7 @@
 
 package connectors
 
+import com.fasterxml.jackson.core.JsonParseException
 import config.AppConfig
 import models.request.*
 import models.request.external.{ExternalBalanceRequest, ExternalLinkRequest, ExternalPaymentRequest}
@@ -25,17 +26,20 @@ import models.response.external.{ExternalBalanceResponse, ExternalLinkResponse, 
 import models.response.nsi.{NsiBalanceResponse, NsiLinkResponse, NsiPaymentResponse}
 import play.api.http.Status
 import play.api.libs.json.*
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import play.api.libs.json.Format.GenericFormat
+import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
 import play.api.mvc.RequestHeader
 import sttp.model.HeaderNames
 import uk.gov.hmrc.http.HttpReads
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendHeaderCarrierProvider
 import utils.FormattedLogging
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 import java.net.{URI, URL, URLEncoder}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class NsiConnector @Inject() (
@@ -124,45 +128,80 @@ object NsiConnector extends FormattedLogging with Status {
   private def encodeParam(outboundPaymentRef: String): String =
     URLEncoder.encode(outboundPaymentRef, "UTF-8").replaceAll("\\+", "%20")
 
-  private given [A: Reads](using rh: RequestHeader): HttpReads[Response[A]] =
+  private given [A: Reads](using RequestHeader): HttpReads[Response[A]] =
     (_, _, response) =>
       if (response.status / 100 == 2) {
-        response.json.validate[A] match {
-          case JsSuccess(result, _) =>
-            logger.info(
-              formattedInfoLog(
-                s"NSI responded ${response.status}"
-              )
-            )
-            Right(result)
-          case JsError(jsonErrors) =>
-            logger.warn(
-              formattedErrorLog(
-                s"NSI responded ${response.status}. Resulting in JSON validation errors - $jsonErrors - triggering ETFC3"
-              )
-            )
-            Left(ServiceErrorResponse.ETFC3)
+        val jsonValidatedResponse: Try[JsResult[A]] = Try(response.json.validate[A])
+        jsonValidatedResponse match {
+          case Success(JsSuccess(result, _)) =>
+            nsi200Response(response.status, result)
+          case Success(JsError(jsonErrors)) =>
+            errorResponseJson(response.status, jsonErrors.toString())
+          case Failure(exception) =>
+            exceptionResponse(exception)
         }
       } else {
-        response.json.validate[ErrorResponse] match {
-          case JsSuccess(nsiErrorResponse, _) =>
-            val message = formattedErrorLog(
-              s"NSI responded ${response.status} with body ${response.body} - triggering $nsiErrorResponse"
-            )
-            if (nsiErrorResponse.reportAsStatus < INTERNAL_SERVER_ERROR) {
-              logger.info(message)
-            } else {
-              logger.warn(message)
-            }
-            Left(nsiErrorResponse)
-          case JsError(jsonErrors) =>
-            logger.warn(
-              formattedErrorLog(
-                s"NSI responded ${response.status}. Resulting in JSON validation errors - $jsonErrors - triggering ETFC3"
-              )
-            )
-            Left(ServiceErrorResponse.ETFC3)
+        val jsonValidatedErrorResponse: Try[JsResult[ErrorResponse]] = Try(response.json.validate[ErrorResponse])
+        jsonValidatedErrorResponse match {
+          case Success(JsSuccess(nsiErrorResponse, _)) =>
+            errorResponseNsi(response.status, response.body, nsiErrorResponse)
+          case Success(JsError(jsonErrors)) =>
+            errorResponseJson(response.status, jsonErrors.toString)
+          case Failure(exception) =>
+            exceptionResponse(exception)
         }
       }
+
+  private def nsi200Response[A](status: Int, result: A)(using rh: RequestHeader) = {
+    logger.info(
+      formattedInfoLog(
+        s"NSI responded $status"
+      )
+    )
+    Right(result)
+  }
+
+  private def errorResponseJson(
+      status: Int,
+      errors: String
+  )(using rh: RequestHeader) = {
+    logger.warn(
+      formattedErrorLog(
+        s"NSI responded $status. Resulting in JSON validation errors - $errors - triggering ETFC3"
+      )
+    )
+    Left(ServiceErrorResponse.ETFC3)
+  }
+
+  private def errorResponseNsi(status: Int, body: String, response: ErrorResponse)(using rh: RequestHeader) = {
+    val message = formattedErrorLog(
+      s"NSI responded $status with body $body - triggering $response"
+    )
+    if (response.reportAsStatus < INTERNAL_SERVER_ERROR) {
+      logger.info(message)
+    } else {
+      logger.warn(message)
+    }
+    Left(response)
+  }
+
+  private def exceptionResponse(exception: Throwable)(
+      using rh: RequestHeader
+  ) =
+    exception match {
+      case _: JsonParseException =>
+        logger.warn(
+          formattedErrorLog(
+            s"NSI responded with a body that cannot be parsed triggering ETFC3"
+          )
+        )
+      case _ =>
+        logger.warn(
+          formattedErrorLog(
+            s"An exception occurred while reading NSI response triggering ETFC3"
+          )
+        )
+    }
+    Left(ServiceErrorResponse.ETFC3)
 
 }
