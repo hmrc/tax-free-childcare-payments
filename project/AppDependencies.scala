@@ -2,7 +2,7 @@ import sbt.*
 
 object AppDependencies {
 
-  private val bootstrapVersion  = "10.7.0"
+  private val bootstrapVersion  = "10.9.0"
   private val enumeratumVersion = "1.9.8"
 
   private val scalacheckVersion = "3.2.18.0"
