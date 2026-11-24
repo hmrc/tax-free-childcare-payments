@@ -2,7 +2,7 @@ import play.sbt.PlayImport.PlayKeys.playDefaultPort
 import uk.gov.hmrc.DefaultBuildSettings
 
 ThisBuild / majorVersion                                         := 0
-ThisBuild / scalaVersion                                         := "3.3.7"
+ThisBuild / scalaVersion                                         := "3.3.9"
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 
 lazy val microservice = Project("tax-free-childcare-payments", file("."))
